@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-electron
+.vite
+.wrangler
+.turbo
+coverage
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
