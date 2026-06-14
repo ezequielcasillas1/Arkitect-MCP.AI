@@ -19,6 +19,8 @@
     "@arkitect/github": "workspace:*",
     "@arkitect/mcp-server": "workspace:*",
     "@arkitect/repo-analyzer": "workspace:*",
+    "@cursor/sdk": "^1.0.18",
+    "lucide-react": "^1.18.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

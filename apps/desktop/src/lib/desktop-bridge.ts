@@ -1,4 +1,17 @@
-import type { GitHubApiError, GitHubRouteInput } from "@arkitect/contracts";
+import type {
+  AiConnectionTestResult,
+  AiDiagnosisRunRequest,
+  AiDiagnosisRunResult,
+  AiProviderCredentials,
+  GitHubApiError,
+  GitHubRouteInput
+} from "@arkitect/contracts";
+import {
+  createMockConnectionResult,
+  createMockDiagnosisEnrichment,
+  createProviderAdapter,
+  validateCredentialsForProvider
+} from "@arkitect/ai";
 import { fetchGitHubRoutePayload, githubRouteToRepoInspection } from "@arkitect/github";
 
 export type DesktopRuntime = "electron" | "browser" | "electron-bridge-missing";
@@ -186,4 +199,93 @@ export function formatShellLabel(shellInfo: RuntimeShellInfo | null): string {
   }
 
   return `${shellInfo.shell} on ${shellInfo.platform}`;
+}
+
+const browserAiAdapter = createProviderAdapter({
+  testCursorConnection: async (credentials) => createMockConnectionResult(credentials),
+  runCursorDiagnosis: async (facts, credentials) => createMockDiagnosisEnrichment(facts, credentials)
+});
+
+export async function testAiConnectionViaBridge(
+  credentials: AiProviderCredentials,
+  runtime: DesktopRuntime
+): Promise<AiConnectionTestResult> {
+  if (hasDesktopBridge() && window.arkitectDesktop?.testAiConnection) {
+    try {
+      return await window.arkitectDesktop.testAiConnection(credentials);
+    } catch (error) {
+      return {
+        ok: false,
+        connected: false,
+        provider: credentials.preferredProvider,
+        modelName: credentials.modelName,
+        message: error instanceof Error ? error.message : "AI connection test failed.",
+        code: "network_error"
+      };
+    }
+  }
+
+  if (runtime === "electron" || runtime === "electron-bridge-missing") {
+    return {
+      ok: false,
+      connected: false,
+      provider: credentials.preferredProvider,
+      modelName: credentials.modelName,
+      message: "AI connection requires the Electron desktop bridge. Restart with pnpm dev:desktop.",
+      code: "network_error"
+    };
+  }
+
+  return browserAiAdapter.testConnection(credentials);
+}
+
+export async function runAiDiagnosisViaBridge(request: AiDiagnosisRunRequest, runtime: DesktopRuntime): Promise<AiDiagnosisRunResult> {
+  const validation = validateCredentialsForProvider(request.credentials);
+
+  if (!validation.ok) {
+    return {
+      ok: true,
+      enrichment: {
+        status: "skipped",
+        provider: request.credentials.preferredProvider,
+        modelName: request.credentials.modelName,
+        summary: validation.message,
+        reasoning: ["Rule-based diagnosis remains the baseline."],
+        nextActions: [],
+        generatedAt: new Date().toISOString()
+      }
+    };
+  }
+
+  if (hasDesktopBridge() && window.arkitectDesktop?.runAiDiagnosis) {
+    try {
+      return await window.arkitectDesktop.runAiDiagnosis(request);
+    } catch (error) {
+      return {
+        ok: false,
+        error: {
+          code: "network_error",
+          message: error instanceof Error ? error.message : "AI diagnosis bridge call failed."
+        }
+      };
+    }
+  }
+
+  if (runtime === "electron" || runtime === "electron-bridge-missing") {
+    return {
+      ok: false,
+      error: {
+        code: "network_error",
+        message: "Live AI diagnosis requires the Electron desktop bridge."
+      }
+    };
+  }
+
+  const enrichment = await browserAiAdapter.runDiagnosis(request.facts, request.credentials, request.repoPath);
+
+  return {
+    ok: enrichment.ok,
+    enrichment: enrichment.enrichment,
+    error: enrichment.error
+  };
 }

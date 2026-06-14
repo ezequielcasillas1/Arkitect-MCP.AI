@@ -1,4 +1,4 @@
-import type { AiRecommendation, AiSettings } from "./ai.js";
+import type { AiDiagnosisEnrichment, AiRecommendation, AiSettings } from "./ai.js";
 import type {
   ArchitectureCatalogId,
   CatalogRecommendationBundle,
@@ -95,6 +95,7 @@ export interface DiagnosisResult {
   catalogRecommendation: CatalogRecommendationBundle;
   patternGuidance: PatternGuidance;
   aiRecommendation: AiRecommendation;
+  aiEnrichment?: AiDiagnosisEnrichment;
   experienceFlow: ExperienceFlowStep[];
   generatedAt: string;
 }

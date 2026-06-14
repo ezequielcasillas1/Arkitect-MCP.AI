@@ -5,6 +5,8 @@ interface ReviewRunSectionProps {
   result: DiagnosisResult;
   canRun: boolean;
   hasRun: boolean;
+  diagnosisBusy: boolean;
+  aiConnected: boolean;
   onPermissionChange: (permission: ExecutionPermission) => void;
   onRun: () => void;
 }
@@ -30,6 +32,8 @@ export function ReviewRunSection({
   result,
   canRun,
   hasRun,
+  diagnosisBusy,
+  aiConnected,
   onPermissionChange,
   onRun
 }: ReviewRunSectionProps) {
@@ -84,22 +88,25 @@ export function ReviewRunSection({
             <li>Repo health: {result.signals.repoHealth.final.value}</li>
             <li>Selected remix: {result.decision.selectedRemixId ?? "auto-ranked only"}</li>
             <li>Provider: {result.intake.ai.preferredProvider}</li>
+            <li>Model: {result.intake.ai.modelName}</li>
+            <li>AI connection: {aiConnected ? "connected" : "not connected / skipped"}</li>
           </ul>
         </article>
 
         <article className="panel-card">
           <span className="metric-label">Run diagnosis</span>
           <p className="summary-copy">
-            Running the diagnosis captures the current repo selection, policy direction, AI settings, and the
-            MCP-exposed payload for the results screen.
+            Runs the rule-based engine first, then calls your connected model with a structured facts bundle (repo
+            inspection, detections, policy, catalog). AI enriches summary, reasoning, and next actions — it does not
+            replace safety guardrails.
           </p>
           <button
             className="primary-button action-button-wide"
-            disabled={!canRun || permissionBlocked}
+            disabled={!canRun || permissionBlocked || diagnosisBusy}
             onClick={onRun}
             type="button"
           >
-            {hasRun ? "Run diagnosis again" : "Run diagnosis"}
+            {diagnosisBusy ? "Running diagnosis…" : hasRun ? "Run diagnosis again" : "Run diagnosis"}
           </button>
         </article>
       </div>

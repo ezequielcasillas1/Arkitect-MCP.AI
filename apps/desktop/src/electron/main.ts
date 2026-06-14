@@ -13,6 +13,7 @@ import type {
 import { fetchGitHubRoutePayload, githubRouteToRepoInspection } from "@arkitect/github";
 import { getDesktopLibraryPath, loadDesktopLibrary, saveDesktopLibrary } from "./library-store.js";
 import { inspectRepoPath } from "./repo-inspector.js";
+import { runAiDiagnosis, testAiConnection } from "./ai-service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
@@ -135,6 +136,10 @@ app.whenReady().then(() => {
   );
   ipcMain.handle("arkitect:load-library", async () => loadDesktopLibrary());
   ipcMain.handle("arkitect:save-library", async (_event, state: DesktopLibraryState) => saveDesktopLibrary(state));
+  ipcMain.handle("arkitect:test-ai-connection", async (_event, credentials) => testAiConnection(credentials));
+  ipcMain.handle("arkitect:run-ai-diagnosis", async (_event, request) =>
+    runAiDiagnosis(request.facts, request.credentials, request.repoPath)
+  );
 
   createWindow();
 

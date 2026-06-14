@@ -294,6 +294,12 @@ code {
   color: #ffd7a4;
 }
 
+.status-connected {
+  background: rgba(87, 211, 155, 0.16);
+  border-color: rgba(87, 211, 155, 0.35);
+  color: #99f0c6;
+}
+
 .soft-pill {
   background: rgba(255, 255, 255, 0.06);
   color: #dbe3f7;
@@ -395,6 +401,84 @@ input[type="checkbox"] {
 
 .checkbox-row {
   justify-content: flex-start;
+}
+
+.checkbox-label-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-hint {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.info-hint-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid rgba(109, 140, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(109, 140, 255, 0.1);
+  color: #c4d2ff;
+  transition: 120ms ease;
+}
+
+.info-hint-button:hover,
+.info-hint-button:focus-visible {
+  background: rgba(109, 140, 255, 0.18);
+  border-color: rgba(109, 140, 255, 0.42);
+  color: #e3ebff;
+  outline: none;
+}
+
+.info-hint-tooltip {
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  z-index: 2;
+  width: min(280px, 70vw);
+  padding: 10px 12px;
+  border: 1px solid rgba(109, 140, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(12, 16, 28, 0.98);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+  color: #d8e0f4;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) translateX(-4px);
+  transition: 120ms ease;
+}
+
+.info-hint:hover .info-hint-tooltip,
+.info-hint:focus-within .info-hint-tooltip,
+.info-hint-open .info-hint-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0);
+}
+
+@media (max-width: 900px) {
+  .info-hint-tooltip {
+    left: auto;
+    right: 0;
+    top: calc(100% + 8px);
+    transform: translateY(4px);
+  }
+
+  .info-hint:hover .info-hint-tooltip,
+  .info-hint:focus-within .info-hint-tooltip,
+  .info-hint-open .info-hint-tooltip {
+    transform: translateY(0);
+  }
 }
 
 .primary-button,
@@ -544,6 +628,19 @@ input[type="checkbox"] {
 .tab-button-active {
   border-color: rgba(109, 140, 255, 0.42);
   background: rgba(109, 140, 255, 0.16);
+}
+
+.connection-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.cost-hint-box {
+  margin-top: 4px;
+}
+
+.metric-card-wide {
+  grid-column: 1 / -1;
 }
 
 .warning-box {

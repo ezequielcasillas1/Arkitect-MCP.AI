@@ -1,4 +1,5 @@
 import type { DiagnosisField, DiagnosisResult, RepoInspection, UserSignalInputs } from "@arkitect/contracts";
+import { InfoHint } from "../../components/InfoHint";
 
 interface FieldPatch {
   hint?: string;
@@ -199,7 +200,12 @@ export function ProjectProfileSection({
                   checked={Boolean(fieldState?.confirmed)}
                   onChange={(event) => onFieldPatch(key, { confirmed: event.target.checked })}
                 />
-                Confirm the auto-detected value
+                <span className="checkbox-label-copy">
+                  Confirm the auto-detected value
+                  <InfoHint label="What does confirming the auto-detected value mean?">
+                    {`Check this when Arkitect's auto-detected value looks correct (e.g. "${signal.auto.value}"). Unchecked means you haven't verified it yet. Checked means you accept the detection and want to proceed with it. This is for visibility and control, separate from auto-continue on healthy architecture.`}
+                  </InfoHint>
+                </span>
               </label>
 
               <div className="final-row">

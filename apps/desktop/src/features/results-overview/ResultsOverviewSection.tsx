@@ -19,7 +19,7 @@ export function ResultsOverviewSection({
   cursorGuidance,
   toolNames
 }: ResultsOverviewSectionProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "architecture" | "patterns" | "risks" | "mcp">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp">("overview");
   const selectedArchitecture = result.decision.selectedArchitectureId
     ? getArchitectureCatalogEntry(result.decision.selectedArchitectureId)
     : undefined;
@@ -60,7 +60,7 @@ export function ResultsOverviewSection({
           {lastRunAt ? <p className="run-timestamp">Last run: {new Date(lastRunAt).toLocaleString()}</p> : null}
 
           <div className="tab-row">
-            {["overview", "architecture", "patterns", "risks", "mcp"].map((tab) => (
+            {["overview", "architecture", "patterns", "risks", "ai", "mcp"].map((tab) => (
               <button
                 className={`tab-button ${activeTab === tab ? "tab-button-active" : ""}`}
                 key={tab}
@@ -92,6 +92,12 @@ export function ResultsOverviewSection({
                 <strong>{result.decision.requiredPermission}</strong>
                 <p>{result.decision.recommendedExecutionMode}</p>
               </article>
+              {result.aiEnrichment ? (
+                <article className="metric-card metric-card-wide">
+                  <span className="metric-label">AI summary ({result.aiEnrichment.status})</span>
+                  <p>{result.aiEnrichment.summary}</p>
+                </article>
+              ) : null}
             </div>
           ) : null}
 
@@ -204,6 +210,51 @@ export function ResultsOverviewSection({
                   ))}
                 </div>
               </article>
+            </div>
+          ) : null}
+
+          {activeTab === "ai" ? (
+            <div className="step-grid">
+              {result.aiEnrichment ? (
+                <>
+                  <article className="panel-card">
+                    <span className="metric-label">AI reasoning</span>
+                    <p className="helper-copy">
+                      Provider: {result.aiEnrichment.provider} · Model: {result.aiEnrichment.modelName}
+                      {result.aiEnrichment.latencyMs ? ` · ${result.aiEnrichment.latencyMs}ms` : ""}
+                    </p>
+                    <p>{result.aiEnrichment.summary}</p>
+                    <ul className="tight-list">
+                      {result.aiEnrichment.reasoning.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </article>
+                  <article className="panel-card">
+                    <span className="metric-label">AI next actions</span>
+                    <ul className="tight-list">
+                      {result.aiEnrichment.nextActions.map((step) => (
+                        <li key={step}>{step}</li>
+                      ))}
+                    </ul>
+                    {result.aiEnrichment.error ? (
+                      <div className="warning-box">
+                        <strong>{result.aiEnrichment.error.code}</strong>
+                        <p>{result.aiEnrichment.error.message}</p>
+                      </div>
+                    ) : null}
+                    <p className="helper-copy">
+                      Rule-based warnings and next steps remain visible on the Risks tab. AI output enriches — it does not
+                      override permission guardrails.
+                    </p>
+                  </article>
+                </>
+              ) : (
+                <article className="panel-card">
+                  <span className="metric-label">No AI enrichment</span>
+                  <p>Connect a Cursor API Key on the AI / Execution step and re-run diagnosis for live model reasoning.</p>
+                </article>
+              )}
             </div>
           ) : null}
 

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type {
+  AiConnectionTestResult,
+  AiProviderId,
   DashboardStepId,
   DesktopLibraryState,
   DiagnosisField,
@@ -11,6 +13,7 @@ import type {
   SavedProviderPreset,
   UserSignalInputs
 } from "@arkitect/contracts";
+import { buildDiagnosisFactsBundle } from "@arkitect/ai";
 import { createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult } from "@arkitect/core";
 import { arkitectWindowsTheme, buildCssVariables } from "@arkitect/design-system";
 import { githubRouteToRepoInspection, validateGitHubTokenFormat } from "@arkitect/github";
@@ -27,6 +30,8 @@ import {
   connectGitHubRoute as connectGitHubRouteViaBridge,
   getGitHubConnectBlockedCode,
   resolveRuntimeShellInfo,
+  runAiDiagnosisViaBridge,
+  testAiConnectionViaBridge,
   type RuntimeShellInfo
 } from "./lib/desktop-bridge";
 import { createLocalId, loadBrowserLibrary, saveBrowserLibrary } from "./lib/library-persistence";
@@ -41,6 +46,12 @@ interface GitHubConnectionState {
   status: "idle" | "connecting" | "success" | "error";
   message: string;
   code?: string;
+}
+
+interface AiConnectionState {
+  status: "idle" | "testing" | "connected" | "disconnected" | "error";
+  message: string;
+  lastResult?: AiConnectionTestResult;
 }
 
 const themeStyle = buildCssVariables(arkitectWindowsTheme) as CSSProperties;
@@ -156,6 +167,12 @@ export function App() {
   const [lastRunAt, setLastRunAt] = useState<string | undefined>(undefined);
   const [repoSummaryTouched, setRepoSummaryTouched] = useState(false);
   const [cursorApiKey, setCursorApiKey] = useState("");
+  const [providerKeys, setProviderKeys] = useState<Partial<Record<AiProviderId, string>>>({});
+  const [aiConnection, setAiConnection] = useState<AiConnectionState>({
+    status: "idle",
+    message: ""
+  });
+  const [diagnosisBusy, setDiagnosisBusy] = useState(false);
   const [repoConnectionMode, setRepoConnectionMode] = useState<DiagnosisIntake["routeSource"]>("local-path");
   const [githubToken, setGithubToken] = useState("");
   const [githubOwner, setGithubOwner] = useState("");
@@ -241,6 +258,7 @@ export function App() {
   const resultForDisplay = lastRun ?? previewResult;
   const mcpPayload = useMemo(() => toDiagnosisMcpPayload(resultForDisplay), [resultForDisplay]);
   const repoReady = isRepoReady(draft.routeSource, draft.repoInspection);
+  const aiConnected = aiConnection.status === "connected";
   const highestUnlockedIndex = lastRun
     ? 5
     : settingsReviewed
@@ -580,14 +598,78 @@ export function App() {
     }
   }
 
-  function runDiagnosis() {
-    const runResult = createDiagnosisResult(draft, createMockAutoDetections(draft));
-    setProfileReviewed(true);
-    setPolicyReviewed(true);
-    setSettingsReviewed(true);
-    setLastRun(runResult);
-    setLastRunAt(new Date().toISOString());
-    setActiveStep("results-overview");
+  function buildAiCredentials() {
+    return {
+      preferredProvider: draft.ai.preferredProvider,
+      modelName: draft.ai.modelName,
+      cursorApiKey: cursorApiKey.trim() || undefined,
+      providerKeys: Object.fromEntries(
+        Object.entries(providerKeys).filter(([, value]) => Boolean(value?.trim()))
+      ) as Partial<Record<AiProviderId, string>>
+    };
+  }
+
+  async function testAiConnection() {
+    const runtime = shellInfo?.runtime ?? "browser";
+
+    setAiConnection({
+      status: "testing",
+      message: "Validating provider connection…"
+    });
+
+    const result = await testAiConnectionViaBridge(buildAiCredentials(), runtime);
+
+    setAiConnection({
+      status: result.connected ? "connected" : "error",
+      message: result.message,
+      lastResult: result
+    });
+  }
+
+  async function runDiagnosis() {
+    setDiagnosisBusy(true);
+
+    try {
+      const baseline = createDiagnosisResult(draft, createMockAutoDetections(draft));
+      const runtime = shellInfo?.runtime ?? "browser";
+      const credentials = buildAiCredentials();
+      const facts = buildDiagnosisFactsBundle(baseline);
+      const localRepoPath =
+        draft.routeSource === "local-path"
+          ? draft.repoPath
+          : draft.repoInspection?.path ?? draft.repoPath;
+
+      const aiResult = await runAiDiagnosisViaBridge(
+        {
+          facts,
+          credentials,
+          repoPath: localRepoPath
+        },
+        runtime
+      );
+
+      const runResult = {
+        ...baseline,
+        aiEnrichment: aiResult.enrichment
+      };
+
+      setProfileReviewed(true);
+      setPolicyReviewed(true);
+      setSettingsReviewed(true);
+      setLastRun(runResult);
+      setLastRunAt(new Date().toISOString());
+      setActiveStep("results-overview");
+
+      if (aiResult.enrichment?.status === "success" && aiConnection.status !== "connected") {
+        setAiConnection({
+          status: "connected",
+          message: "Model responded during diagnosis run.",
+          lastResult: aiConnection.lastResult
+        });
+      }
+    } finally {
+      setDiagnosisBusy(false);
+    }
   }
 
   const intake = useMemo<DiagnosisIntake>(
@@ -904,10 +986,25 @@ export function App() {
           {activeStep === "ai-settings" ? (
             <AiSettingsSection
               allowUserSuppliedKeys={draft.ai.allowUserSuppliedKeys}
+              connectionState={aiConnection}
               cursorApiKey={cursorApiKey}
+              providerKeys={providerKeys}
               fallbackProviders={draft.ai.fallbackProviders}
               modelName={draft.ai.modelName}
-              onCursorApiKeyChange={setCursorApiKey}
+              onCursorApiKeyChange={(value) => {
+                setCursorApiKey(value);
+                setAiConnection({ status: "disconnected", message: "API key changed — test connection again." });
+                resetFromSettings();
+              }}
+              onProviderKeyChange={(provider, value) => {
+                setProviderKeys((current) => ({
+                  ...current,
+                  [provider]: value
+                }));
+                setAiConnection({ status: "disconnected", message: "Provider key changed — test connection again." });
+                resetFromSettings();
+              }}
+              onTestConnection={() => void testAiConnection()}
               onDeleteProviderPreset={(id) =>
                 setLibrary((current) => ({
                   ...current,
@@ -1007,7 +1104,9 @@ export function App() {
 
           {activeStep === "review-and-run" ? (
             <ReviewRunSection
+              aiConnected={aiConnected}
               canRun={repoReady && profileReviewed && policyReviewed && settingsReviewed}
+              diagnosisBusy={diagnosisBusy}
               executionPermission={draft.executionPermission}
               hasRun={Boolean(lastRun)}
               onPermissionChange={(permission: ExecutionPermission) => {
@@ -1017,7 +1116,7 @@ export function App() {
                 }));
                 resetFromSettings();
               }}
-              onRun={runDiagnosis}
+              onRun={() => void runDiagnosis()}
               result={previewResult}
             />
           ) : null}

@@ -4,6 +4,10 @@ import type {
   GitHubApiError,
   GitHubRouteInput,
   GitHubRoutePayload,
+  AiDiagnosisRunRequest,
+  AiDiagnosisRunResult,
+  AiProviderCredentials,
+  AiConnectionTestResult,
   RepoInspection
 } from "@arkitect/contracts";
 
@@ -34,5 +38,9 @@ contextBridge.exposeInMainWorld("arkitectDesktop", {
     ipcRenderer.invoke("arkitect:connect-github-route", input) as Promise<GitHubConnectResponse>,
   loadLibrary: () => ipcRenderer.invoke("arkitect:load-library") as Promise<DesktopLibraryState>,
   saveLibrary: (state: DesktopLibraryState) =>
-    ipcRenderer.invoke("arkitect:save-library", state) as Promise<DesktopLibraryState>
+    ipcRenderer.invoke("arkitect:save-library", state) as Promise<DesktopLibraryState>,
+  testAiConnection: (credentials: AiProviderCredentials) =>
+    ipcRenderer.invoke("arkitect:test-ai-connection", credentials) as Promise<AiConnectionTestResult>,
+  runAiDiagnosis: (request: AiDiagnosisRunRequest) =>
+    ipcRenderer.invoke("arkitect:run-ai-diagnosis", request) as Promise<AiDiagnosisRunResult>
 });

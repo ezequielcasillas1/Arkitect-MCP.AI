@@ -3,6 +3,10 @@ import type {
   GitHubApiError,
   GitHubRouteInput,
   GitHubRoutePayload,
+  AiDiagnosisRunRequest,
+  AiDiagnosisRunResult,
+  AiProviderCredentials,
+  AiConnectionTestResult,
   RepoInspection
 } from "@arkitect/contracts";
 
@@ -34,6 +38,8 @@ declare global {
       connectGitHubRoute: (input: GitHubRouteInput) => Promise<GitHubConnectResponse>;
       loadLibrary: () => Promise<DesktopLibraryState>;
       saveLibrary: (state: DesktopLibraryState) => Promise<DesktopLibraryState>;
+      testAiConnection: (credentials: AiProviderCredentials) => Promise<AiConnectionTestResult>;
+      runAiDiagnosis: (request: AiDiagnosisRunRequest) => Promise<AiDiagnosisRunResult>;
     };
   }
 }
