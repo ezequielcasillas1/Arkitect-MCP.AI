@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import type { AiConnectionTestResult, AiProviderId, SavedProviderPreset } from "@arkitect/contracts";
 import { createRecommendedModel, providerCatalog, resolveModelCostHint } from "@arkitect/ai";
+import type { RuntimeShellInfo } from "../../lib/desktop-bridge";
 
 interface AiSettingsSectionProps {
+  shellInfo: RuntimeShellInfo | null;
   preferredProvider: AiProviderId;
   modelName: string;
   cursorApiKey: string;
@@ -63,6 +65,7 @@ function connectionStatusLabel(status: AiSettingsSectionProps["connectionState"]
 }
 
 export function AiSettingsSection({
+  shellInfo,
   preferredProvider,
   modelName,
   cursorApiKey,
@@ -86,6 +89,8 @@ export function AiSettingsSection({
   const [presetName, setPresetName] = useState("");
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
   const costHint = useMemo(() => resolveModelCostHint(modelName), [modelName]);
+  const isElectron = shellInfo?.runtime === "electron";
+  const showRuntimeWarning = shellInfo != null && !isElectron;
 
   return (
     <section className="section-card">
@@ -99,11 +104,28 @@ export function AiSettingsSection({
         </span>
       </div>
 
+      {showRuntimeWarning ? (
+        <div className="warning-box">
+          <strong>Electron desktop required for live Cursor API</strong>
+          <p>
+            {shellInfo?.runtime === "browser"
+              ? "You are in the Vite browser preview. Cursor API keys only connect from the Electron window opened by pnpm dev:desktop."
+              : "The desktop bridge is unavailable. Restart with pnpm dev:desktop and use the Electron window."}
+          </p>
+        </div>
+      ) : null}
+
       <p className="summary-copy">
-        Connect a Cursor account API key for Composer (default <code>composer-2.5</code>). The key is your Cursor account
-        credential; Composer is the model family. Newer Composer builds are recognized when your account exposes them.
-        Keys stay in this session only — saved presets never store API keys.
+        This step connects a <strong>Cursor account API key</strong> for Composer diagnosis — separate from MCP Connection
+        (next step), which registers the Arkitect MCP server with Cursor IDE. Select <code>Composer 2.5</code>, paste your
+        key, then click <strong>Test connection</strong>. Connected shows a green pill and resolved model id below.
       </p>
+
+      <ol className="tight-list helper-copy">
+        <li>Select the <strong>Composer 2.5</strong> provider card (recommended).</li>
+        <li>Paste your Cursor account / programmatic API key.</li>
+        <li>Click <strong>Test connection</strong> — status must show Connected before Review &amp; Run.</li>
+      </ol>
 
       <div className="provider-grid provider-grid-large">
         {providerCatalog.map((provider) => (
@@ -151,8 +173,9 @@ export function AiSettingsSection({
             ) : null}
 
             <p className="helper-copy">
-              Use <code>arkitect-mock</code> in dev to exercise the flow without a real key. Run Diagnosis keeps the
-              rule engine as baseline and merges AI reasoning when connected.
+              Use <code>arkitect-mock</code> in dev to exercise the flow without a real key. Keys stay in this app session
+              only — saved presets never store API keys. You must click Test connection; entering a key alone does not
+              connect.
             </p>
 
             <label>
@@ -223,6 +246,9 @@ export function AiSettingsSection({
                 {connectionState.status === "testing" ? "Testing connection…" : "Test connection"}
               </button>
               {connectionState.message ? <p className="helper-copy">{connectionState.message}</p> : null}
+              {connectionState.status === "idle" ? (
+                <p className="helper-copy">Status: Not tested — click Test connection after entering your key.</p>
+              ) : null}
               {connectionState.lastResult?.resolvedModelId ? (
                 <p className="helper-copy">Resolved model: {connectionState.lastResult.resolvedModelId}</p>
               ) : null}

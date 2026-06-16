@@ -77,6 +77,7 @@ export type DashboardStepId =
   | "project-profile"
   | "architecture-policy"
   | "ai-settings"
+  | "mcp-connection"
   | "review-and-run"
   | "results-overview";
 

@@ -5,6 +5,7 @@ export interface FlowSidebarStep {
   title: string;
   description: string;
   status: "current" | "complete" | "ready" | "locked";
+  lockReason?: string;
 }
 
 interface FlowSidebarProps {
@@ -42,11 +43,14 @@ export function FlowSidebar({
       <nav aria-label="Diagnosis flow" className="sidebar-nav panel-surface">
         {steps.map((step, index) => (
           <button
+            aria-disabled={step.status === "locked"}
             className={`sidebar-step ${
               activeStep === step.id ? "sidebar-step-active" : ""
             } sidebar-step-${step.status}`}
+            disabled={step.status === "locked"}
             key={step.id}
             onClick={() => onStepSelect(step.id)}
+            title={step.lockReason}
             type="button"
           >
             <span className="sidebar-step-index">{index + 1}</span>

@@ -13,6 +13,7 @@ import type {
 import {
   createDefaultIntake,
   createDiagnosisResult,
+  defaultArchitecturePolicy,
   getCatalogCounts,
   listArchitectureCatalog,
   listDesignPatternCatalog,
@@ -270,3 +271,22 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
 }
 
 export const arkitectMcpServer = createArkitectMcpServer();
+
+export async function readArkitectMcpResource(uri: string): Promise<unknown> {
+  switch (uri) {
+    case "arkitect://diagnosis/latest": {
+      const result = lastDiagnosis ?? (await diagnoseRepository());
+      return toDiagnosisMcpPayload(result);
+    }
+    case "arkitect://policy/default":
+      return defaultArchitecturePolicy;
+    case "arkitect://catalog/architectures":
+      return toArchitectureCatalogPayload();
+    case "arkitect://catalog/remixes":
+      return toRemixCatalogPayload();
+    case "arkitect://catalog/patterns":
+      return toPatternCatalogPayload();
+    default:
+      throw new Error(`Unknown resource: ${uri}`);
+  }
+}

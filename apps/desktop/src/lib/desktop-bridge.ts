@@ -10,6 +10,8 @@ import {
   createMockConnectionResult,
   createMockDiagnosisEnrichment,
   createProviderAdapter,
+  createSkippedEnrichment,
+  isMockApiKey,
   validateCredentialsForProvider
 } from "@arkitect/ai";
 import { fetchGitHubRoutePayload, githubRouteToRepoInspection } from "@arkitect/github";
@@ -206,6 +208,24 @@ const browserAiAdapter = createProviderAdapter({
   runCursorDiagnosis: async (facts, credentials) => createMockDiagnosisEnrichment(facts, credentials)
 });
 
+export function getAiConnectBlockedMessage(runtime: DesktopRuntime): string {
+  if (runtime === "browser") {
+    return "Live Cursor API connection runs in the Electron desktop window. Close this browser tab and use the window opened by pnpm dev:desktop.";
+  }
+
+  return "AI connection requires the Electron desktop bridge. Stop the app, run pnpm dev:desktop from the repo root, and use the Electron window (not the Vite browser tab).";
+}
+
+function shouldBlockLiveAiInBrowser(credentials: AiProviderCredentials, runtime: DesktopRuntime): boolean {
+  if (runtime !== "browser") {
+    return false;
+  }
+
+  const validation = validateCredentialsForProvider(credentials);
+
+  return validation.ok && !isMockApiKey(validation.apiKey);
+}
+
 export async function testAiConnectionViaBridge(
   credentials: AiProviderCredentials,
   runtime: DesktopRuntime
@@ -231,7 +251,18 @@ export async function testAiConnectionViaBridge(
       connected: false,
       provider: credentials.preferredProvider,
       modelName: credentials.modelName,
-      message: "AI connection requires the Electron desktop bridge. Restart with pnpm dev:desktop.",
+      message: getAiConnectBlockedMessage(runtime),
+      code: "network_error"
+    };
+  }
+
+  if (shouldBlockLiveAiInBrowser(credentials, runtime)) {
+    return {
+      ok: false,
+      connected: false,
+      provider: credentials.preferredProvider,
+      modelName: credentials.modelName,
+      message: getAiConnectBlockedMessage(runtime),
       code: "network_error"
     };
   }
@@ -276,8 +307,19 @@ export async function runAiDiagnosisViaBridge(request: AiDiagnosisRunRequest, ru
       ok: false,
       error: {
         code: "network_error",
-        message: "Live AI diagnosis requires the Electron desktop bridge."
+        message: getAiConnectBlockedMessage(runtime)
       }
+    };
+  }
+
+  if (shouldBlockLiveAiInBrowser(request.credentials, runtime)) {
+    return {
+      ok: true,
+      enrichment: createSkippedEnrichment(
+        request.credentials.preferredProvider,
+        request.credentials.modelName,
+        getAiConnectBlockedMessage(runtime)
+      )
     };
   }
 

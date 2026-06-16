@@ -6,3 +6,16 @@
 4. Prefer vertical slices and modular package boundaries for new implementation work.
 5. Keep implementation notes concise in `implementations.md`.
 6. Keep the encoded architecture, remix, and pattern catalog shared across contracts, core, MCP, and desktop.
+
+7. Chat-driven MCP auto-configuration — user describes MCP servers in chat; Arkitect parses intent and writes/updates MCP launch config.
+- Detect stdio vs remote transport, command, args, env from natural language.
+- Preview config diff before apply; require explicit confirm in desktop UI.
+- Reuse MCP Connection step state; do not mix with Cursor API key (AI / Execution) flow.
+- Fall back to manual edit when parsing is ambiguous.
+
+8. Dual-path UX — equivalent routes through Cursor chat or Arkitect desktop; flexible A→B→C routing, not one rigid funnel.
+- Chat path: user drives in Cursor chat; Arkitect MCP returns decisions; Cursor AI implements.
+- Desktop path: guided wizard (repo → profile → policy → AI/MCP → review → results) with manual MCP connection UI.
+- Shared core (contracts, catalog, diagnosis) across MCP, desktop, and chat; either path reaches same outcomes.
+- Allow path mixing (connect in desktop, decide in chat) without forcing linear wizard completion.
+- Connection layer built (stdio + `.cursor/mcp.json` + desktop bridge); full chat orchestration loop and cross-path parity pending.

@@ -24,6 +24,7 @@ import { ArchitecturePolicySection } from "./features/architecture-policy/Archit
 import { ProjectProfileSection } from "./features/project-profile/ProjectProfileSection";
 import { RepoConnectionSection } from "./features/repo-connection/RepoConnectionSection";
 import { ResultsOverviewSection } from "./features/results-overview/ResultsOverviewSection";
+import { McpConnectionSection } from "./features/mcp-connection/McpConnectionSection";
 import { ReviewRunSection } from "./features/review-run/ReviewRunSection";
 import { FlowSidebar, type FlowSidebarStep } from "./features/shell/FlowSidebar";
 import {
@@ -34,7 +35,7 @@ import {
   testAiConnectionViaBridge,
   type RuntimeShellInfo
 } from "./lib/desktop-bridge";
-import { createLocalId, loadBrowserLibrary, saveBrowserLibrary } from "./lib/library-persistence";
+import { createLocalId, loadAiSessionCredentials, loadBrowserLibrary, saveAiSessionCredentials, saveBrowserLibrary } from "./lib/library-persistence";
 
 interface FieldPatch {
   hint?: string;
@@ -75,6 +76,11 @@ const stepOrder: Array<{ id: DashboardStepId; title: string; description: string
     id: "ai-settings",
     title: "AI / Execution",
     description: "Configure provider behavior and presets."
+  },
+  {
+    id: "mcp-connection",
+    title: "MCP Connection",
+    description: "Connect manually or via external MCP registration."
   },
   {
     id: "review-and-run",
@@ -122,6 +128,53 @@ function isRepoReady(routeSource: DiagnosisIntake["routeSource"], inspection?: R
   );
 }
 
+function getHighestNavigableIndex(
+  repoReady: boolean,
+  settingsReviewed: boolean,
+  lastRun: boolean
+): number {
+  if (lastRun) {
+    return 6;
+  }
+
+  if (settingsReviewed) {
+    return 5;
+  }
+
+  if (repoReady) {
+    return 3;
+  }
+
+  return 0;
+}
+
+function getStepLockReason(
+  stepId: DashboardStepId,
+  stepIndex: number,
+  highestNavigableIndex: number,
+  repoReady: boolean,
+  settingsReviewed: boolean,
+  lastRun: boolean
+): string | undefined {
+  if (stepId === "mcp-connection" || stepIndex <= highestNavigableIndex) {
+    return undefined;
+  }
+
+  if (!repoReady) {
+    return "Inspect or browse to a repo folder on Connect Repo first.";
+  }
+
+  if (stepId === "review-and-run" && !settingsReviewed) {
+    return "Use Next on AI / Execution to unlock Review & Run.";
+  }
+
+  if (stepId === "results-overview" && !lastRun) {
+    return "Run diagnosis on Review & Run to unlock Results.";
+  }
+
+  return "Complete the previous step first.";
+}
+
 function formatMissingGitHubFields(token: string, owner: string, repo: string) {
   const missingFields: string[] = [];
 
@@ -166,11 +219,13 @@ export function App() {
   const [lastRun, setLastRun] = useState<ReturnType<typeof createDiagnosisResult> | null>(null);
   const [lastRunAt, setLastRunAt] = useState<string | undefined>(undefined);
   const [repoSummaryTouched, setRepoSummaryTouched] = useState(false);
-  const [cursorApiKey, setCursorApiKey] = useState("");
-  const [providerKeys, setProviderKeys] = useState<Partial<Record<AiProviderId, string>>>({});
+  const [cursorApiKey, setCursorApiKey] = useState(() => loadAiSessionCredentials().cursorApiKey ?? "");
+  const [providerKeys, setProviderKeys] = useState<Partial<Record<AiProviderId, string>>>(
+    () => loadAiSessionCredentials().providerKeys ?? {}
+  );
   const [aiConnection, setAiConnection] = useState<AiConnectionState>({
     status: "idle",
-    message: ""
+    message: "Enter your Cursor API Key and click Test connection."
   });
   const [diagnosisBusy, setDiagnosisBusy] = useState(false);
   const [repoConnectionMode, setRepoConnectionMode] = useState<DiagnosisIntake["routeSource"]>("local-path");
@@ -254,30 +309,27 @@ export function App() {
     };
   }, [library, libraryLoaded]);
 
+  useEffect(() => {
+    saveAiSessionCredentials({
+      cursorApiKey: cursorApiKey.trim() || undefined,
+      providerKeys
+    });
+  }, [cursorApiKey, providerKeys]);
+
   const previewResult = useMemo(() => createDiagnosisResult(draft, createMockAutoDetections(draft)), [draft]);
   const resultForDisplay = lastRun ?? previewResult;
   const mcpPayload = useMemo(() => toDiagnosisMcpPayload(resultForDisplay), [resultForDisplay]);
   const repoReady = isRepoReady(draft.routeSource, draft.repoInspection);
   const aiConnected = aiConnection.status === "connected";
-  const highestUnlockedIndex = lastRun
-    ? 5
-    : settingsReviewed
-      ? 4
-      : policyReviewed
-        ? 3
-        : profileReviewed
-          ? 2
-          : repoReady
-            ? 1
-            : 0;
+  const highestNavigableIndex = getHighestNavigableIndex(repoReady, settingsReviewed, Boolean(lastRun));
 
   useEffect(() => {
     const activeIndex = stepOrder.findIndex((step) => step.id === activeStep);
 
-    if (activeIndex > highestUnlockedIndex) {
-      setActiveStep(stepOrder[highestUnlockedIndex].id);
+    if (activeIndex > highestNavigableIndex && activeStep !== "mcp-connection") {
+      setActiveStep(stepOrder[highestNavigableIndex].id);
     }
-  }, [activeStep, highestUnlockedIndex]);
+  }, [activeStep, highestNavigableIndex]);
 
   const sidebarSteps = useMemo<FlowSidebarStep[]>(
     () =>
@@ -290,14 +342,31 @@ export function App() {
           (step.id === "review-and-run" && Boolean(lastRun)) ||
           (step.id === "results-overview" && Boolean(lastRun));
 
-        const unlocked = index <= highestUnlockedIndex;
+        const unlocked = step.id === "mcp-connection" || index <= highestNavigableIndex;
+        const lockReason = getStepLockReason(
+          step.id,
+          index,
+          highestNavigableIndex,
+          repoReady,
+          settingsReviewed,
+          Boolean(lastRun)
+        );
 
         return {
           ...step,
-          status: activeStep === step.id ? "current" : completed ? "complete" : unlocked ? "ready" : "locked"
+          status: activeStep === step.id ? "current" : completed ? "complete" : unlocked ? "ready" : "locked",
+          lockReason
         };
       }),
-    [activeStep, highestUnlockedIndex, lastRun, policyReviewed, profileReviewed, repoReady, settingsReviewed]
+    [
+      activeStep,
+      highestNavigableIndex,
+      lastRun,
+      policyReviewed,
+      profileReviewed,
+      repoReady,
+      settingsReviewed
+    ]
   );
 
   function resetFromProfile() {
@@ -581,6 +650,11 @@ export function App() {
 
     if (activeStep === "ai-settings") {
       setSettingsReviewed(true);
+      setActiveStep("mcp-connection");
+      return;
+    }
+
+    if (activeStep === "mcp-connection") {
       setActiveStep("review-and-run");
       return;
     }
@@ -671,6 +745,14 @@ export function App() {
       setDiagnosisBusy(false);
     }
   }
+
+  useEffect(() => {
+    if (draft.routeSource !== "local-path" || !draft.repoPath.trim()) {
+      return;
+    }
+
+    void window.arkitectDesktop?.setMcpDefaultRepoPath?.(draft.repoPath);
+  }, [draft.repoPath, draft.routeSource]);
 
   const intake = useMemo<DiagnosisIntake>(
     () => draft,
@@ -989,6 +1071,7 @@ export function App() {
               connectionState={aiConnection}
               cursorApiKey={cursorApiKey}
               providerKeys={providerKeys}
+              shellInfo={shellInfo}
               fallbackProviders={draft.ai.fallbackProviders}
               modelName={draft.ai.modelName}
               onCursorApiKeyChange={(value) => {
@@ -1099,6 +1182,13 @@ export function App() {
               onSaveProviderPreset={upsertProviderPreset}
               preferredProvider={draft.ai.preferredProvider}
               providerPresets={library.providerPresets}
+            />
+          ) : null}
+
+          {activeStep === "mcp-connection" ? (
+            <McpConnectionSection
+              defaultRepoPath={draft.routeSource === "local-path" ? draft.repoPath : undefined}
+              shellInfo={shellInfo}
             />
           ) : null}
 

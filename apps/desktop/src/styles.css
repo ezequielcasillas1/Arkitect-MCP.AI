@@ -178,6 +178,15 @@ code {
   background: #44526c;
 }
 
+.sidebar-step-locked {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.sidebar-step-locked:hover {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
 .workbench-content {
   display: grid;
   gap: 18px;
@@ -648,6 +657,17 @@ input[type="checkbox"] {
   border-radius: 16px;
   border: 1px solid rgba(255, 190, 105, 0.32);
   background: rgba(255, 190, 105, 0.08);
+}
+
+.form-stack textarea {
+  width: 100%;
+  min-height: 96px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  color: #dce7ff;
+  resize: vertical;
 }
 
 .tight-list {

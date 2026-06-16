@@ -2,6 +2,9 @@
   "name": "@arkitect/mcp-server",
   "version": "0.1.0",
   "type": "module",
+  "bin": {
+    "arkitect-mcp": "./dist/stdio.js"
+  },
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./src/index.ts",
@@ -14,7 +17,11 @@
   "dependencies": {
     "@arkitect/contracts": "workspace:*",
     "@arkitect/core": "workspace:*",
-    "@arkitect/repo-analyzer": "workspace:*"
+    "@arkitect/repo-analyzer": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.27.0"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",

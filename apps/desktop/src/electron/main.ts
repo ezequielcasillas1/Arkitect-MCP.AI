@@ -14,6 +14,7 @@ import { fetchGitHubRoutePayload, githubRouteToRepoInspection } from "@arkitect/
 import { getDesktopLibraryPath, loadDesktopLibrary, saveDesktopLibrary } from "./library-store.js";
 import { inspectRepoPath } from "./repo-inspector.js";
 import { runAiDiagnosis, testAiConnection } from "./ai-service.js";
+import { getMcpConnectionService } from "./mcp-connection-service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
@@ -74,6 +75,8 @@ function createWindow() {
   });
   mainWindow = window;
 
+  getMcpConnectionService().attachWindow(window);
+
   window.webContents.on("preload-error", (_event, preloadFile, error) => {
     console.error(`[arkitect-desktop] Preload failed for ${preloadFile}:`, error);
   });
@@ -91,7 +94,10 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  const mcpService = getMcpConnectionService();
+  await mcpService.start();
+
   ipcMain.handle("arkitect:get-shell-info", () => ({
     shell: "electron",
     platform: process.platform,
@@ -140,6 +146,18 @@ app.whenReady().then(() => {
   ipcMain.handle("arkitect:run-ai-diagnosis", async (_event, request) =>
     runAiDiagnosis(request.facts, request.credentials, request.repoPath)
   );
+  ipcMain.handle("arkitect:get-mcp-connection-state", () => mcpService.getState());
+  ipcMain.handle("arkitect:get-mcp-launch-config", () => mcpService.getLaunchConfig());
+  ipcMain.handle("arkitect:save-mcp-launch-config", async (_event, config) => mcpService.saveLaunchConfig(config));
+  ipcMain.handle("arkitect:connect-mcp-manual", async (_event, config) => mcpService.connectManual(config));
+  ipcMain.handle("arkitect:disconnect-mcp", async () => mcpService.disconnect());
+  ipcMain.handle("arkitect:switch-mcp-manual-mode", async () => mcpService.switchToManualMode());
+  ipcMain.handle("arkitect:ping-mcp-connection", async () => mcpService.ping());
+  ipcMain.handle("arkitect:set-mcp-default-repo", async (_event, repoPath?: string) => {
+    mcpService.setDefaultRepoPath(repoPath);
+    return mcpService.getState();
+  });
+  ipcMain.handle("arkitect:get-mcp-bridge-manifest", () => mcpService.getBridgeManifest());
 
   createWindow();
 
@@ -151,7 +169,11 @@ app.whenReady().then(() => {
 });
 
 app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-  }
+  void getMcpConnectionService()
+    .stop()
+    .finally(() => {
+      if (process.platform !== "darwin") {
+        app.quit();
+      }
+    });
 });

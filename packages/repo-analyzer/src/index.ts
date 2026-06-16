@@ -1,1 +1,1 @@
-export * from "./mock-analyzer";
+export * from "./mock-analyzer.js";

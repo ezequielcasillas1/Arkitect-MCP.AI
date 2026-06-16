@@ -7,7 +7,10 @@ import type {
   AiDiagnosisRunResult,
   AiProviderCredentials,
   AiConnectionTestResult,
-  RepoInspection
+  RepoInspection,
+  McpConnectionState,
+  McpServerLaunchConfig,
+  McpBridgeManifest
 } from "@arkitect/contracts";
 
 interface GitHubConnectSuccess {
@@ -40,6 +43,16 @@ declare global {
       saveLibrary: (state: DesktopLibraryState) => Promise<DesktopLibraryState>;
       testAiConnection: (credentials: AiProviderCredentials) => Promise<AiConnectionTestResult>;
       runAiDiagnosis: (request: AiDiagnosisRunRequest) => Promise<AiDiagnosisRunResult>;
+      getMcpConnectionState: () => Promise<McpConnectionState>;
+      getMcpLaunchConfig: () => Promise<McpServerLaunchConfig>;
+      saveMcpLaunchConfig: (config: McpServerLaunchConfig) => Promise<McpServerLaunchConfig>;
+      connectMcpManual: (config: McpServerLaunchConfig) => Promise<McpConnectionState>;
+      disconnectMcp: () => Promise<McpConnectionState>;
+      switchMcpToManualMode: () => Promise<McpConnectionState>;
+      pingMcpConnection: () => Promise<McpConnectionState>;
+      setMcpDefaultRepoPath: (repoPath?: string) => Promise<McpConnectionState>;
+      getMcpBridgeManifest: () => Promise<McpBridgeManifest>;
+      onMcpConnectionStateChange: (handler: (state: McpConnectionState) => void) => () => void;
     };
   }
 }
