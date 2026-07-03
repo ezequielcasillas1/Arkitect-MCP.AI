@@ -1,14 +1,19 @@
-import type { DiagnosisResult, ExecutionPermission } from "@arkitect/contracts";
+import type { CodebaseVerifyResult, DiagnosisResult, ExecutionPermission } from "@arkitect/contracts";
+import { InfoHint } from "../../components/InfoHint";
 
 interface ReviewRunSectionProps {
   executionPermission: ExecutionPermission;
   result: DiagnosisResult;
   canRun: boolean;
+  canVerify: boolean;
   hasRun: boolean;
   diagnosisBusy: boolean;
+  verifyBusy: boolean;
   aiConnected: boolean;
+  lastVerifyResult?: CodebaseVerifyResult;
   onPermissionChange: (permission: ExecutionPermission) => void;
   onRun: () => void;
+  onVerify: () => void;
 }
 
 const permissionOrder: ExecutionPermission[] = [
@@ -31,11 +36,15 @@ export function ReviewRunSection({
   executionPermission,
   result,
   canRun,
+  canVerify,
   hasRun,
   diagnosisBusy,
+  verifyBusy,
   aiConnected,
+  lastVerifyResult,
   onPermissionChange,
-  onRun
+  onRun,
+  onVerify
 }: ReviewRunSectionProps) {
   const { decision } = result;
   const permissionBlocked =
@@ -55,7 +64,27 @@ export function ReviewRunSection({
 
       <div className="metric-grid">
         <article className="metric-card">
-          <span className="metric-label">Current permission</span>
+          <div className="metric-label-row">
+            <span className="metric-label">Current permission</span>
+            <InfoHint label="How to choose an execution permission" wide>
+              <p className="permission-guide-copy">
+                Pick the highest level you&apos;re comfortable with. Diagnosis is blocked if your choice is below what
+                this setup requires.
+              </p>
+              <ul className="permission-guide-list">
+                {permissionOrder.map((permission) => (
+                  <li
+                    key={permission}
+                    className={permission === decision.requiredPermission ? "permission-guide-required" : undefined}
+                  >
+                    <strong>{permission}</strong>
+                    <span>{permissionDescriptions[permission]}</span>
+                    {permission === decision.requiredPermission ? <em>Minimum for this setup</em> : null}
+                  </li>
+                ))}
+              </ul>
+            </InfoHint>
+          </div>
           <select value={executionPermission} onChange={(event) => onPermissionChange(event.target.value as ExecutionPermission)}>
             {permissionOrder.map((permission) => (
               <option key={permission} value={permission}>
@@ -67,9 +96,15 @@ export function ReviewRunSection({
         </article>
 
         <article className="metric-card">
-          <span className="metric-label">Decision requirements</span>
+          <div className="metric-label-row">
+            <span className="metric-label">Decision requirements</span>
+            <InfoHint label="What decision requirements mean">
+              The rule engine sets the minimum permission for this diagnosis path. Match or exceed it in Current
+              permission, or stay read-only if you only want findings.
+            </InfoHint>
+          </div>
           <strong>{decision.requiredPermission}</strong>
-          <p>Arkitect surfaces the required permission before it runs so users can approve or keep the flow read-only.</p>
+          <p>Minimum permission for this setup. Raise Current permission to at least this level to run diagnosis.</p>
         </article>
 
         <article className="metric-card">
@@ -108,6 +143,39 @@ export function ReviewRunSection({
           >
             {diagnosisBusy ? "Running diagnosis…" : hasRun ? "Run diagnosis again" : "Run diagnosis"}
           </button>
+        </article>
+
+        <article className="panel-card">
+          <div className="metric-label-row">
+            <span className="metric-label">Run codebase verify</span>
+            <InfoHint label="How codebase verify works" wide>
+              <p className="permission-guide-copy">
+                Runs pnpm lint, pnpm build, pnpm typecheck, then pnpm test from the connected local repo root — the same
+                as <strong>pnpm verify</strong>.
+              </p>
+              <p className="permission-guide-copy">
+                Always run from the project folder that contains package.json. Running from C:\Windows\System32 will fail
+                with a permissions error.
+              </p>
+            </InfoHint>
+          </div>
+          <p className="summary-copy">
+            Self-check the whole monorepo before or after diagnosis. GitHub-only routes must use a local library path or
+            terminal verify.
+          </p>
+          <button
+            className="secondary-button action-button-wide"
+            disabled={!canVerify || verifyBusy || diagnosisBusy}
+            onClick={onVerify}
+            type="button"
+          >
+            {verifyBusy ? "Running verify…" : lastVerifyResult ? "Run verify again" : "Run codebase verify"}
+          </button>
+          {lastVerifyResult ? (
+            <p className={`verify-summary ${lastVerifyResult.ok ? "verify-summary-ok" : "verify-summary-fail"}`}>
+              {lastVerifyResult.summary}
+            </p>
+          ) : null}
         </article>
       </div>
 

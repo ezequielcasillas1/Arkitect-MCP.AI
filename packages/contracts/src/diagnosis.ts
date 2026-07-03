@@ -14,7 +14,12 @@ import type {
   DiagnosisSignals,
   ExecutionMode,
   ExecutionPermission,
-  UserSignalInputs
+  UserSignalInputs,
+  ArchitectureStyle,
+  DiagnosisIntent,
+  PlatformType,
+  RepoHealth,
+  WorkloadType
 } from "./taxonomy.js";
 import type { GitHubRoutePayload } from "./github.js";
 
@@ -34,6 +39,26 @@ export interface RepoInspection {
   validationErrors: string[];
   summary: string;
   inspectedAt: string;
+}
+
+export type RequirementTagSuggestionSource = "repo-inspection" | "diagnosis-signal" | "scope-keyword";
+
+export interface RequirementTagSuggestion {
+  tag: string;
+  confidence: number;
+  reason: string;
+  source: RequirementTagSuggestionSource;
+}
+
+export interface RequirementTagSuggestionInput {
+  repoSummary: string;
+  requestedOutcome: string;
+  repoInspection?: RepoInspection;
+  platformType: PlatformType;
+  workloadType: WorkloadType;
+  currentArchitecture: ArchitectureStyle;
+  repoHealth: RepoHealth;
+  likelyDiagnosisIntent: DiagnosisIntent;
 }
 
 export interface DiagnosisIntake {
@@ -95,6 +120,7 @@ export interface DiagnosisResult {
   decision: ArchitectureDecision;
   catalogRecommendation: CatalogRecommendationBundle;
   patternGuidance: PatternGuidance;
+  requirementTagSuggestions: RequirementTagSuggestion[];
   aiRecommendation: AiRecommendation;
   aiEnrichment?: AiDiagnosisEnrichment;
   experienceFlow: ExperienceFlowStep[];

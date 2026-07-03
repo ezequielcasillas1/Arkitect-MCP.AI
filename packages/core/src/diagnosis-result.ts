@@ -15,6 +15,7 @@ import type {
   UserSignalInputs
 } from "@arkitect/contracts";
 import { buildPatternGuidance, recommendCatalog } from "./recommendation-engine.js";
+import { buildRequirementTagSuggestionInput, suggestRequirementTags } from "./requirement-tag-suggestions.js";
 
 type AutoDetectionMap = {
   [K in DiagnosisField]: Detection<DiagnosisFieldValueMap[K]>;
@@ -276,13 +277,7 @@ export function createDefaultIntake(repoPath = "C:\\Dev\\Arkitect-mcp.com"): Dia
     },
     catalogPreferences: {
       complexityProfile: "balanced",
-      requirementTags: [
-        "desktop-shell",
-        "mcp-tool-registry",
-        "agent-services",
-        "provider-switching",
-        "local-repo-first"
-      ]
+      requirementTags: []
     }
   };
 }
@@ -295,6 +290,7 @@ export function createDiagnosisResult(
   const catalogInput = toCatalogRecommendationInput(intake, signals);
   const catalogRecommendation = recommendCatalog(catalogInput);
   const decision = createDecision(intake, signals, catalogRecommendation);
+  const requirementTagSuggestions = suggestRequirementTags(buildRequirementTagSuggestionInput(intake, signals));
   const result: DiagnosisResult = {
     intake,
     signals,
@@ -302,6 +298,7 @@ export function createDiagnosisResult(
     decision,
     catalogRecommendation,
     patternGuidance: buildPatternGuidance(catalogInput, catalogRecommendation),
+    requirementTagSuggestions,
     aiRecommendation: createRecommendedModel(),
     experienceFlow: [],
     generatedAt: new Date().toISOString()

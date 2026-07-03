@@ -1,6 +1,11 @@
 import type {
   DesktopLibraryState,
   GitHubApiError,
+  GitHubBranchOption,
+  GitHubOAuthFlowState,
+  GitHubOAuthRepoInput,
+  GitHubOAuthSession,
+  GitHubRepositoryOption,
   GitHubRouteInput,
   GitHubRoutePayload,
   AiDiagnosisRunRequest,
@@ -10,7 +15,9 @@ import type {
   RepoInspection,
   McpConnectionState,
   McpServerLaunchConfig,
-  McpBridgeManifest
+  McpBridgeManifest,
+  McpCursorInstallResult,
+  CodebaseVerifyResult
 } from "@arkitect/contracts";
 
 interface GitHubConnectSuccess {
@@ -39,10 +46,24 @@ declare global {
       selectRepoFolder: () => Promise<RepoInspection | null>;
       inspectRepoPath: (repoPath: string) => Promise<RepoInspection>;
       connectGitHubRoute: (input: GitHubRouteInput) => Promise<GitHubConnectResponse>;
+      connectGitHubOAuthRoute: (input: GitHubOAuthRepoInput) => Promise<GitHubConnectResponse>;
+      getGitHubOAuthConfigured: () => Promise<boolean>;
+      getGitHubOAuthSession: () => Promise<GitHubOAuthSession>;
+      getGitHubOAuthFlowState: () => Promise<GitHubOAuthFlowState>;
+      startGitHubOAuth: () => Promise<GitHubOAuthFlowState>;
+      cancelGitHubOAuth: () => Promise<void>;
+      disconnectGitHubOAuth: () => Promise<void>;
+      listGitHubOAuthRepos: () => Promise<
+        { ok: true; repos: GitHubRepositoryOption[] } | { ok: false; error: GitHubApiError }
+      >;
+      listGitHubOAuthBranches: (input: { owner: string; repo: string }) => Promise<
+        { ok: true; branches: GitHubBranchOption[] } | { ok: false; error: GitHubApiError }
+      >;
       loadLibrary: () => Promise<DesktopLibraryState>;
       saveLibrary: (state: DesktopLibraryState) => Promise<DesktopLibraryState>;
       testAiConnection: (credentials: AiProviderCredentials) => Promise<AiConnectionTestResult>;
       runAiDiagnosis: (request: AiDiagnosisRunRequest) => Promise<AiDiagnosisRunResult>;
+      runCodebaseVerify: (input: { repoPath: string }) => Promise<CodebaseVerifyResult>;
       getMcpConnectionState: () => Promise<McpConnectionState>;
       getMcpLaunchConfig: () => Promise<McpServerLaunchConfig>;
       saveMcpLaunchConfig: (config: McpServerLaunchConfig) => Promise<McpServerLaunchConfig>;
@@ -52,7 +73,9 @@ declare global {
       pingMcpConnection: () => Promise<McpConnectionState>;
       setMcpDefaultRepoPath: (repoPath?: string) => Promise<McpConnectionState>;
       getMcpBridgeManifest: () => Promise<McpBridgeManifest>;
+      installMcpInCursor: (input: { repoPath?: string; env?: Record<string, string> }) => Promise<McpCursorInstallResult>;
       onMcpConnectionStateChange: (handler: (state: McpConnectionState) => void) => () => void;
+      onGitHubOAuthStateChange: (handler: (state: GitHubOAuthFlowState) => void) => () => void;
     };
   }
 }

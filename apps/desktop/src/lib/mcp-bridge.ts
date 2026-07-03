@@ -1,4 +1,4 @@
-import type { McpConnectionState, McpServerLaunchConfig } from "@arkitect/contracts";
+import type { McpConnectionState, McpCursorInstallResult, McpServerLaunchConfig } from "@arkitect/contracts";
 import { createDefaultMcpConnectionState } from "@arkitect/contracts";
 import { hasDesktopBridge } from "./desktop-bridge";
 
@@ -75,6 +75,22 @@ export function subscribeMcpConnectionState(onChange: (state: McpConnectionState
   }
 
   return window.arkitectDesktop.onMcpConnectionStateChange(onChange);
+}
+
+export async function installMcpInCursor(input: { repoPath?: string; env?: Record<string, string> }) {
+  if (hasDesktopBridge() && window.arkitectDesktop?.installMcpInCursor) {
+    return window.arkitectDesktop.installMcpInCursor(input);
+  }
+
+  return {
+    ok: false,
+    deeplink: "",
+    stdioPath: "",
+    stdioBuilt: false,
+    deeplinkOpened: false,
+    mcpJsonWritten: false,
+    message: "Install in Cursor requires the Electron desktop app."
+  } satisfies McpCursorInstallResult;
 }
 
 export function formatMcpStatusLabel(state: McpConnectionState) {

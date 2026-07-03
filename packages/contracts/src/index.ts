@@ -6,3 +6,4 @@ export * from "./github.js";
 export * from "./licensing.js";
 export * from "./mcp.js";
 export * from "./taxonomy.js";
+export * from "./verification.js";

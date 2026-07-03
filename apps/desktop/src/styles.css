@@ -26,6 +26,11 @@ textarea {
 
 button {
   cursor: pointer;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
 }
 
 code {
@@ -270,6 +275,17 @@ code {
   margin-bottom: 8px;
 }
 
+.metric-label-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.metric-label-row .metric-label {
+  margin-bottom: 0;
+}
+
 .section-spacer {
   margin-top: 18px;
 }
@@ -446,6 +462,50 @@ input[type="checkbox"] {
   outline: none;
 }
 
+.info-hint-tooltip-wide {
+  width: min(360px, 84vw);
+}
+
+.permission-guide-copy {
+  margin: 0 0 10px;
+}
+
+.permission-guide-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.permission-guide-list li {
+  display: grid;
+  gap: 2px;
+}
+
+.permission-guide-list strong {
+  color: #eef2ff;
+  font-size: 0.76rem;
+  font-weight: 600;
+}
+
+.permission-guide-list span {
+  color: #b8c4de;
+}
+
+.permission-guide-required {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(109, 140, 255, 0.12);
+  border: 1px solid rgba(109, 140, 255, 0.24);
+}
+
+.permission-guide-required em {
+  color: #9eb4ff;
+  font-style: normal;
+  font-size: 0.72rem;
+}
+
 .info-hint-tooltip {
   position: absolute;
   left: calc(100% + 10px);
@@ -543,22 +603,67 @@ input[type="checkbox"] {
   margin-bottom: 16px;
 }
 
-.provider-option,
-.candidate-card {
+.provider-option {
   padding: 16px;
   color: inherit;
   text-align: left;
 }
 
-.provider-option span,
-.candidate-card p {
+.provider-option span {
   color: #9aa6c2;
 }
 
-.provider-option-active,
-.candidate-card-active {
+.provider-option-active {
   border-color: rgba(109, 140, 255, 0.48);
   background: rgba(109, 140, 255, 0.13);
+}
+
+.candidate-card {
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  transition: border-color 140ms ease, background 140ms ease, box-shadow 140ms ease;
+}
+
+.candidate-card:hover {
+  border-color: rgba(109, 140, 255, 0.38);
+  background: rgba(109, 140, 255, 0.1);
+}
+
+.candidate-card strong {
+  color: #f0f4ff;
+  font-size: 1rem;
+}
+
+.candidate-card p {
+  color: #aeb9d6;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.candidate-card .soft-pill {
+  background: rgba(109, 140, 255, 0.14);
+  color: #c8d6ff;
+}
+
+.candidate-card-header .soft-pill {
+  background: rgba(87, 211, 155, 0.16);
+  color: #9ef0c8;
+  font-weight: 600;
+}
+
+.candidate-card-active {
+  border-color: rgba(109, 140, 255, 0.58);
+  background: rgba(109, 140, 255, 0.16);
+  box-shadow: 0 0 0 1px rgba(109, 140, 255, 0.22), 0 8px 24px rgba(109, 140, 255, 0.12);
+}
+
+.candidate-card-active strong {
+  color: #ffffff;
 }
 
 .tag-row {
@@ -574,6 +679,51 @@ input[type="checkbox"] {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   color: #dce7ff;
+}
+
+.tag-editor-header,
+.suggestion-panel {
+  display: grid;
+  gap: 10px;
+}
+
+.tag-editor-header {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
+.suggestion-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px dashed rgba(109, 140, 255, 0.34);
+  background: rgba(109, 140, 255, 0.1);
+  color: #d6e2ff;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.suggestion-chip:hover:not(:disabled) {
+  border-color: rgba(109, 140, 255, 0.52);
+  background: rgba(109, 140, 255, 0.18);
+  color: #f0f4ff;
+}
+
+.suggestion-chip-applied,
+.suggestion-chip:disabled {
+  opacity: 0.55;
+  cursor: default;
+  border-style: solid;
+  background: rgba(87, 211, 155, 0.12);
+  border-color: rgba(87, 211, 155, 0.28);
+  color: #b9f3d7;
+}
+
+.suggestion-chip-meta {
+  font-size: 0.72rem;
+  color: #9ef0c8;
 }
 
 .tag-chip-button {
@@ -631,12 +781,20 @@ input[type="checkbox"] {
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
+  color: #aeb9d6;
+  transition: border-color 120ms ease, background 120ms ease, color 120ms ease;
+}
+
+.tab-button:hover {
   color: #dce7ff;
+  border-color: rgba(109, 140, 255, 0.28);
+  background: rgba(109, 140, 255, 0.08);
 }
 
 .tab-button-active {
-  border-color: rgba(109, 140, 255, 0.42);
-  background: rgba(109, 140, 255, 0.16);
+  border-color: rgba(109, 140, 255, 0.48);
+  background: rgba(109, 140, 255, 0.18);
+  color: #f0f4ff;
 }
 
 .connection-actions {
@@ -684,6 +842,67 @@ input[type="checkbox"] {
   overflow: auto;
   background: rgba(0, 0, 0, 0.3);
   color: #dce7ff;
+}
+
+.verify-summary {
+  margin: 12px 0 0;
+  font-size: 0.84rem;
+}
+
+.verify-summary-ok {
+  color: #8fd4a8;
+}
+
+.verify-summary-fail {
+  color: #ffb4b4;
+}
+
+.verify-step-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.verify-step {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(109, 140, 255, 0.18);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.verify-step-success {
+  border-color: rgba(88, 196, 132, 0.28);
+}
+
+.verify-step-failure {
+  border-color: rgba(255, 120, 120, 0.28);
+}
+
+.verify-step-skipped {
+  opacity: 0.72;
+}
+
+.verify-step-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.verify-step-output {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  overflow: auto;
+  max-height: 220px;
+  background: rgba(0, 0, 0, 0.28);
+  color: #d8e0f4;
+  font-size: 0.74rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .empty-state {

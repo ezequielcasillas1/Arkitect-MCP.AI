@@ -1,25 +1,31 @@
 import { useState } from "react";
-import type { DiagnosisResult } from "@arkitect/contracts";
+import type { CodebaseVerifyResult, DiagnosisResult } from "@arkitect/contracts";
 import { getArchitectureCatalogEntry, getDesignPatternDisplayName, getRemixProfileCatalogEntry, listDiagnosisStrategies } from "@arkitect/core";
 
 interface ResultsOverviewSectionProps {
   result: DiagnosisResult;
   hasRun: boolean;
   lastRunAt?: string;
+  lastVerifyResult?: CodebaseVerifyResult;
+  lastVerifyAt?: string;
   mcpSummary: string;
   cursorGuidance: string[];
   toolNames: string[];
 }
 
+type ResultsTab = "overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp" | "verify";
+
 export function ResultsOverviewSection({
   result,
   hasRun,
   lastRunAt,
+  lastVerifyResult,
+  lastVerifyAt,
   mcpSummary,
   cursorGuidance,
   toolNames
 }: ResultsOverviewSectionProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp">("overview");
+  const [activeTab, setActiveTab] = useState<ResultsTab>("overview");
   const selectedArchitecture = result.decision.selectedArchitectureId
     ? getArchitectureCatalogEntry(result.decision.selectedArchitectureId)
     : undefined;
@@ -51,20 +57,23 @@ export function ResultsOverviewSection({
           <p className="section-label">Results</p>
           <h2>Interactive diagnosis output</h2>
         </div>
-        <span className="status-pill status-visible">{hasRun ? "Run complete" : "Awaiting run"}</span>
+        <span className="status-pill status-visible">
+          {hasRun ? "Run complete" : lastVerifyResult ? "Verify complete" : "Awaiting run"}
+        </span>
       </div>
 
-      {hasRun ? (
+      {hasRun || lastVerifyResult ? (
         <>
-          <p className="summary-copy">{mcpSummary}</p>
-          {lastRunAt ? <p className="run-timestamp">Last run: {new Date(lastRunAt).toLocaleString()}</p> : null}
+          {hasRun ? <p className="summary-copy">{mcpSummary}</p> : null}
+          {lastRunAt ? <p className="run-timestamp">Last diagnosis: {new Date(lastRunAt).toLocaleString()}</p> : null}
+          {lastVerifyAt ? <p className="run-timestamp">Last verify: {new Date(lastVerifyAt).toLocaleString()}</p> : null}
 
           <div className="tab-row">
-            {["overview", "architecture", "patterns", "risks", "ai", "mcp"].map((tab) => (
+            {(["overview", "architecture", "patterns", "risks", "ai", "mcp", "verify"] as ResultsTab[]).map((tab) => (
               <button
                 className={`tab-button ${activeTab === tab ? "tab-button-active" : ""}`}
                 key={tab}
-                onClick={() => setActiveTab(tab as typeof activeTab)}
+                onClick={() => setActiveTab(tab)}
                 type="button"
               >
                 {tab}
@@ -72,7 +81,7 @@ export function ResultsOverviewSection({
             ))}
           </div>
 
-          {activeTab === "overview" ? (
+          {activeTab === "overview" && hasRun ? (
             <div className="metric-grid">
               <article className="metric-card">
                 <span className="metric-label">Detected profile</span>
@@ -101,7 +110,7 @@ export function ResultsOverviewSection({
             </div>
           ) : null}
 
-          {activeTab === "architecture" ? (
+          {activeTab === "architecture" && hasRun ? (
             <div className="step-grid">
               <article className="panel-card">
                 <span className="metric-label">Detected architecture</span>
@@ -130,7 +139,7 @@ export function ResultsOverviewSection({
             </div>
           ) : null}
 
-          {activeTab === "patterns" ? (
+          {activeTab === "patterns" && hasRun ? (
             <div className="step-grid">
               <article className="panel-card">
                 <span className="metric-label">Recommended design patterns</span>
@@ -182,7 +191,7 @@ export function ResultsOverviewSection({
             </div>
           ) : null}
 
-          {activeTab === "risks" ? (
+          {activeTab === "risks" && hasRun ? (
             <div className="step-grid">
               <article className="panel-card">
                 <span className="metric-label">Warnings and drift</span>
@@ -213,7 +222,7 @@ export function ResultsOverviewSection({
             </div>
           ) : null}
 
-          {activeTab === "ai" ? (
+          {activeTab === "ai" && hasRun ? (
             <div className="step-grid">
               {result.aiEnrichment ? (
                 <>
@@ -258,7 +267,7 @@ export function ResultsOverviewSection({
             </div>
           ) : null}
 
-          {activeTab === "mcp" ? (
+          {activeTab === "mcp" && (hasRun || lastVerifyResult) ? (
             <div className="step-grid">
               <article className="panel-card">
                 <span className="metric-label">MCP tools</span>
@@ -269,6 +278,10 @@ export function ResultsOverviewSection({
                     </span>
                   ))}
                 </div>
+                <p className="helper-copy">
+                  Test tools: verify_codebase (lint/build/typecheck/test), run_tests (pnpm test), run_test_suite
+                  (unit | integration | all).
+                </p>
                 <span className="metric-label">Cursor guidance</span>
                 <ul className="tight-list">
                   {cursorGuidance.map((guidance) => (
@@ -282,11 +295,62 @@ export function ResultsOverviewSection({
               </article>
             </div>
           ) : null}
+
+          {activeTab === "verify" ? (
+            <div className="step-grid">
+              {lastVerifyResult ? (
+                <>
+                  <article className="panel-card">
+                    <span className="metric-label">Verify summary</span>
+                    <strong className={lastVerifyResult.ok ? "verify-summary-ok" : "verify-summary-fail"}>
+                      {lastVerifyResult.ok ? "Passed" : "Failed"}
+                    </strong>
+                    <p>{lastVerifyResult.summary}</p>
+                    <ul className="tight-list">
+                      <li>Repo: {lastVerifyResult.repoPath}</li>
+                      <li>Command: {lastVerifyResult.command}</li>
+                      <li>Duration: {Math.round(lastVerifyResult.durationMs / 1000)}s</li>
+                    </ul>
+                    {lastVerifyResult.hint ? <p className="helper-copy">{lastVerifyResult.hint}</p> : null}
+                  </article>
+                  <article className="panel-card">
+                    <span className="metric-label">Verify steps</span>
+                    <ul className="verify-step-list">
+                      {lastVerifyResult.steps.map((step) => (
+                        <li className={`verify-step verify-step-${step.status}`} key={step.id}>
+                          <div className="verify-step-header">
+                            <strong>{step.label}</strong>
+                            <span className="soft-pill">{step.status}</span>
+                          </div>
+                          {step.outputTail ? <pre className="verify-step-output">{step.outputTail}</pre> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                </>
+              ) : (
+                <article className="panel-card">
+                  <span className="metric-label">No verify run yet</span>
+                  <p>
+                    Use Review &amp; Run → Run codebase verify, or call MCP tools from Cursor: verify_codebase,
+                    run_tests, run_test_suite.
+                  </p>
+                </article>
+              )}
+            </div>
+          ) : null}
+
+          {activeTab === "overview" && !hasRun ? (
+            <div className="empty-state">
+              <strong>No diagnosis run yet</strong>
+              <p>Run diagnosis on Review &amp; Run, or open the verify tab for codebase verification results.</p>
+            </div>
+          ) : null}
         </>
       ) : (
         <div className="empty-state">
-          <strong>No diagnosis run yet</strong>
-          <p>Use the Review & Run step to generate a real results screen, tabbed output, and MCP payload preview.</p>
+          <strong>No results yet</strong>
+          <p>Use Review &amp; Run to run diagnosis or codebase verify.</p>
         </div>
       )}
     </section>

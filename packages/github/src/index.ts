@@ -5,6 +5,17 @@ import type {
   GitHubTokenValidation,
   RepoInspection
 } from "@arkitect/contracts";
+import { inferGitHubAuthMode } from "./oauth.js";
+
+export {
+  fetchGitHubBranchOptions,
+  fetchGitHubOAuthSession,
+  fetchGitHubRepositoryOptions,
+  inferGitHubAuthMode,
+  pollGitHubDeviceToken,
+  requestGitHubDeviceCode
+} from "./oauth.js";
+export type { GitHubDevicePollResult } from "./oauth.js";
 
 const apiBase = "https://api.github.com";
 const tokenPrefixes = ["ghp_", "github_pat_", "gho_", "ghu_", "ghs_", "ghr_"];
@@ -227,7 +238,7 @@ export async function fetchGitHubRoutePayload(
 
   return {
     source: "github-api",
-    authMode: "personal-access-token",
+    authMode: input.authMode ?? inferGitHubAuthMode(tokenValidation.normalizedToken),
     target: {
       owner,
       repo,

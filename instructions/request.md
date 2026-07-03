@@ -19,3 +19,12 @@
 - Shared core (contracts, catalog, diagnosis) across MCP, desktop, and chat; either path reaches same outcomes.
 - Allow path mixing (connect in desktop, decide in chat) without forcing linear wizard completion.
 - Connection layer built (stdio + `.cursor/mcp.json` + desktop bridge); full chat orchestration loop and cross-path parity pending.
+
+9. Licensing worker (deferred) — deploy after MCP/community testing; Stripe + entitlements on Cloudflare.
+- See `instructions/future-licensing-worker.md` for deploy, secrets, and verify commands.
+- Desktop GitHub OAuth (device flow + repo/branch picker) lives in Electron; Cloudflare worker deferred.
+
+10. Scope-based requirement tag suggestions — derive tags from repo inspection + diagnosis signals.
+- Core `suggestRequirementTags` API; included in diagnosis payload and MCP `suggest_requirement_tags` tool.
+- Desktop Architecture Policy shows suggested chips with apply-one / apply-all actions.
+- AI enrichment of tag suggestions deferred until provider flow is wired.

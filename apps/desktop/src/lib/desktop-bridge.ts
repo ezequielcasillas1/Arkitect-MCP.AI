@@ -3,7 +3,13 @@ import type {
   AiDiagnosisRunRequest,
   AiDiagnosisRunResult,
   AiProviderCredentials,
+  CodebaseVerifyResult,
   GitHubApiError,
+  GitHubBranchOption,
+  GitHubOAuthFlowState,
+  GitHubOAuthRepoInput,
+  GitHubOAuthSession,
+  GitHubRepositoryOption,
   GitHubRouteInput
 } from "@arkitect/contracts";
 import {
@@ -163,6 +169,95 @@ export async function connectGitHubRoute(
   }
 
   return getGitHubConnectBlockedError(runtime);
+}
+
+export async function connectGitHubOAuthRoute(
+  input: GitHubOAuthRepoInput,
+  runtime: DesktopRuntime
+): Promise<GitHubConnectResponse> {
+  if (hasDesktopBridge() && window.arkitectDesktop?.connectGitHubOAuthRoute) {
+    try {
+      return (await window.arkitectDesktop.connectGitHubOAuthRoute(input)) as GitHubConnectResponse;
+    } catch (error) {
+      return {
+        ok: false,
+        error: {
+          code: "network_error",
+          message: error instanceof Error ? error.message : "Failed to reach desktop GitHub OAuth bridge."
+        }
+      };
+    }
+  }
+
+  return getGitHubConnectBlockedError(runtime);
+}
+
+export async function getGitHubOAuthConfiguredViaBridge(): Promise<boolean> {
+  return (await window.arkitectDesktop?.getGitHubOAuthConfigured?.()) ?? false;
+}
+
+export async function getGitHubOAuthSessionViaBridge(): Promise<GitHubOAuthSession> {
+  return (await window.arkitectDesktop?.getGitHubOAuthSession?.()) ?? { connected: false };
+}
+
+export async function getGitHubOAuthFlowStateViaBridge(): Promise<GitHubOAuthFlowState> {
+  return (await window.arkitectDesktop?.getGitHubOAuthFlowState?.()) ?? { status: "idle" };
+}
+
+export async function startGitHubOAuthViaBridge(): Promise<GitHubOAuthFlowState> {
+  if (!window.arkitectDesktop?.startGitHubOAuth) {
+    return {
+      status: "error",
+      message: "GitHub OAuth requires the Electron desktop app."
+    };
+  }
+
+  return window.arkitectDesktop.startGitHubOAuth();
+}
+
+export async function cancelGitHubOAuthViaBridge(): Promise<void> {
+  await window.arkitectDesktop?.cancelGitHubOAuth?.();
+}
+
+export async function disconnectGitHubOAuthViaBridge(): Promise<void> {
+  await window.arkitectDesktop?.disconnectGitHubOAuth?.();
+}
+
+export async function listGitHubOAuthReposViaBridge(): Promise<
+  { ok: true; repos: GitHubRepositoryOption[] } | { ok: false; error: GitHubApiError }
+> {
+  if (!window.arkitectDesktop?.listGitHubOAuthRepos) {
+    return {
+      ok: false,
+      error: {
+        code: "network_error",
+        message: "GitHub repo list requires the Electron desktop app."
+      }
+    };
+  }
+
+  return window.arkitectDesktop.listGitHubOAuthRepos();
+}
+
+export async function listGitHubOAuthBranchesViaBridge(
+  owner: string,
+  repo: string
+): Promise<{ ok: true; branches: GitHubBranchOption[] } | { ok: false; error: GitHubApiError }> {
+  if (!window.arkitectDesktop?.listGitHubOAuthBranches) {
+    return {
+      ok: false,
+      error: {
+        code: "network_error",
+        message: "GitHub branch list requires the Electron desktop app."
+      }
+    };
+  }
+
+  return window.arkitectDesktop.listGitHubOAuthBranches({ owner, repo });
+}
+
+export function subscribeGitHubOAuthStateViaBridge(handler: (state: GitHubOAuthFlowState) => void) {
+  return window.arkitectDesktop?.onGitHubOAuthStateChange?.(handler) ?? (() => undefined);
 }
 
 export async function resolveRuntimeShellInfo(): Promise<RuntimeShellInfo> {
@@ -329,5 +424,58 @@ export async function runAiDiagnosisViaBridge(request: AiDiagnosisRunRequest, ru
     ok: enrichment.ok,
     enrichment: enrichment.enrichment,
     error: enrichment.error
+  };
+}
+
+export async function runCodebaseVerifyViaBridge(
+  input: { repoPath: string },
+  runtime: DesktopRuntime
+): Promise<CodebaseVerifyResult> {
+  if (hasDesktopBridge() && window.arkitectDesktop?.runCodebaseVerify) {
+    try {
+      return await window.arkitectDesktop.runCodebaseVerify(input);
+    } catch (error) {
+      return {
+        ok: false,
+        repoPath: input.repoPath,
+        command: "pnpm verify",
+        startedAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+        durationMs: 0,
+        steps: [],
+        summary: "Codebase verification bridge call failed.",
+        hint: error instanceof Error ? error.message : "Unknown bridge error."
+      };
+    }
+  }
+
+  const browserHint =
+    "Run from the repo root in PowerShell: cd C:\\Dev\\Arkitect-mcp.com then pnpm verify — not C:\\Windows\\System32.";
+
+  if (runtime === "browser") {
+    return {
+      ok: false,
+      repoPath: input.repoPath,
+      command: "pnpm verify",
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      durationMs: 0,
+      steps: [],
+      summary: "Codebase verification requires the Electron desktop app.",
+      errorCode: "not_local_repo",
+      hint: browserHint
+    };
+  }
+
+  return {
+    ok: false,
+    repoPath: input.repoPath,
+    command: "pnpm verify",
+    startedAt: new Date().toISOString(),
+    finishedAt: new Date().toISOString(),
+    durationMs: 0,
+    steps: [],
+    summary: "Desktop bridge unavailable for codebase verification.",
+    hint: "Restart with pnpm dev:desktop, or run pnpm verify from the connected repo root in PowerShell."
   };
 }

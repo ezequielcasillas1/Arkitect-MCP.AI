@@ -36,8 +36,10 @@ Template:
 - No env/config surface yet (e.g. real analyzer toggle, policy overrides)
 - `get_last_diagnosis` auto-runs diagnosis if none exists—may surprise agents expecting empty state
 
-### 2026-06-16 - Dual MCP Connection Paths
+### 2026-07-03 - Scope-Based Requirement Tag Suggestions
 **Status:** PENDING
+**Files:** packages/contracts/src/diagnosis.ts, packages/core/src/requirement-tag-suggestions.ts, packages/core/src/diagnosis-result.ts, packages/mcp-server/src/index.ts, apps/desktop/src/features/architecture-policy/ArchitecturePolicySection.tsx, apps/desktop/src/styles.css
+**Result:** Added scope-based tag suggestion API from repo inspection and diagnosis signals; desktop UI shows apply-one/apply-all chips; MCP exposes `suggest_requirement_tags`; default tags now start empty until applied.
 **Files:** packages/contracts/src/mcp.ts, packages/contracts/src/diagnosis.ts, packages/mcp-server/src/desktop-bridge-client.ts, packages/mcp-server/src/stdio.ts, apps/desktop/src/electron/mcp-*.ts, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx, apps/desktop/src/lib/mcp-bridge.ts, apps/desktop/src/App.tsx
 **Result:** Added MCP Connection dashboard step, localhost bridge for external stdio registration, Electron MCP client for manual spawn/connect, shared connection contracts, and real-time IPC state updates; awaiting user confirmation before success log.
 
@@ -70,3 +72,18 @@ Template:
 **Status:** PENDING
 **Files:** instructions/request.md
 **Result:** Captured equivalent chat vs desktop wizard routes and flexible A→B→C routing in request.md item #8; supersedes chat-first / wizard-fallback framing.
+
+### 2026-07-03 - GitHub OAuth Cloudflare Config
+**Status:** PARTIAL
+**Files:** apps/licensing-worker/wrangler.jsonc, apps/licensing-worker/src/index.ts, apps/licensing-worker/.dev.vars.example, apps/licensing-worker/.env.example, .gitignore
+**Result:** Added GitHub OAuth vars, arkitect-mcp.com worker routes, and GET /oauth/github/config; Cloudflare API push blocked by VPN/proxy — deploy and secrets must be run locally off VPN.
+
+### 2026-07-03 - Desktop GitHub OAuth + Repo Picker
+**Status:** PENDING
+**Files:** packages/contracts/src/github.ts, packages/github/src/oauth.ts, packages/github/src/index.ts, apps/desktop/src/electron/github-oauth-*.ts, apps/desktop/src/electron/main.ts, apps/desktop/src/features/repo-connection/RepoConnectionSection.tsx, apps/desktop/src/App.tsx, apps/desktop/github-oauth.config.example.json
+**Result:** Device-flow OAuth in Electron, encrypted token storage, repo/branch pickers; requires github-oauth.config.json Client ID; awaiting user verification.
+
+### 2026-07-03 - Install in Cursor MCP button
+**Status:** PENDING
+**Files:** apps/desktop/src/electron/mcp-cursor-install.ts, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx, packages/contracts/src/mcp.ts
+**Result:** Dual-path MCP screen adds Install in Cursor — writes `.cursor/mcp.json`, opens Cursor deeplink, copy-link fallback; awaiting user verification.

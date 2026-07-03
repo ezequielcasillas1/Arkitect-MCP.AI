@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { McpConnectionState, McpServerLaunchConfig } from "@arkitect/contracts";
+import type { McpConnectionState, McpCursorInstallResult, McpServerLaunchConfig } from "@arkitect/contracts";
 import { createDefaultMcpLaunchConfig } from "@arkitect/contracts";
 import { InfoHint } from "../../components/InfoHint";
 import {
@@ -8,6 +8,7 @@ import {
   switchMcpToManualMode,
   formatMcpHealthTimestamp,
   formatMcpStatusLabel,
+  installMcpInCursor,
   loadMcpConnectionState,
   loadMcpLaunchConfig,
   pingMcpConnection,
@@ -56,6 +57,7 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
   const [envInput, setEnvInput] = useState("ARKITECT_ANALYZER=mock");
   const [busy, setBusy] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
+  const [installResult, setInstallResult] = useState<McpCursorInstallResult | null>(null);
 
   const isElectron = shellInfo?.runtime === "electron";
   const isExternalSession = connectionState?.path === "external" && connectionState.status === "connected";
@@ -178,6 +180,32 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
     } finally {
       setBusy(false);
     }
+  }
+
+  async function handleInstallInCursor() {
+    setBusy(true);
+    setInstallResult(null);
+
+    try {
+      const result = await installMcpInCursor({
+        repoPath: defaultRepoPath ?? connectionState?.config.defaultRepoPath,
+        env: parseEnvInput(envInput)
+      });
+      setInstallResult(result);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleCopyInstallLink() {
+    if (!installResult?.deeplink) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(installResult.deeplink);
+    setInstallResult((current) =>
+      current ? { ...current, message: `${current.message} Link copied to clipboard.` } : current
+    );
   }
 
   return (
@@ -316,10 +344,46 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
           </div>
 
           <p className="helper-copy">
-            Keep Arkitect Desktop open. Enable `arkitect-mcp` in `.cursor/mcp.json`. The stdio server reads{" "}
+            Keep Arkitect Desktop open. Click <strong>Install in Cursor</strong> to write <code>.cursor/mcp.json</code>{" "}
+            and open Cursor&apos;s MCP install prompt. The stdio server reads{" "}
             <code>%LOCALAPPDATA%/arkitect-desktop/mcp-bridge.json</code> and posts register/heartbeat events to the
             bridge on port {connectionState?.bridgePort ?? 47821}.
           </p>
+
+          <div className="step-actions">
+            <button
+              className="primary-button"
+              disabled={busy || !isElectron}
+              onClick={() => void handleInstallInCursor()}
+              type="button"
+            >
+              Install in Cursor
+            </button>
+          </div>
+
+          {installResult ? (
+            <div className={installResult.ok ? "panel-card" : "warning-box"}>
+              <strong>{installResult.ok ? "Cursor install ready" : "Install blocked"}</strong>
+              <p className="helper-copy">{installResult.message}</p>
+              {installResult.mcpJsonPath ? (
+                <p className="helper-copy">
+                  Config: <code>{installResult.mcpJsonPath}</code>
+                </p>
+              ) : null}
+              {!installResult.stdioBuilt ? (
+                <p className="helper-copy">
+                  Run <code>pnpm --filter @arkitect/mcp-server build</code> before connecting.
+                </p>
+              ) : null}
+              {installResult.deeplink ? (
+                <div className="step-actions">
+                  <button className="ghost-button" disabled={busy} onClick={() => void handleCopyInstallLink()} type="button">
+                    Copy install link
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
 
           {isExternalSession ? (
             <div className="warning-box">

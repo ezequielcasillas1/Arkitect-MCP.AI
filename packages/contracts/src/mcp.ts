@@ -157,3 +157,14 @@ export function createDefaultMcpLaunchConfig(
     ...overrides
   };
 }
+
+export interface McpCursorInstallResult {
+  ok: boolean;
+  deeplink: string;
+  mcpJsonPath?: string;
+  stdioPath: string;
+  stdioBuilt: boolean;
+  deeplinkOpened: boolean;
+  mcpJsonWritten: boolean;
+  message: string;
+}

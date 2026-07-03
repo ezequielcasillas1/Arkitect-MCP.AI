@@ -2,11 +2,16 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import type {
   AiConnectionTestResult,
   AiProviderId,
+  CodebaseVerifyResult,
   DashboardStepId,
   DesktopLibraryState,
   DiagnosisField,
   DiagnosisIntake,
   ExecutionPermission,
+  GitHubBranchOption,
+  GitHubOAuthFlowState,
+  GitHubOAuthSession,
+  GitHubRepositoryOption,
   RepoInspection,
   SavedArchitectureProfile,
   SavedProjectProfile,
@@ -28,10 +33,21 @@ import { McpConnectionSection } from "./features/mcp-connection/McpConnectionSec
 import { ReviewRunSection } from "./features/review-run/ReviewRunSection";
 import { FlowSidebar, type FlowSidebarStep } from "./features/shell/FlowSidebar";
 import {
+  cancelGitHubOAuthViaBridge,
+  connectGitHubOAuthRoute,
   connectGitHubRoute as connectGitHubRouteViaBridge,
+  disconnectGitHubOAuthViaBridge,
   getGitHubConnectBlockedCode,
+  getGitHubOAuthConfiguredViaBridge,
+  getGitHubOAuthFlowStateViaBridge,
+  getGitHubOAuthSessionViaBridge,
+  listGitHubOAuthBranchesViaBridge,
+  listGitHubOAuthReposViaBridge,
   resolveRuntimeShellInfo,
   runAiDiagnosisViaBridge,
+  runCodebaseVerifyViaBridge,
+  startGitHubOAuthViaBridge,
+  subscribeGitHubOAuthStateViaBridge,
   testAiConnectionViaBridge,
   type RuntimeShellInfo
 } from "./lib/desktop-bridge";
@@ -131,9 +147,9 @@ function isRepoReady(routeSource: DiagnosisIntake["routeSource"], inspection?: R
 function getHighestNavigableIndex(
   repoReady: boolean,
   settingsReviewed: boolean,
-  lastRun: boolean
+  hasResults: boolean
 ): number {
-  if (lastRun) {
+  if (hasResults) {
     return 6;
   }
 
@@ -154,7 +170,7 @@ function getStepLockReason(
   highestNavigableIndex: number,
   repoReady: boolean,
   settingsReviewed: boolean,
-  lastRun: boolean
+  hasResults: boolean
 ): string | undefined {
   if (stepId === "mcp-connection" || stepIndex <= highestNavigableIndex) {
     return undefined;
@@ -168,8 +184,8 @@ function getStepLockReason(
     return "Use Next on AI / Execution to unlock Review & Run.";
   }
 
-  if (stepId === "results-overview" && !lastRun) {
-    return "Run diagnosis on Review & Run to unlock Results.";
+  if (stepId === "results-overview" && !hasResults) {
+    return "Run diagnosis or codebase verify on Review & Run to unlock Results.";
   }
 
   return "Complete the previous step first.";
@@ -228,6 +244,9 @@ export function App() {
     message: "Enter your Cursor API Key and click Test connection."
   });
   const [diagnosisBusy, setDiagnosisBusy] = useState(false);
+  const [verifyBusy, setVerifyBusy] = useState(false);
+  const [lastVerifyResult, setLastVerifyResult] = useState<CodebaseVerifyResult | null>(null);
+  const [lastVerifyAt, setLastVerifyAt] = useState<string | undefined>(undefined);
   const [repoConnectionMode, setRepoConnectionMode] = useState<DiagnosisIntake["routeSource"]>("local-path");
   const [githubToken, setGithubToken] = useState("");
   const [githubOwner, setGithubOwner] = useState("");
@@ -237,6 +256,14 @@ export function App() {
     status: "idle",
     message: ""
   });
+  const [githubOAuthConfigured, setGithubOAuthConfigured] = useState(false);
+  const [githubOAuthFlow, setGithubOAuthFlow] = useState<GitHubOAuthFlowState>({ status: "idle" });
+  const [githubOAuthSession, setGithubOAuthSession] = useState<GitHubOAuthSession | null>(null);
+  const [githubRepos, setGithubRepos] = useState<GitHubRepositoryOption[]>([]);
+  const [githubReposBusy, setGithubReposBusy] = useState(false);
+  const [githubBranches, setGithubBranches] = useState<GitHubBranchOption[]>([]);
+  const [githubBranchesBusy, setGithubBranchesBusy] = useState(false);
+  const [selectedRepoFullName, setSelectedRepoFullName] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -274,6 +301,84 @@ export function App() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function hydrateGitHubOAuth() {
+      const [configured, session, flowState] = await Promise.all([
+        getGitHubOAuthConfiguredViaBridge(),
+        getGitHubOAuthSessionViaBridge(),
+        getGitHubOAuthFlowStateViaBridge()
+      ]);
+
+      if (cancelled) {
+        return;
+      }
+
+      setGithubOAuthConfigured(configured);
+      setGithubOAuthSession(session.connected ? session : null);
+      setGithubOAuthFlow(flowState);
+    }
+
+    void hydrateGitHubOAuth();
+
+    const unsubscribe = subscribeGitHubOAuthStateViaBridge((state) => {
+      setGithubOAuthFlow(state);
+
+      if (state.status === "connected" && state.session?.connected) {
+        setGithubOAuthSession(state.session);
+      }
+
+      if (state.status === "idle") {
+        setGithubOAuthSession(null);
+        setGithubRepos([]);
+        setGithubBranches([]);
+        setSelectedRepoFullName("");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!githubOAuthSession?.connected) {
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadRepos() {
+      setGithubReposBusy(true);
+
+      const response = await listGitHubOAuthReposViaBridge();
+
+      if (cancelled) {
+        return;
+      }
+
+      if (response.ok) {
+        setGithubRepos(response.repos);
+      } else {
+        setGithubConnection({
+          status: "error",
+          message: response.error.message,
+          code: response.error.code
+        });
+      }
+
+      setGithubReposBusy(false);
+    }
+
+    void loadRepos();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [githubOAuthSession?.connected, githubOAuthSession?.login]);
 
   useEffect(() => {
     if (!libraryLoaded) {
@@ -321,7 +426,11 @@ export function App() {
   const mcpPayload = useMemo(() => toDiagnosisMcpPayload(resultForDisplay), [resultForDisplay]);
   const repoReady = isRepoReady(draft.routeSource, draft.repoInspection);
   const aiConnected = aiConnection.status === "connected";
-  const highestNavigableIndex = getHighestNavigableIndex(repoReady, settingsReviewed, Boolean(lastRun));
+  const localRepoPath =
+    draft.routeSource === "local-path" ? draft.repoPath : draft.repoInspection?.path ?? draft.repoPath;
+  const canVerify = draft.routeSource === "local-path" && repoReady && Boolean(localRepoPath.trim());
+  const hasResults = Boolean(lastRun) || Boolean(lastVerifyResult);
+  const highestNavigableIndex = getHighestNavigableIndex(repoReady, settingsReviewed, hasResults);
 
   useEffect(() => {
     const activeIndex = stepOrder.findIndex((step) => step.id === activeStep);
@@ -339,8 +448,8 @@ export function App() {
           (step.id === "project-profile" && profileReviewed) ||
           (step.id === "architecture-policy" && policyReviewed) ||
           (step.id === "ai-settings" && settingsReviewed) ||
-          (step.id === "review-and-run" && Boolean(lastRun)) ||
-          (step.id === "results-overview" && Boolean(lastRun));
+          (step.id === "review-and-run" && hasResults) ||
+          (step.id === "results-overview" && hasResults);
 
         const unlocked = step.id === "mcp-connection" || index <= highestNavigableIndex;
         const lockReason = getStepLockReason(
@@ -349,7 +458,7 @@ export function App() {
           highestNavigableIndex,
           repoReady,
           settingsReviewed,
-          Boolean(lastRun)
+          hasResults
         );
 
         return {
@@ -360,6 +469,7 @@ export function App() {
       }),
     [
       activeStep,
+      hasResults,
       highestNavigableIndex,
       lastRun,
       policyReviewed,
@@ -395,6 +505,74 @@ export function App() {
       status: "idle",
       message: ""
     });
+  }
+
+  async function loadGitHubBranchesForSelection(fullName: string, preferredBranch?: string) {
+    const [owner, repo] = fullName.split("/");
+
+    if (!owner || !repo) {
+      setGithubBranches([]);
+      setGithubBranch("");
+      return;
+    }
+
+    setGithubBranchesBusy(true);
+    const response = await listGitHubOAuthBranchesViaBridge(owner, repo);
+    setGithubBranchesBusy(false);
+
+    if (!response.ok) {
+      setGithubConnection({
+        status: "error",
+        message: response.error.message,
+        code: response.error.code
+      });
+      setGithubBranches([]);
+      return;
+    }
+
+    setGithubBranches(response.branches);
+    const selectedRepo = githubRepos.find((entry) => entry.fullName === fullName);
+    const nextBranch =
+      preferredBranch ??
+      (response.branches.some((branch) => branch.name === githubBranch) ? githubBranch : selectedRepo?.defaultBranch ?? "");
+
+    setGithubOwner(owner);
+    setGithubRepo(repo);
+    setGithubBranch(nextBranch);
+  }
+
+  async function handleSelectedRepoChange(fullName: string) {
+    setSelectedRepoFullName(fullName);
+
+    if (!fullName) {
+      setGithubBranches([]);
+      setGithubOwner("");
+      setGithubRepo("");
+      setGithubBranch("");
+      return;
+    }
+
+    await loadGitHubBranchesForSelection(fullName);
+  }
+
+  async function startGitHubOAuth() {
+    resetGitHubFeedback();
+    const state = await startGitHubOAuthViaBridge();
+    setGithubOAuthFlow(state);
+  }
+
+  async function cancelGitHubOAuth() {
+    await cancelGitHubOAuthViaBridge();
+    setGithubOAuthFlow({ status: "idle" });
+  }
+
+  async function disconnectGitHubOAuth() {
+    await disconnectGitHubOAuthViaBridge();
+    setGithubOAuthSession(null);
+    setGithubRepos([]);
+    setGithubBranches([]);
+    setSelectedRepoFullName("");
+    resetGitHubFeedback();
   }
 
   function upsertProjectProfile(name: string, existingId?: string) {
@@ -554,6 +732,91 @@ export function App() {
     const token = githubToken.trim();
     const owner = githubOwner.trim();
     const repo = githubRepo.trim();
+    const usePatFallback = Boolean(token && owner && repo);
+    const oauthTarget = selectedRepoFullName.trim();
+    const runtime =
+      shellInfo?.runtime ?? (typeof navigator !== "undefined" && /Electron/i.test(navigator.userAgent)
+        ? "electron-bridge-missing"
+        : "browser");
+
+    if (!usePatFallback) {
+      if (!githubOAuthSession?.connected) {
+        setGithubConnection({
+          status: "error",
+          message: "Connect with GitHub and select a repository first."
+        });
+        return;
+      }
+
+      if (!oauthTarget) {
+        setGithubConnection({
+          status: "error",
+          message: "Select a repository from your GitHub account."
+        });
+        return;
+      }
+
+      const [oauthOwner, oauthRepo] = oauthTarget.split("/");
+
+      if (!oauthOwner || !oauthRepo) {
+        setGithubConnection({
+          status: "error",
+          message: "Selected repository is invalid."
+        });
+        return;
+      }
+
+      setRepoConnectionMode("github-api");
+      setGithubConnection({
+        status: "connecting",
+        message: "Connecting to GitHub repository..."
+      });
+
+      const response = await connectGitHubOAuthRoute(
+        {
+          owner: oauthOwner,
+          repo: oauthRepo,
+          branch: githubBranch.trim() ? githubBranch.trim() : undefined
+        },
+        runtime
+      );
+
+      if (!response.ok) {
+        setGithubConnection({
+          status: "error",
+          message: response.error.message,
+          code:
+            response.error.code === "network_error" && runtime !== "electron"
+              ? getGitHubConnectBlockedCode(runtime)
+              : response.error.code
+        });
+        return;
+      }
+
+      const githubPath = `${response.route.target.htmlUrl}#${response.route.target.branch}`;
+
+      setDraft((current) => ({
+        ...current,
+        routeSource: "github-api",
+        repoPath: githubPath,
+        repoName: response.route.target.fullName,
+        githubRoute: response.route,
+        repoInspection: response.inspection,
+        repoSummary: repoSummaryTouched ? current.repoSummary : response.route.signals.summary
+      }));
+      setLibrary((current) => ({
+        ...current,
+        lastOpenedRepoPath: githubPath
+      }));
+      setGithubConnection({
+        status: "success",
+        message: `Connected ${response.route.target.fullName} (${response.route.target.branch}).`
+      });
+      resetFromProfile();
+      setActiveStep("project-profile");
+      return;
+    }
+
     const missingFieldsMessage = formatMissingGitHubFields(token, owner, repo);
 
     if (missingFieldsMessage) {
@@ -574,11 +837,6 @@ export function App() {
       return;
     }
 
-    const runtime =
-      shellInfo?.runtime ?? (typeof navigator !== "undefined" && /Electron/i.test(navigator.userAgent)
-        ? "electron-bridge-missing"
-        : "browser");
-
     setRepoConnectionMode("github-api");
     setGithubConnection({
       status: "connecting",
@@ -590,7 +848,8 @@ export function App() {
         token: tokenValidation.normalizedToken,
         owner,
         repo,
-        branch: githubBranch.trim() ? githubBranch.trim() : undefined
+        branch: githubBranch.trim() ? githubBranch.trim() : undefined,
+        authMode: "personal-access-token"
       },
       runtime
     );
@@ -746,6 +1005,25 @@ export function App() {
     }
   }
 
+  async function runCodebaseVerify() {
+    if (!canVerify) {
+      return;
+    }
+
+    setVerifyBusy(true);
+
+    try {
+      const runtime = shellInfo?.runtime ?? "browser";
+      const result = await runCodebaseVerifyViaBridge({ repoPath: localRepoPath }, runtime);
+
+      setLastVerifyResult(result);
+      setLastVerifyAt(new Date().toISOString());
+      setActiveStep("results-overview");
+    } finally {
+      setVerifyBusy(false);
+    }
+  }
+
   useEffect(() => {
     if (draft.routeSource !== "local-path" || !draft.repoPath.trim()) {
       return;
@@ -811,13 +1089,22 @@ export function App() {
               connectionMode={repoConnectionMode}
               draft={intake}
               githubBranch={githubBranch}
+              githubBranches={githubBranches}
+              githubBranchesBusy={githubBranchesBusy}
               githubConnection={githubConnection}
+              githubOAuthConfigured={githubOAuthConfigured}
+              githubOAuthFlow={githubOAuthFlow}
+              githubOAuthSession={githubOAuthSession}
               githubOwner={githubOwner}
               githubRepo={githubRepo}
+              githubRepos={githubRepos}
+              githubReposBusy={githubReposBusy}
               githubToken={githubToken}
               inspection={draft.repoInspection}
               inspectionBusy={inspectionBusy}
+              selectedRepoFullName={selectedRepoFullName}
               onBrowse={() => void browseForRepo()}
+              onCancelGitHubOAuth={() => void cancelGitHubOAuth()}
               onConnectionModeChange={(mode) => {
                 setRepoConnectionMode(mode);
                 setDraft((current) => ({
@@ -830,6 +1117,7 @@ export function App() {
                 resetFromProfile();
               }}
               onConnectGitHub={() => void connectGitHubRoute()}
+              onDisconnectGitHubOAuth={() => void disconnectGitHubOAuth()}
               onDeleteProjectProfile={(id) =>
                 setLibrary((current) => ({
                   ...current,
@@ -864,6 +1152,8 @@ export function App() {
               onGitHubRepoChange={setGithubRepo}
               onGitHubTokenChange={setGithubToken}
               onInspect={() => void inspectRepoPath()}
+              onSelectedRepoChange={(fullName) => void handleSelectedRepoChange(fullName)}
+              onStartGitHubOAuth={() => void startGitHubOAuth()}
               onLoadProjectProfile={(id) => {
                 const preset = library.projectProfiles.find((profile) => profile.id === id);
 
@@ -893,6 +1183,11 @@ export function App() {
                   setGithubOwner(preset.githubRoute.target.owner);
                   setGithubRepo(preset.githubRoute.target.repo);
                   setGithubBranch(preset.githubRoute.target.branch);
+                  setSelectedRepoFullName(preset.githubRoute.target.fullName);
+                  void loadGitHubBranchesForSelection(
+                    preset.githubRoute.target.fullName,
+                    preset.githubRoute.target.branch
+                  );
                   setGithubConnection({
                     status: "success",
                     message: `Loaded ${preset.githubRoute.target.fullName} (${preset.githubRoute.target.branch}) from saved profile.`
@@ -1196,9 +1491,11 @@ export function App() {
             <ReviewRunSection
               aiConnected={aiConnected}
               canRun={repoReady && profileReviewed && policyReviewed && settingsReviewed}
+              canVerify={canVerify}
               diagnosisBusy={diagnosisBusy}
               executionPermission={draft.executionPermission}
               hasRun={Boolean(lastRun)}
+              lastVerifyResult={lastVerifyResult ?? undefined}
               onPermissionChange={(permission: ExecutionPermission) => {
                 setDraft((current) => ({
                   ...current,
@@ -1207,7 +1504,9 @@ export function App() {
                 resetFromSettings();
               }}
               onRun={() => void runDiagnosis()}
+              onVerify={() => void runCodebaseVerify()}
               result={previewResult}
+              verifyBusy={verifyBusy}
             />
           ) : null}
 
@@ -1216,6 +1515,8 @@ export function App() {
               cursorGuidance={mcpPayload.cursorGuidance}
               hasRun={Boolean(lastRun)}
               lastRunAt={lastRunAt}
+              lastVerifyAt={lastVerifyAt}
+              lastVerifyResult={lastVerifyResult ?? undefined}
               mcpSummary={mcpPayload.summary}
               result={resultForDisplay}
               toolNames={arkitectMcpServer.tools.map((tool) => tool.name)}
@@ -1248,6 +1549,11 @@ export function App() {
               {activeStep === "review-and-run" && lastRun ? (
                 <button className="primary-button" onClick={goToNextStep} type="button">
                   Open results
+                </button>
+              ) : null}
+              {activeStep === "review-and-run" && !lastRun && lastVerifyResult ? (
+                <button className="primary-button" onClick={goToNextStep} type="button">
+                  Open verify results
                 </button>
               ) : null}
             </div>

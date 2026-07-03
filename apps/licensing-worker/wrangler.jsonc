@@ -2,5 +2,31 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "arkitect-licensing-worker",
   "main": "src/index.ts",
-  "compatibility_date": "2026-06-14"
+  "compatibility_date": "2026-06-14",
+  "routes": [
+    {
+      "pattern": "arkitect-mcp.com/oauth/*",
+      "zone_name": "arkitect-mcp.com"
+    },
+    {
+      "pattern": "arkitect-mcp.com/webhooks/*",
+      "zone_name": "arkitect-mcp.com"
+    },
+    {
+      "pattern": "arkitect-mcp.com/licenses/*",
+      "zone_name": "arkitect-mcp.com"
+    },
+    {
+      "pattern": "arkitect-mcp.com/entitlements/*",
+      "zone_name": "arkitect-mcp.com"
+    }
+  ],
+  "vars": {
+    "GITHUB_OAUTH_APP_NAME": "Arkitect-mcp",
+    "GITHUB_OAUTH_HOMEPAGE_URL": "https://arkitect-mcp.com",
+    "GITHUB_OAUTH_CALLBACK_URL": "https://arkitect-mcp.com/oauth/github/callback",
+    "GITHUB_OAUTH_APP_DESCRIPTION": "Desktop architecture reasoning app for repo diagnosis, policy review, and MCP integration.",
+    "GITHUB_OAUTH_DEVICE_FLOW_ENABLED": "true",
+    "GITHUB_OAUTH_CLIENT_ID": ""
+  }
 }

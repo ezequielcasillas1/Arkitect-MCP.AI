@@ -14,7 +14,11 @@ import { fetchGitHubRoutePayload, githubRouteToRepoInspection } from "@arkitect/
 import { getDesktopLibraryPath, loadDesktopLibrary, saveDesktopLibrary } from "./library-store.js";
 import { inspectRepoPath } from "./repo-inspector.js";
 import { runAiDiagnosis, testAiConnection } from "./ai-service.js";
+import { runCodebaseVerification } from "@arkitect/core";
 import { getMcpConnectionService } from "./mcp-connection-service.js";
+import { installMcpInCursor } from "./mcp-cursor-install.js";
+import { getGitHubOAuthService } from "./github-oauth-service.js";
+import { getGitHubOAuthConfigured } from "./github-oauth-config.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
@@ -76,6 +80,13 @@ function createWindow() {
   mainWindow = window;
 
   getMcpConnectionService().attachWindow(window);
+
+  const githubOAuthService = getGitHubOAuthService();
+  githubOAuthService.subscribe((state) => {
+    if (!window.isDestroyed()) {
+      window.webContents.send("arkitect:github-oauth-state-changed", state);
+    }
+  });
 
   window.webContents.on("preload-error", (_event, preloadFile, error) => {
     console.error(`[arkitect-desktop] Preload failed for ${preloadFile}:`, error);
@@ -140,11 +151,84 @@ app.whenReady().then(async () => {
       }
     }
   );
+  ipcMain.handle("arkitect:connect-github-oauth-route", async (_event, input: { owner: string; repo: string; branch?: string }) => {
+    try {
+      const token = await getGitHubOAuthService().getAccessToken();
+
+      if (!token) {
+        return {
+          ok: false,
+          error: {
+            code: "unauthorized",
+            message: "Connect GitHub before selecting a repository."
+          } satisfies GitHubApiError
+        };
+      }
+
+      const route = await fetchGitHubRoutePayload({
+        token,
+        owner: input.owner,
+        repo: input.repo,
+        branch: input.branch,
+        authMode: "oauth"
+      });
+
+      return {
+        ok: true,
+        route,
+        inspection: githubRouteToRepoInspection(route)
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: normalizeGitHubError(error)
+      };
+    }
+  });
+  ipcMain.handle("arkitect:github-oauth-get-configured", () => getGitHubOAuthConfigured());
+  ipcMain.handle("arkitect:github-oauth-get-session", () => getGitHubOAuthService().getSession());
+  ipcMain.handle("arkitect:github-oauth-get-flow-state", () => getGitHubOAuthService().getFlowState());
+  ipcMain.handle("arkitect:github-oauth-start", () => getGitHubOAuthService().startDeviceFlow());
+  ipcMain.handle("arkitect:github-oauth-cancel", () => {
+    getGitHubOAuthService().cancelDeviceFlow();
+  });
+  ipcMain.handle("arkitect:github-oauth-disconnect", async () => {
+    await getGitHubOAuthService().disconnect();
+  });
+  ipcMain.handle("arkitect:github-oauth-list-repos", async () => {
+    try {
+      return {
+        ok: true as const,
+        repos: await getGitHubOAuthService().listRepositories()
+      };
+    } catch (error) {
+      return {
+        ok: false as const,
+        error: normalizeGitHubError(error)
+      };
+    }
+  });
+  ipcMain.handle("arkitect:github-oauth-list-branches", async (_event, input: { owner: string; repo: string }) => {
+    try {
+      return {
+        ok: true as const,
+        branches: await getGitHubOAuthService().listBranches(input.owner, input.repo)
+      };
+    } catch (error) {
+      return {
+        ok: false as const,
+        error: normalizeGitHubError(error)
+      };
+    }
+  });
   ipcMain.handle("arkitect:load-library", async () => loadDesktopLibrary());
   ipcMain.handle("arkitect:save-library", async (_event, state: DesktopLibraryState) => saveDesktopLibrary(state));
   ipcMain.handle("arkitect:test-ai-connection", async (_event, credentials) => testAiConnection(credentials));
   ipcMain.handle("arkitect:run-ai-diagnosis", async (_event, request) =>
     runAiDiagnosis(request.facts, request.credentials, request.repoPath)
+  );
+  ipcMain.handle("arkitect:run-codebase-verify", async (_event, input: { repoPath: string }) =>
+    runCodebaseVerification(input)
   );
   ipcMain.handle("arkitect:get-mcp-connection-state", () => mcpService.getState());
   ipcMain.handle("arkitect:get-mcp-launch-config", () => mcpService.getLaunchConfig());
@@ -158,6 +242,12 @@ app.whenReady().then(async () => {
     return mcpService.getState();
   });
   ipcMain.handle("arkitect:get-mcp-bridge-manifest", () => mcpService.getBridgeManifest());
+  ipcMain.handle(
+    "arkitect:install-mcp-in-cursor",
+    async (_event, input: { repoPath?: string; env?: Record<string, string> }) => installMcpInCursor(input)
+  );
+
+  await getGitHubOAuthService().hydrateFromStore();
 
   createWindow();
 

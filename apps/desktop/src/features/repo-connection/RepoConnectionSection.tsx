@@ -1,5 +1,13 @@
-import { useState } from "react";
-import type { DiagnosisIntake, RepoInspection, SavedProjectProfile } from "@arkitect/contracts";
+import { useMemo, useState } from "react";
+import type {
+  DiagnosisIntake,
+  GitHubBranchOption,
+  GitHubOAuthFlowState,
+  GitHubOAuthSession,
+  GitHubRepositoryOption,
+  RepoInspection,
+  SavedProjectProfile
+} from "@arkitect/contracts";
 import { formatShellLabel, type RuntimeShellInfo } from "../../lib/desktop-bridge";
 
 interface RepoConnectionSectionProps {
@@ -8,10 +16,18 @@ interface RepoConnectionSectionProps {
   shellInfo: RuntimeShellInfo | null;
   inspectionBusy: boolean;
   connectionMode: DiagnosisIntake["routeSource"];
+  githubOAuthConfigured: boolean;
+  githubOAuthFlow: GitHubOAuthFlowState;
+  githubOAuthSession: GitHubOAuthSession | null;
+  githubRepos: GitHubRepositoryOption[];
+  githubReposBusy: boolean;
+  githubBranches: GitHubBranchOption[];
+  githubBranchesBusy: boolean;
+  selectedRepoFullName: string;
+  githubBranch: string;
   githubToken: string;
   githubOwner: string;
   githubRepo: string;
-  githubBranch: string;
   githubConnection: {
     status: "idle" | "connecting" | "success" | "error";
     message: string;
@@ -19,11 +35,15 @@ interface RepoConnectionSectionProps {
   };
   projectProfiles: SavedProjectProfile[];
   onConnectionModeChange: (mode: DiagnosisIntake["routeSource"]) => void;
+  onStartGitHubOAuth: () => void;
+  onCancelGitHubOAuth: () => void;
+  onDisconnectGitHubOAuth: () => void;
+  onSelectedRepoChange: (fullName: string) => void;
+  onGitHubBranchChange: (value: string) => void;
+  onConnectGitHub: () => void;
   onGitHubTokenChange: (value: string) => void;
   onGitHubOwnerChange: (value: string) => void;
   onGitHubRepoChange: (value: string) => void;
-  onGitHubBranchChange: (value: string) => void;
-  onConnectGitHub: () => void;
   onRepoPathChange: (value: string) => void;
   onRepoNameChange: (value: string) => void;
   onRepoSummaryChange: (value: string) => void;
@@ -39,7 +59,8 @@ interface RepoConnectionSectionProps {
 function getConnectionStatus(
   mode: DiagnosisIntake["routeSource"],
   inspection: RepoInspection | undefined,
-  githubConnection: RepoConnectionSectionProps["githubConnection"]
+  githubConnection: RepoConnectionSectionProps["githubConnection"],
+  githubOAuthSession: GitHubOAuthSession | null
 ) {
   if (mode === "github-api") {
     if (githubConnection.status === "connecting") {
@@ -63,8 +84,15 @@ function getConnectionStatus(
       };
     }
 
+    if (githubOAuthSession?.connected) {
+      return {
+        label: "GitHub account connected",
+        className: "status-visible"
+      };
+    }
+
     return {
-      label: "Awaiting GitHub target",
+      label: "Awaiting GitHub sign-in",
       className: "status-attention"
     };
   }
@@ -100,18 +128,30 @@ export function RepoConnectionSection({
   shellInfo,
   inspectionBusy,
   connectionMode,
+  githubOAuthConfigured,
+  githubOAuthFlow,
+  githubOAuthSession,
+  githubRepos,
+  githubReposBusy,
+  githubBranches,
+  githubBranchesBusy,
+  selectedRepoFullName,
+  githubBranch,
   githubToken,
   githubOwner,
   githubRepo,
-  githubBranch,
   githubConnection,
   projectProfiles,
   onConnectionModeChange,
+  onStartGitHubOAuth,
+  onCancelGitHubOAuth,
+  onDisconnectGitHubOAuth,
+  onSelectedRepoChange,
+  onGitHubBranchChange,
+  onConnectGitHub,
   onGitHubTokenChange,
   onGitHubOwnerChange,
   onGitHubRepoChange,
-  onGitHubBranchChange,
-  onConnectGitHub,
   onRepoPathChange,
   onRepoNameChange,
   onRepoSummaryChange,
@@ -125,7 +165,27 @@ export function RepoConnectionSection({
 }: RepoConnectionSectionProps) {
   const [profileName, setProfileName] = useState("");
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
-  const connectionStatus = getConnectionStatus(connectionMode, inspection, githubConnection);
+  const [showPatFallback, setShowPatFallback] = useState(false);
+  const [repoFilter, setRepoFilter] = useState("");
+  const connectionStatus = getConnectionStatus(connectionMode, inspection, githubConnection, githubOAuthSession);
+
+  const filteredRepos = useMemo(() => {
+    const query = repoFilter.trim().toLowerCase();
+
+    if (!query) {
+      return githubRepos;
+    }
+
+    return githubRepos.filter(
+      (repo) =>
+        repo.fullName.toLowerCase().includes(query) ||
+        (repo.description?.toLowerCase().includes(query) ?? false)
+    );
+  }, [githubRepos, repoFilter]);
+
+  const selectedRepo = githubRepos.find((repo) => repo.fullName === selectedRepoFullName);
+  const oauthConnected = Boolean(githubOAuthSession?.connected);
+  const awaitingDeviceAuth = githubOAuthFlow.status === "awaiting_user";
 
   return (
     <section className="section-card">
@@ -138,7 +198,7 @@ export function RepoConnectionSection({
       </div>
 
       <p className="summary-copy">
-        Use a local filesystem path or GitHub API target. Once connected, Arkitect uses the same detection flow for both routes.
+        Use a local filesystem path or sign in with GitHub to browse and select a repository.
       </p>
 
       <div className="step-grid">
@@ -156,7 +216,7 @@ export function RepoConnectionSection({
               onClick={() => onConnectionModeChange("github-api")}
               type="button"
             >
-              GitHub API
+              GitHub
             </button>
           </div>
 
@@ -183,44 +243,144 @@ export function RepoConnectionSection({
             </div>
           ) : (
             <div className="form-stack">
-              <div className="step-actions">
-                <button
-                  className="primary-button"
-                  disabled={githubConnection.status === "connecting"}
-                  onClick={onConnectGitHub}
-                  type="button"
-                >
-                  {githubConnection.status === "connecting" ? "Connecting..." : "Connect GitHub repo"}
-                </button>
-              </div>
+              {!githubOAuthConfigured ? (
+                <div className="warning-box">
+                  <strong>GitHub OAuth not configured</strong>
+                  <p>
+                    Copy <code>apps/desktop/github-oauth.config.example.json</code> to{" "}
+                    <code>apps/desktop/github-oauth.config.json</code>, then replace the placeholder with your real GitHub
+                    OAuth Client ID from{" "}
+                    <a href="https://github.com/settings/developers" rel="noreferrer" target="_blank">
+                      github.com/settings/developers
+                    </a>
+                    .
+                  </p>
+                  <p className="summary-copy">
+                    Or launch with <code>GITHUB_OAUTH_CLIENT_ID=your_id pnpm dev:desktop</code>. Restart the desktop app
+                    after saving the config.
+                  </p>
+                </div>
+              ) : null}
 
-              <label>
-                GitHub Personal Access Token
-                <input
-                  autoComplete="off"
-                  onChange={(event) => onGitHubTokenChange(event.target.value)}
-                  placeholder="ghp_... or github_pat_..."
-                  type="password"
-                  value={githubToken}
-                />
-              </label>
+              {!oauthConnected ? (
+                <div className="form-stack">
+                  <div className="step-actions">
+                    <button
+                      className="primary-button"
+                      disabled={!githubOAuthConfigured || awaitingDeviceAuth}
+                      onClick={onStartGitHubOAuth}
+                      type="button"
+                    >
+                      {awaitingDeviceAuth ? "Waiting for GitHub..." : "Connect with GitHub"}
+                    </button>
+                    {awaitingDeviceAuth ? (
+                      <button className="secondary-button" onClick={onCancelGitHubOAuth} type="button">
+                        Cancel
+                      </button>
+                    ) : null}
+                  </div>
 
-              <div className="dual-form-grid">
-                <label>
-                  Owner
-                  <input onChange={(event) => onGitHubOwnerChange(event.target.value)} placeholder="octocat" type="text" value={githubOwner} />
-                </label>
+                  {awaitingDeviceAuth && githubOAuthFlow.device ? (
+                    <div className="empty-state">
+                      <strong>Authorize Arkitect on GitHub</strong>
+                      <p>
+                        Enter code <code>{githubOAuthFlow.device.userCode}</code> at{" "}
+                        <a href={githubOAuthFlow.device.verificationUri} rel="noreferrer" target="_blank">
+                          {githubOAuthFlow.device.verificationUri}
+                        </a>
+                      </p>
+                      <p className="summary-copy">A browser tab should open automatically. Finish sign-in there to continue.</p>
+                    </div>
+                  ) : (
+                    <p className="summary-copy">
+                      Sign in with GitHub to browse your repositories and pick a branch — no token paste required.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="form-stack">
+                  <div className="empty-state">
+                    <strong>Signed in as {githubOAuthSession?.login}</strong>
+                    <p>{githubOAuthSession?.name ?? "GitHub account connected"}</p>
+                  </div>
 
-                <label>
-                  Repo
-                  <input onChange={(event) => onGitHubRepoChange(event.target.value)} placeholder="hello-world" type="text" value={githubRepo} />
-                </label>
-              </div>
+                  <div className="step-actions">
+                    <button className="ghost-button" onClick={onDisconnectGitHubOAuth} type="button">
+                      Disconnect GitHub
+                    </button>
+                  </div>
 
-              <label>
-                Branch (optional)
-                <input onChange={(event) => onGitHubBranchChange(event.target.value)} placeholder="main" type="text" value={githubBranch} />
-              </label>
+                  <label>
+                    Search repositories
+                    <input
+                      onChange={(event) => setRepoFilter(event.target.value)}
+                      placeholder="Filter by name or description"
+                      type="search"
+                      value={repoFilter}
+                    />
+                  </label>
+
+                  <label>
+                    Repository
+                    <select
+                      disabled={githubReposBusy}
+                      onChange={(event) => onSelectedRepoChange(event.target.value)}
+                      value={selectedRepoFullName}
+                    >
+                      <option value="">{githubReposBusy ? "Loading repositories..." : "Select a repository"}</option>
+                      {filteredRepos.map((repo) => (
+                        <option key={repo.id} value={repo.fullName}>
+                          {repo.fullName}
+                          {repo.private ? " (private)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  {selectedRepo?.description ? <p className="summary-copy">{selectedRepo.description}</p> : null}
+
+                  <label>
+                    Branch
+                    <select
+                      disabled={!selectedRepoFullName || githubBranchesBusy}
+                      onChange={(event) => onGitHubBranchChange(event.target.value)}
+                      value={githubBranch}
+                    >
+                      <option value="">
+                        {!selectedRepoFullName
+                          ? "Select a repository first"
+                          : githubBranchesBusy
+                            ? "Loading branches..."
+                            : "Use default branch"}
+                      </option>
+                      {githubBranches.map((branch) => (
+                        <option key={branch.name} value={branch.name}>
+                          {branch.name}
+                          {branch.protected ? " (protected)" : ""}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <div className="step-actions">
+                    <button
+                      className="primary-button"
+                      disabled={!selectedRepoFullName || githubConnection.status === "connecting"}
+                      onClick={onConnectGitHub}
+                      type="button"
+                    >
+                      {githubConnection.status === "connecting" ? "Connecting..." : "Connect selected repository"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {githubOAuthFlow.status === "error" && githubOAuthFlow.message ? (
+                <div className="warning-box">
+                  <strong>GitHub sign-in error</strong>
+                  <p>{githubOAuthFlow.message}</p>
+                </div>
+              ) : null}
 
               {githubConnection.message ? (
                 <div className={githubConnection.status === "error" ? "warning-box" : "empty-state"}>
@@ -230,9 +390,7 @@ export function RepoConnectionSection({
                     {githubConnection.code ? ` (${githubConnection.code})` : ""}
                   </p>
                 </div>
-              ) : (
-                <p className="summary-copy">Token is used for this desktop session only and is not saved in presets.</p>
-              )}
+              ) : null}
 
               {draft.routeSource === "github-api" && draft.githubRoute ? (
                 <div className="empty-state">
@@ -240,6 +398,62 @@ export function RepoConnectionSection({
                   <p>
                     {draft.githubRoute.target.fullName} on {draft.githubRoute.target.branch}
                   </p>
+                </div>
+              ) : null}
+
+              <div className="section-spacer">
+                <button className="ghost-button" onClick={() => setShowPatFallback((current) => !current)} type="button">
+                  {showPatFallback ? "Hide manual token fallback" : "Use manual token instead"}
+                </button>
+              </div>
+
+              {showPatFallback ? (
+                <div className="form-stack">
+                  <label>
+                    GitHub Personal Access Token
+                    <input
+                      autoComplete="off"
+                      onChange={(event) => onGitHubTokenChange(event.target.value)}
+                      placeholder="ghp_... or github_pat_..."
+                      type="password"
+                      value={githubToken}
+                    />
+                  </label>
+
+                  <div className="dual-form-grid">
+                    <label>
+                      Owner
+                      <input
+                        onChange={(event) => onGitHubOwnerChange(event.target.value)}
+                        placeholder="octocat"
+                        type="text"
+                        value={githubOwner}
+                      />
+                    </label>
+
+                    <label>
+                      Repo
+                      <input
+                        onChange={(event) => onGitHubRepoChange(event.target.value)}
+                        placeholder="hello-world"
+                        type="text"
+                        value={githubRepo}
+                      />
+                    </label>
+                  </div>
+
+                  <div className="step-actions">
+                    <button
+                      className="secondary-button"
+                      disabled={githubConnection.status === "connecting"}
+                      onClick={onConnectGitHub}
+                      type="button"
+                    >
+                      Connect with token
+                    </button>
+                  </div>
+
+                  <p className="summary-copy">Manual token mode is session-only and is not saved in presets.</p>
                 </div>
               ) : null}
             </div>
@@ -260,11 +474,7 @@ export function RepoConnectionSection({
 
             <label>
               Repo context summary
-              <textarea
-                onChange={(event) => onRepoSummaryChange(event.target.value)}
-                rows={3}
-                value={draft.repoSummary}
-              />
+              <textarea onChange={(event) => onRepoSummaryChange(event.target.value)} rows={3} value={draft.repoSummary} />
             </label>
 
             <label>
@@ -333,7 +543,7 @@ export function RepoConnectionSection({
           ) : (
             <div className="empty-state">
               <strong>No project inspected yet</strong>
-              <p>Use Browse folder or paste a local path, then inspect it to unlock the rest of the flow.</p>
+              <p>Use Browse folder or connect a GitHub repository to unlock the rest of the flow.</p>
             </div>
           )}
         </article>

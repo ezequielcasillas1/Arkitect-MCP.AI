@@ -9,3 +9,5 @@ coverage
 .env
 .env.*
 !.env.example
+.dev.vars
+apps/desktop/github-oauth.config.json

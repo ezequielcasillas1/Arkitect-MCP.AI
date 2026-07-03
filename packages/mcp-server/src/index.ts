@@ -18,7 +18,12 @@ import {
   listArchitectureCatalog,
   listDesignPatternCatalog,
   listDiagnosisStrategies,
-  listRemixProfileCatalog
+  listRemixProfileCatalog,
+  buildRequirementTagSuggestionInput,
+  suggestRequirementTags,
+  createDiagnosisSignals,
+  runCodebaseVerification,
+  runRepoTests
 } from "@arkitect/core";
 import { MockRepositoryAnalyzer } from "@arkitect/repo-analyzer";
 
@@ -54,6 +59,8 @@ function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake {
 }
 
 function createCursorGuidance(result: DiagnosisResult): string[] {
+  const topSuggestions = result.requirementTagSuggestions.slice(0, 4).map((item) => item.tag);
+
   return [
     `Detected platform: ${result.signals.platformType.final.value}`,
     `Detected architecture: ${result.signals.currentArchitecture.final.value}`,
@@ -61,6 +68,7 @@ function createCursorGuidance(result: DiagnosisResult): string[] {
     `Recommended action: ${result.decision.recommendedAction}`,
     `Selected architecture path: ${result.decision.selectedArchitectureId ?? "not yet stable"}`,
     `Selected remix profile: ${result.decision.selectedRemixId ?? "auto-ranked only"}`,
+    `Suggested requirement tags: ${topSuggestions.length > 0 ? topSuggestions.join(", ") : "none yet"}`,
     `Active strategies: ${result.decision.appliedStrategies.join(", ")}`,
     "Honor overrides before applying any structural changes.",
     "Do not auto-refactor spaghetti structure without explicit migration or refactor intent."
@@ -119,6 +127,19 @@ export async function diagnoseRepository(input: Partial<DiagnosisIntake> = {}): 
   return result;
 }
 
+export async function suggestRequirementTagsForIntake(input: Partial<DiagnosisIntake> = {}) {
+  const intake = mergeIntake(input);
+  const autoDetections = await analyzer.analyze(intake);
+  const signals = createDiagnosisSignals(autoDetections, intake.userInput);
+  const suggestions = suggestRequirementTags(buildRequirementTagSuggestionInput(intake, signals));
+
+  return {
+    summary: `Arkitect suggested ${suggestions.length} requirement tags from repo scope and diagnosis signals.`,
+    suggestions,
+    appliedTags: intake.catalogPreferences.requirementTags
+  };
+}
+
 const diagnosisToolInputSchema = {
   type: "object",
   properties: {
@@ -155,6 +176,57 @@ const catalogToolOutputSchema = {
   }
 };
 
+const verifyToolInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" }
+  }
+};
+
+const verifyToolOutputSchema = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" },
+    repoPath: { type: "string" },
+    command: { type: "string" },
+    summary: { type: "string" },
+    steps: { type: "array", items: { type: "object" } },
+    hint: { type: "string" }
+  }
+};
+
+const testToolInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" }
+  }
+};
+
+const testSuiteToolInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" },
+    suite: { type: "string", enum: ["unit", "integration", "all"] }
+  }
+};
+
+const testToolOutputSchema = {
+  type: "object",
+  properties: {
+    ok: { type: "boolean" },
+    repoPath: { type: "string" },
+    suite: { type: "string" },
+    command: { type: "string" },
+    summary: { type: "string" },
+    steps: { type: "array", items: { type: "object" } },
+    hint: { type: "string" }
+  }
+};
+
+function resolveDefaultRepoPath(input?: { repoPath?: string }): string {
+  return input?.repoPath?.trim() || process.env.ARKITECT_DEFAULT_REPO_PATH?.trim() || process.cwd();
+}
+
 function createJsonToolResult(json: unknown) {
   return {
     content: [
@@ -164,6 +236,21 @@ function createJsonToolResult(json: unknown) {
       }
     ]
   };
+}
+
+export async function verifyCodebase(input: { repoPath?: string } = {}) {
+  const repoPath = resolveDefaultRepoPath(input);
+  return runCodebaseVerification({ repoPath });
+}
+
+export async function runTests(input: { repoPath?: string } = {}) {
+  const repoPath = resolveDefaultRepoPath(input);
+  return runRepoTests({ repoPath, suite: "all" });
+}
+
+export async function runTestSuite(input: { repoPath?: string; suite?: "unit" | "integration" | "all" } = {}) {
+  const repoPath = resolveDefaultRepoPath(input);
+  return runRepoTests({ repoPath, suite: input.suite ?? "all" });
 }
 
 export function createArkitectMcpServer(): ArkitectMcpServer {
@@ -239,6 +326,20 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
       execute: async () => createJsonToolResult(toPatternCatalogPayload())
     },
     {
+      name: "suggest_requirement_tags",
+      description: "Suggest requirement tags from repo inspection, intake scope, and diagnosis signals.",
+      inputSchema: diagnosisToolInputSchema,
+      outputSchema: {
+        type: "object",
+        properties: {
+          summary: { type: "string" },
+          suggestions: { type: "array", items: { type: "object" } },
+          appliedTags: { type: "array", items: { type: "string" } }
+        }
+      },
+      execute: async (input) => createJsonToolResult(await suggestRequirementTagsForIntake(input as Partial<DiagnosisIntake>))
+    },
+    {
       name: "list_diagnosis_strategies",
       description: "Return the diagnosis and continuation strategies Arkitect applies during recommendation.",
       inputSchema: { type: "object", properties: {} },
@@ -256,6 +357,39 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
           total: listDiagnosisStrategies().length,
           items: listDiagnosisStrategies()
         })
+    },
+    {
+      name: "verify_codebase",
+      description:
+        "Run the full verify pipeline: pnpm lint, build, typecheck, and test from a repo root. Use the connected local path — not a system folder like C:\\Windows\\System32.",
+      inputSchema: verifyToolInputSchema,
+      outputSchema: verifyToolOutputSchema,
+      execute: async (input) => {
+        const result = await verifyCodebase(input as { repoPath?: string });
+        return createJsonToolResult(result);
+      }
+    },
+    {
+      name: "run_tests",
+      description:
+        "Run unit and integration tests only (pnpm test) from a repo root. Returns structured pass/fail, step output tails, and summary.",
+      inputSchema: testToolInputSchema,
+      outputSchema: testToolOutputSchema,
+      execute: async (input) => {
+        const result = await runTests(input as { repoPath?: string });
+        return createJsonToolResult(result);
+      }
+    },
+    {
+      name: "run_test_suite",
+      description:
+        "Run a specific test suite from a repo root: unit (test:unit), integration (test:integration), or all (test). Returns structured JSON with steps and output tails.",
+      inputSchema: testSuiteToolInputSchema,
+      outputSchema: testToolOutputSchema,
+      execute: async (input) => {
+        const result = await runTestSuite(input as { repoPath?: string; suite?: "unit" | "integration" | "all" });
+        return createJsonToolResult(result);
+      }
     }
   ];
 

@@ -157,8 +157,55 @@ export function ArchitecturePolicySection({
             </div>
 
             <div className="tag-editor section-spacer">
-              <span className="metric-label">Requirement tags</span>
-              <div className="preset-form-row">
+              <div className="tag-editor-header">
+                <div>
+                  <span className="metric-label">Requirement tags</span>
+                  <p className="helper-copy">Tags steer remix and pattern ranking. Apply scope-based suggestions or add your own.</p>
+                </div>
+                {result.requirementTagSuggestions.filter((suggestion) => !requirementTags.includes(suggestion.tag)).length > 0 ? (
+                  <button
+                    className="secondary-button"
+                    onClick={() => {
+                      const pending = result.requirementTagSuggestions
+                        .map((suggestion) => suggestion.tag)
+                        .filter((tag) => !requirementTags.includes(tag));
+                      onRequirementTagsChange([...requirementTags, ...pending]);
+                    }}
+                    type="button"
+                  >
+                    Apply all suggestions
+                  </button>
+                ) : null}
+              </div>
+
+              {result.requirementTagSuggestions.length > 0 ? (
+                <div className="suggestion-panel section-spacer">
+                  <span className="metric-label">Suggested for this project</span>
+                  <div className="chip-cluster">
+                    {result.requirementTagSuggestions.map((suggestion) => {
+                      const isApplied = requirementTags.includes(suggestion.tag);
+
+                      return (
+                        <button
+                          className={`suggestion-chip ${isApplied ? "suggestion-chip-applied" : ""}`}
+                          disabled={isApplied}
+                          key={suggestion.tag}
+                          onClick={() => onRequirementTagsChange([...requirementTags, suggestion.tag])}
+                          title={`${suggestion.reason} (${Math.round(suggestion.confidence * 100)}% confidence)`}
+                          type="button"
+                        >
+                          <span>{suggestion.tag}</span>
+                          <span className="suggestion-chip-meta">{Math.round(suggestion.confidence * 100)}%</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <p className="helper-copy section-spacer">Connect and inspect a repo to unlock scope-based tag suggestions.</p>
+              )}
+
+              <div className="preset-form-row section-spacer">
                 <input
                   onChange={(event) => setTagInput(event.target.value)}
                   placeholder="Add requirement tag"

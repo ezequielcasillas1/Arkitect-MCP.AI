@@ -1,12 +1,13 @@
-import { useId, useState } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Info } from "lucide-react";
 
 interface InfoHintProps {
   label: string;
-  children: string;
+  children: ReactNode;
+  wide?: boolean;
 }
 
-export function InfoHint({ label, children }: InfoHintProps) {
+export function InfoHint({ label, children, wide = false }: InfoHintProps) {
   const tooltipId = useId();
   const [open, setOpen] = useState(false);
 
@@ -27,7 +28,7 @@ export function InfoHint({ label, children }: InfoHintProps) {
       >
         <Info aria-hidden="true" size={14} strokeWidth={2.25} />
       </button>
-      <span className="info-hint-tooltip" id={tooltipId} role="tooltip">
+      <span className={`info-hint-tooltip${wide ? " info-hint-tooltip-wide" : ""}`} id={tooltipId} role="tooltip">
         {children}
       </span>
     </span>
