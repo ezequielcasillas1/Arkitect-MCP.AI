@@ -905,6 +905,33 @@ input[type="checkbox"] {
   white-space: pre-wrap;
 }
 
+.panel-card-wide {
+  grid-column: 1 / -1;
+}
+
+.test-override-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.test-override-group {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.test-override-button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.test-override-button {
+  min-width: 120px;
+}
+
 .empty-state {
   padding: 18px;
   border-radius: 16px;
@@ -915,6 +942,47 @@ input[type="checkbox"] {
 .empty-state strong {
   display: block;
   margin-bottom: 8px;
+}
+
+.device-code-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.device-code-value {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(109, 140, 255, 0.28);
+  background: rgba(7, 10, 18, 0.55);
+  color: #eef3ff;
+  cursor: pointer;
+  transition: 120ms ease;
+}
+
+.device-code-value:hover,
+.device-code-value:focus-visible {
+  border-color: rgba(109, 140, 255, 0.5);
+  background: rgba(109, 140, 255, 0.12);
+  outline: none;
+}
+
+.device-code-value code {
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  user-select: all;
+}
+
+.device-code-copy-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 8px 12px;
 }
 
 .empty-inline {

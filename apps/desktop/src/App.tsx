@@ -16,6 +16,9 @@ import type {
   SavedArchitectureProfile,
   SavedProjectProfile,
   SavedProviderPreset,
+  TestOverrideCatalog,
+  TestOverrideKind,
+  TestOverrideRunResult,
   UserSignalInputs
 } from "@arkitect/contracts";
 import { buildDiagnosisFactsBundle } from "@arkitect/ai";
@@ -41,11 +44,13 @@ import {
   getGitHubOAuthConfiguredViaBridge,
   getGitHubOAuthFlowStateViaBridge,
   getGitHubOAuthSessionViaBridge,
+  getTestOverrideCatalogViaBridge,
   listGitHubOAuthBranchesViaBridge,
   listGitHubOAuthReposViaBridge,
   resolveRuntimeShellInfo,
   runAiDiagnosisViaBridge,
   runCodebaseVerifyViaBridge,
+  runTestOverrideViaBridge,
   startGitHubOAuthViaBridge,
   subscribeGitHubOAuthStateViaBridge,
   testAiConnectionViaBridge,
@@ -247,6 +252,10 @@ export function App() {
   const [verifyBusy, setVerifyBusy] = useState(false);
   const [lastVerifyResult, setLastVerifyResult] = useState<CodebaseVerifyResult | null>(null);
   const [lastVerifyAt, setLastVerifyAt] = useState<string | undefined>(undefined);
+  const [testOverrideBusy, setTestOverrideBusy] = useState(false);
+  const [testCatalog, setTestCatalog] = useState<TestOverrideCatalog | undefined>(undefined);
+  const [lastTestOverrideResult, setLastTestOverrideResult] = useState<TestOverrideRunResult | null>(null);
+  const [lastTestOverrideAt, setLastTestOverrideAt] = useState<string | undefined>(undefined);
   const [repoConnectionMode, setRepoConnectionMode] = useState<DiagnosisIntake["routeSource"]>("local-path");
   const [githubToken, setGithubToken] = useState("");
   const [githubOwner, setGithubOwner] = useState("");
@@ -429,7 +438,7 @@ export function App() {
   const localRepoPath =
     draft.routeSource === "local-path" ? draft.repoPath : draft.repoInspection?.path ?? draft.repoPath;
   const canVerify = draft.routeSource === "local-path" && repoReady && Boolean(localRepoPath.trim());
-  const hasResults = Boolean(lastRun) || Boolean(lastVerifyResult);
+  const hasResults = Boolean(lastRun) || Boolean(lastVerifyResult) || Boolean(lastTestOverrideResult);
   const highestNavigableIndex = getHighestNavigableIndex(repoReady, settingsReviewed, hasResults);
 
   useEffect(() => {
@@ -1005,6 +1014,35 @@ export function App() {
     }
   }
 
+  async function discoverTestCapabilities() {
+    if (!canVerify) {
+      return;
+    }
+
+    const runtime = shellInfo?.runtime ?? "browser";
+    const catalog = await getTestOverrideCatalogViaBridge({ repoPath: localRepoPath }, runtime);
+    setTestCatalog(catalog);
+  }
+
+  async function runTestOverride(kind: TestOverrideKind) {
+    if (!canVerify) {
+      return;
+    }
+
+    setTestOverrideBusy(true);
+
+    try {
+      const runtime = shellInfo?.runtime ?? "browser";
+      const result = await runTestOverrideViaBridge({ repoPath: localRepoPath, kind }, runtime);
+
+      setLastTestOverrideResult(result);
+      setLastTestOverrideAt(new Date().toISOString());
+      setActiveStep("results-overview");
+    } finally {
+      setTestOverrideBusy(false);
+    }
+  }
+
   async function runCodebaseVerify() {
     if (!canVerify) {
       return;
@@ -1023,6 +1061,15 @@ export function App() {
       setVerifyBusy(false);
     }
   }
+
+  useEffect(() => {
+    if (!canVerify) {
+      setTestCatalog(undefined);
+      return;
+    }
+
+    void discoverTestCapabilities();
+  }, [canVerify, localRepoPath, shellInfo?.runtime]);
 
   useEffect(() => {
     if (draft.routeSource !== "local-path" || !draft.repoPath.trim()) {
@@ -1496,6 +1543,8 @@ export function App() {
               executionPermission={draft.executionPermission}
               hasRun={Boolean(lastRun)}
               lastVerifyResult={lastVerifyResult ?? undefined}
+              lastTestOverrideResult={lastTestOverrideResult ?? undefined}
+              onDiscoverTests={() => void discoverTestCapabilities()}
               onPermissionChange={(permission: ExecutionPermission) => {
                 setDraft((current) => ({
                   ...current,
@@ -1504,8 +1553,11 @@ export function App() {
                 resetFromSettings();
               }}
               onRun={() => void runDiagnosis()}
+              onRunTestOverride={(kind) => void runTestOverride(kind)}
               onVerify={() => void runCodebaseVerify()}
               result={previewResult}
+              testCatalog={testCatalog}
+              testOverrideBusy={testOverrideBusy}
               verifyBusy={verifyBusy}
             />
           ) : null}
@@ -1517,6 +1569,8 @@ export function App() {
               lastRunAt={lastRunAt}
               lastVerifyAt={lastVerifyAt}
               lastVerifyResult={lastVerifyResult ?? undefined}
+              lastTestOverrideAt={lastTestOverrideAt}
+              lastTestOverrideResult={lastTestOverrideResult ?? undefined}
               mcpSummary={mcpPayload.summary}
               result={resultForDisplay}
               toolNames={arkitectMcpServer.tools.map((tool) => tool.name)}

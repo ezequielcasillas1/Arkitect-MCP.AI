@@ -8,15 +8,18 @@ import type {
   GitHubApiError,
   GitHubRouteInput,
   GitHubRoutePayload,
-  RepoInspection
+  RepoInspection,
+  TestOverrideKind
 } from "@arkitect/contracts";
+import { runCodebaseVerification } from "@arkitect/core";
 import { fetchGitHubRoutePayload, githubRouteToRepoInspection } from "@arkitect/github";
 import { getDesktopLibraryPath, loadDesktopLibrary, saveDesktopLibrary } from "./library-store.js";
 import { inspectRepoPath } from "./repo-inspector.js";
 import { runAiDiagnosis, testAiConnection } from "./ai-service.js";
-import { runCodebaseVerification } from "@arkitect/core";
+import { getTestOverrideCatalog, runTestOverrideCommand } from "./test-override-service.js";
 import { getMcpConnectionService } from "./mcp-connection-service.js";
 import { installMcpInCursor } from "./mcp-cursor-install.js";
+import { installElectronNetFetch } from "./electron-fetch.js";
 import { getGitHubOAuthService } from "./github-oauth-service.js";
 import { getGitHubOAuthConfigured } from "./github-oauth-config.js";
 
@@ -106,6 +109,8 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  installElectronNetFetch();
+
   const mcpService = getMcpConnectionService();
   await mcpService.start();
 
@@ -229,6 +234,13 @@ app.whenReady().then(async () => {
   );
   ipcMain.handle("arkitect:run-codebase-verify", async (_event, input: { repoPath: string }) =>
     runCodebaseVerification(input)
+  );
+  ipcMain.handle("arkitect:get-test-override-catalog", async (_event, input: { repoPath: string }) =>
+    getTestOverrideCatalog(input)
+  );
+  ipcMain.handle(
+    "arkitect:run-test-override",
+    async (_event, input: { repoPath: string; kind: TestOverrideKind }) => runTestOverrideCommand(input)
   );
   ipcMain.handle("arkitect:get-mcp-connection-state", () => mcpService.getState());
   ipcMain.handle("arkitect:get-mcp-launch-config", () => mcpService.getLaunchConfig());

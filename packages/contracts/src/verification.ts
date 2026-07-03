@@ -57,3 +57,55 @@ export interface TestRunRequest {
   repoPath: string;
   suite?: TestSuiteId;
 }
+
+export type TestOverrideKind =
+  | "verify"
+  | "lint"
+  | "build"
+  | "typecheck"
+  | "test"
+  | "unit"
+  | "integration";
+
+export type TestOverrideCategory = "verify" | "quality" | "test";
+
+export interface TestOverrideCapability {
+  id: TestOverrideKind;
+  label: string;
+  command: string;
+  available: boolean;
+  category: TestOverrideCategory;
+}
+
+export interface TestOverrideCatalog {
+  repoPath: string;
+  capabilities: TestOverrideCapability[];
+  summary: string;
+}
+
+export interface TestOverrideStepView {
+  id: string;
+  label: string;
+  status: CodebaseVerifyStepStatus;
+  exitCode: number | null;
+  outputTail: string;
+}
+
+export interface TestOverrideRunResult {
+  ok: boolean;
+  kind: TestOverrideKind;
+  repoPath: string;
+  command: string;
+  startedAt: string;
+  finishedAt: string;
+  durationMs: number;
+  steps: TestOverrideStepView[];
+  summary: string;
+  hint?: string;
+  errorCode?: "missing_repo" | "missing_package_json" | "missing_verify_script" | "missing_test_script" | "spawn_failed" | "not_local_repo";
+}
+
+export interface TestOverrideRunRequest {
+  repoPath: string;
+  kind: TestOverrideKind;
+}

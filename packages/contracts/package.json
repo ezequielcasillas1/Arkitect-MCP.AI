@@ -16,8 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "test": "vitest run",
-    "test:unit": "vitest run --exclude \"**/*.integration.test.ts\" --exclude \"tests/**\"",
-    "test:integration": "vitest run --passWithNoTests --include \"**/*.integration.test.ts\" --include \"tests/**/*.test.ts\""
+    "test:unit": "vitest run src",
+    "test:integration": "vitest run tests --passWithNoTests"
   },
   "devDependencies": {
     "vitest": "^3.2.4"

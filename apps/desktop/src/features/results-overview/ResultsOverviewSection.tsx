@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CodebaseVerifyResult, DiagnosisResult } from "@arkitect/contracts";
+import type { CodebaseVerifyResult, DiagnosisResult, TestOverrideRunResult } from "@arkitect/contracts";
 import { getArchitectureCatalogEntry, getDesignPatternDisplayName, getRemixProfileCatalogEntry, listDiagnosisStrategies } from "@arkitect/core";
 
 interface ResultsOverviewSectionProps {
@@ -8,12 +8,14 @@ interface ResultsOverviewSectionProps {
   lastRunAt?: string;
   lastVerifyResult?: CodebaseVerifyResult;
   lastVerifyAt?: string;
+  lastTestOverrideResult?: TestOverrideRunResult;
+  lastTestOverrideAt?: string;
   mcpSummary: string;
   cursorGuidance: string[];
   toolNames: string[];
 }
 
-type ResultsTab = "overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp" | "verify";
+type ResultsTab = "overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp" | "verify" | "tests";
 
 export function ResultsOverviewSection({
   result,
@@ -21,6 +23,8 @@ export function ResultsOverviewSection({
   lastRunAt,
   lastVerifyResult,
   lastVerifyAt,
+  lastTestOverrideResult,
+  lastTestOverrideAt,
   mcpSummary,
   cursorGuidance,
   toolNames
@@ -58,18 +62,23 @@ export function ResultsOverviewSection({
           <h2>Interactive diagnosis output</h2>
         </div>
         <span className="status-pill status-visible">
-          {hasRun ? "Run complete" : lastVerifyResult ? "Verify complete" : "Awaiting run"}
+          {hasRun ? "Run complete" : lastVerifyResult || lastTestOverrideResult ? "Verify complete" : "Awaiting run"}
         </span>
       </div>
 
-      {hasRun || lastVerifyResult ? (
+      {hasRun || lastVerifyResult || lastTestOverrideResult ? (
         <>
           {hasRun ? <p className="summary-copy">{mcpSummary}</p> : null}
           {lastRunAt ? <p className="run-timestamp">Last diagnosis: {new Date(lastRunAt).toLocaleString()}</p> : null}
           {lastVerifyAt ? <p className="run-timestamp">Last verify: {new Date(lastVerifyAt).toLocaleString()}</p> : null}
+          {lastTestOverrideAt ? (
+            <p className="run-timestamp">Last test run: {new Date(lastTestOverrideAt).toLocaleString()}</p>
+          ) : null}
 
           <div className="tab-row">
-            {(["overview", "architecture", "patterns", "risks", "ai", "mcp", "verify"] as ResultsTab[]).map((tab) => (
+            {(
+              ["overview", "architecture", "patterns", "risks", "ai", "mcp", "verify", "tests"] as ResultsTab[]
+            ).map((tab) => (
               <button
                 className={`tab-button ${activeTab === tab ? "tab-button-active" : ""}`}
                 key={tab}
@@ -267,7 +276,7 @@ export function ResultsOverviewSection({
             </div>
           ) : null}
 
-          {activeTab === "mcp" && (hasRun || lastVerifyResult) ? (
+          {activeTab === "mcp" && (hasRun || lastVerifyResult || lastTestOverrideResult) ? (
             <div className="step-grid">
               <article className="panel-card">
                 <span className="metric-label">MCP tools</span>
@@ -293,6 +302,53 @@ export function ResultsOverviewSection({
                 <span className="metric-label">Payload preview</span>
                 <pre className="payload-preview">{payloadPreview}</pre>
               </article>
+            </div>
+          ) : null}
+
+          {activeTab === "tests" ? (
+            <div className="step-grid">
+              {lastTestOverrideResult ? (
+                <>
+                  <article className="panel-card">
+                    <span className="metric-label">Test override summary</span>
+                    <strong className={lastTestOverrideResult.ok ? "verify-summary-ok" : "verify-summary-fail"}>
+                      {lastTestOverrideResult.ok ? "Passed" : "Failed"}
+                    </strong>
+                    <p>{lastTestOverrideResult.summary}</p>
+                    <ul className="tight-list">
+                      <li>Kind: {lastTestOverrideResult.kind}</li>
+                      <li>Repo: {lastTestOverrideResult.repoPath}</li>
+                      <li>Command: {lastTestOverrideResult.command}</li>
+                      <li>Duration: {Math.round(lastTestOverrideResult.durationMs / 1000)}s</li>
+                    </ul>
+                    {lastTestOverrideResult.hint ? (
+                      <p className="helper-copy">{lastTestOverrideResult.hint}</p>
+                    ) : null}
+                  </article>
+                  <article className="panel-card">
+                    <span className="metric-label">Test steps</span>
+                    <ul className="verify-step-list">
+                      {lastTestOverrideResult.steps.map((step) => (
+                        <li className={`verify-step verify-step-${step.status}`} key={step.id}>
+                          <div className="verify-step-header">
+                            <strong>{step.label}</strong>
+                            <span className="soft-pill">{step.status}</span>
+                          </div>
+                          {step.outputTail ? <pre className="verify-step-output">{step.outputTail}</pre> : null}
+                        </li>
+                      ))}
+                    </ul>
+                  </article>
+                </>
+              ) : (
+                <article className="panel-card">
+                  <span className="metric-label">No test override run yet</span>
+                  <p>
+                    Use Review &amp; Run → Test override to run lint, build, typecheck, unit, integration, or full verify
+                    without asking Cursor AI.
+                  </p>
+                </article>
+              )}
             </div>
           ) : null}
 

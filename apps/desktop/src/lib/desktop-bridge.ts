@@ -10,7 +10,10 @@ import type {
   GitHubOAuthRepoInput,
   GitHubOAuthSession,
   GitHubRepositoryOption,
-  GitHubRouteInput
+  GitHubRouteInput,
+  TestOverrideCatalog,
+  TestOverrideKind,
+  TestOverrideRunResult
 } from "@arkitect/contracts";
 import {
   createMockConnectionResult,
@@ -81,7 +84,7 @@ function getBridgeMissingShellInfo(): RuntimeShellInfo {
     platform: navigator.platform,
     electron: "unknown",
     chrome: "unknown",
-    storagePath: "Unavailable — restart with pnpm dev:desktop",
+    storagePath: "Unavailable — cd C:\\Dev\\Arkitect-mcp.com then pnpm dev:desktop",
     runtime: "electron-bridge-missing"
   };
 }
@@ -121,7 +124,7 @@ export function getGitHubConnectBlockedError(runtime: DesktopRuntime): GitHubCon
     error: {
       code: "network_error",
       message:
-        "Desktop bridge is unavailable. Stop the app, run pnpm dev:desktop from the repo root, and use the Electron window (not the Vite browser tab)."
+        "Desktop bridge is unavailable. Stop the app, run from repo root in PowerShell: cd C:\\Dev\\Arkitect-mcp.com then pnpm dev:desktop — use the Electron window (not the Vite browser tab)."
     }
   };
 }
@@ -308,7 +311,7 @@ export function getAiConnectBlockedMessage(runtime: DesktopRuntime): string {
     return "Live Cursor API connection runs in the Electron desktop window. Close this browser tab and use the window opened by pnpm dev:desktop.";
   }
 
-  return "AI connection requires the Electron desktop bridge. Stop the app, run pnpm dev:desktop from the repo root, and use the Electron window (not the Vite browser tab).";
+  return "AI connection requires the Electron desktop bridge. Stop the app, run from repo root in PowerShell: cd C:\\Dev\\Arkitect-mcp.com then pnpm dev:desktop — use the Electron window (not the Vite browser tab).";
 }
 
 function shouldBlockLiveAiInBrowser(credentials: AiProviderCredentials, runtime: DesktopRuntime): boolean {
@@ -476,6 +479,73 @@ export async function runCodebaseVerifyViaBridge(
     durationMs: 0,
     steps: [],
     summary: "Desktop bridge unavailable for codebase verification.",
-    hint: "Restart with pnpm dev:desktop, or run pnpm verify from the connected repo root in PowerShell."
+    hint: "Restart from repo root: cd C:\\Dev\\Arkitect-mcp.com then pnpm dev:desktop, or run pnpm verify from the connected repo root in PowerShell."
+  };
+}
+
+function testOverrideBridgeHint(runtime: DesktopRuntime): string {
+  if (runtime === "browser") {
+    return "Run tests from the repo root in PowerShell: cd C:\\Dev\\Arkitect-mcp.com then pnpm test — not C:\\Windows\\System32.";
+  }
+
+  return "Restart from repo root in PowerShell: cd C:\\Dev\\Arkitect-mcp.com then pnpm dev:desktop to run tests from Arkitect instead of Cursor AI.";
+}
+
+export async function getTestOverrideCatalogViaBridge(
+  input: { repoPath: string },
+  runtime: DesktopRuntime
+): Promise<TestOverrideCatalog> {
+  if (hasDesktopBridge() && window.arkitectDesktop?.getTestOverrideCatalog) {
+    try {
+      return await window.arkitectDesktop.getTestOverrideCatalog(input);
+    } catch {
+      // Fall through to empty catalog.
+    }
+  }
+
+  return {
+    repoPath: input.repoPath,
+    capabilities: [],
+    summary:
+      runtime === "browser"
+        ? "Test discovery requires the Electron desktop app."
+        : "Desktop bridge unavailable for test discovery."
+  };
+}
+
+export async function runTestOverrideViaBridge(
+  input: { repoPath: string; kind: TestOverrideKind },
+  runtime: DesktopRuntime
+): Promise<TestOverrideRunResult> {
+  if (hasDesktopBridge() && window.arkitectDesktop?.runTestOverride) {
+    try {
+      return await window.arkitectDesktop.runTestOverride(input);
+    } catch (error) {
+      return {
+        ok: false,
+        kind: input.kind,
+        repoPath: input.repoPath,
+        command: `pnpm ${input.kind}`,
+        startedAt: new Date().toISOString(),
+        finishedAt: new Date().toISOString(),
+        durationMs: 0,
+        steps: [],
+        summary: "Test override bridge call failed.",
+        hint: error instanceof Error ? error.message : "Unknown bridge error."
+      };
+    }
+  }
+
+  return {
+    ok: false,
+    kind: input.kind,
+    repoPath: input.repoPath,
+    command: `pnpm ${input.kind}`,
+    startedAt: new Date().toISOString(),
+    finishedAt: new Date().toISOString(),
+    durationMs: 0,
+    steps: [],
+    summary: "Test override requires the Electron desktop app.",
+    hint: testOverrideBridgeHint(runtime)
   };
 }

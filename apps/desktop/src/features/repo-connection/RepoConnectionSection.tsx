@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Check, Copy } from "lucide-react";
 import type {
   DiagnosisIntake,
   GitHubBranchOption,
@@ -8,6 +9,7 @@ import type {
   RepoInspection,
   SavedProjectProfile
 } from "@arkitect/contracts";
+import { suggestProjectProfileNames } from "@arkitect/core";
 import { formatShellLabel, type RuntimeShellInfo } from "../../lib/desktop-bridge";
 
 interface RepoConnectionSectionProps {
@@ -183,9 +185,53 @@ export function RepoConnectionSection({
     );
   }, [githubRepos, repoFilter]);
 
+  const profileNameSuggestions = useMemo(
+    () =>
+      suggestProjectProfileNames({
+        repoName: draft.repoName,
+        repoPath: draft.repoPath,
+        routeSource: connectionMode,
+        githubRoute: draft.githubRoute,
+        pendingGitHub:
+          connectionMode === "github-api" && selectedRepoFullName
+            ? {
+                fullName: selectedRepoFullName,
+                branch: githubBranch
+              }
+            : undefined,
+        repoInspection: inspection,
+        existingProfileNames: projectProfiles.map((profile) => profile.name)
+      }),
+    [
+      connectionMode,
+      draft.githubRoute,
+      draft.repoName,
+      draft.repoPath,
+      githubBranch,
+      inspection,
+      projectProfiles,
+      selectedRepoFullName
+    ]
+  );
+
   const selectedRepo = githubRepos.find((repo) => repo.fullName === selectedRepoFullName);
   const oauthConnected = Boolean(githubOAuthSession?.connected);
   const awaitingDeviceAuth = githubOAuthFlow.status === "awaiting_user";
+  const [deviceCodeCopied, setDeviceCodeCopied] = useState(false);
+
+  useEffect(() => {
+    setDeviceCodeCopied(false);
+  }, [githubOAuthFlow.device?.userCode, githubOAuthFlow.status]);
+
+  async function handleCopyDeviceCode(userCode: string) {
+    try {
+      await navigator.clipboard.writeText(userCode);
+      setDeviceCodeCopied(true);
+      window.setTimeout(() => setDeviceCodeCopied(false), 2000);
+    } catch {
+      setDeviceCodeCopied(false);
+    }
+  }
 
   return (
     <section className="section-card">
@@ -256,8 +302,10 @@ export function RepoConnectionSection({
                     .
                   </p>
                   <p className="summary-copy">
-                    Or launch with <code>GITHUB_OAUTH_CLIENT_ID=your_id pnpm dev:desktop</code>. Restart the desktop app
-                    after saving the config.
+                    Then from repo root in PowerShell: <code>cd C:\Dev\Arkitect-mcp.com</code>, then{" "}
+                    <code>pnpm dev:desktop</code>. Or{" "}
+                    <code>$env:GITHUB_OAUTH_CLIENT_ID=&quot;your_id&quot;; pnpm dev:desktop</code> after the same{" "}
+                    <code>cd</code>. Restart the desktop app after saving the config.
                   </p>
                 </div>
               ) : null}
@@ -284,11 +332,29 @@ export function RepoConnectionSection({
                     <div className="empty-state">
                       <strong>Authorize Arkitect on GitHub</strong>
                       <p>
-                        Enter code <code>{githubOAuthFlow.device.userCode}</code> at{" "}
+                        Enter this code at{" "}
                         <a href={githubOAuthFlow.device.verificationUri} rel="noreferrer" target="_blank">
                           {githubOAuthFlow.device.verificationUri}
                         </a>
                       </p>
+                      <div className="device-code-row">
+                        <button
+                          className="device-code-value"
+                          onClick={() => void handleCopyDeviceCode(githubOAuthFlow.device!.userCode)}
+                          title="Click to copy authorization code"
+                          type="button"
+                        >
+                          <code>{githubOAuthFlow.device.userCode}</code>
+                        </button>
+                        <button
+                          className="ghost-button device-code-copy-button"
+                          onClick={() => void handleCopyDeviceCode(githubOAuthFlow.device!.userCode)}
+                          type="button"
+                        >
+                          {deviceCodeCopied ? <Check aria-hidden size={16} /> : <Copy aria-hidden size={16} />}
+                          {deviceCodeCopied ? "Copied!" : "Copy code"}
+                        </button>
+                      </div>
                       <p className="summary-copy">A browser tab should open automatically. Finish sign-in there to continue.</p>
                     </div>
                   ) : (
@@ -580,6 +646,34 @@ export function RepoConnectionSection({
             {editingId ? "Update preset" : "Save preset"}
           </button>
         </div>
+
+        {profileNameSuggestions.length > 0 ? (
+          <div className="suggestion-panel section-spacer">
+            <span className="metric-label">Suggested preset names</span>
+            <div className="chip-cluster">
+              {profileNameSuggestions.map((suggestion) => {
+                const isSelected = profileName.trim().toLowerCase() === suggestion.name.toLowerCase();
+
+                return (
+                  <button
+                    className={`suggestion-chip ${isSelected ? "suggestion-chip-applied" : ""}`}
+                    key={suggestion.name}
+                    onClick={() => setProfileName(suggestion.name)}
+                    title={`${suggestion.reason} (${Math.round(suggestion.confidence * 100)}% confidence)`}
+                    type="button"
+                  >
+                    <span>{suggestion.name}</span>
+                    <span className="suggestion-chip-meta">{Math.round(suggestion.confidence * 100)}%</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <p className="helper-copy section-spacer">
+            Connect and inspect a repo to unlock preset name suggestions.
+          </p>
+        )}
 
         <div className="preset-grid">
           {projectProfiles.length > 0 ? (

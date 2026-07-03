@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { createArkitectMcpServer, diagnoseRepository } from "../src/index.js";
 
 describe("createArkitectMcpServer", () => {
-  it("exposes verify_codebase alongside diagnosis tools", () => {
+  it("exposes verify and test runner tools", () => {
     const server = createArkitectMcpServer();
     const toolNames = server.tools.map((tool) => tool.name);
 
     expect(toolNames).toContain("diagnose_repository");
     expect(toolNames).toContain("verify_codebase");
+    expect(toolNames).toContain("run_tests");
+    expect(toolNames).toContain("run_test_suite");
   });
 });
 

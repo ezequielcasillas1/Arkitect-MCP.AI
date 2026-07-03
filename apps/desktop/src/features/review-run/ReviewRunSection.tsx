@@ -1,4 +1,12 @@
-import type { CodebaseVerifyResult, DiagnosisResult, ExecutionPermission } from "@arkitect/contracts";
+import type {
+  CodebaseVerifyResult,
+  DiagnosisResult,
+  ExecutionPermission,
+  TestOverrideCapability,
+  TestOverrideCatalog,
+  TestOverrideKind,
+  TestOverrideRunResult
+} from "@arkitect/contracts";
 import { InfoHint } from "../../components/InfoHint";
 
 interface ReviewRunSectionProps {
@@ -9,11 +17,16 @@ interface ReviewRunSectionProps {
   hasRun: boolean;
   diagnosisBusy: boolean;
   verifyBusy: boolean;
+  testOverrideBusy: boolean;
   aiConnected: boolean;
   lastVerifyResult?: CodebaseVerifyResult;
+  lastTestOverrideResult?: TestOverrideRunResult;
+  testCatalog?: TestOverrideCatalog;
   onPermissionChange: (permission: ExecutionPermission) => void;
   onRun: () => void;
   onVerify: () => void;
+  onDiscoverTests: () => void;
+  onRunTestOverride: (kind: TestOverrideKind) => void;
 }
 
 const permissionOrder: ExecutionPermission[] = [
@@ -40,15 +53,40 @@ export function ReviewRunSection({
   hasRun,
   diagnosisBusy,
   verifyBusy,
+  testOverrideBusy,
   aiConnected,
   lastVerifyResult,
+  lastTestOverrideResult,
+  testCatalog,
   onPermissionChange,
   onRun,
-  onVerify
+  onVerify,
+  onDiscoverTests,
+  onRunTestOverride
 }: ReviewRunSectionProps) {
   const { decision } = result;
   const permissionBlocked =
     permissionOrder.indexOf(executionPermission) < permissionOrder.indexOf(decision.requiredPermission);
+  const runnableCapabilities = (testCatalog?.capabilities ?? []).filter((cap) => cap.available);
+  const testCapabilities = runnableCapabilities.filter((cap) => cap.category === "test");
+  const qualityCapabilities = runnableCapabilities.filter((cap) => cap.category === "quality");
+  const verifyCapability = runnableCapabilities.find((cap) => cap.id === "verify");
+
+  function renderCapabilityButton(capability: TestOverrideCapability) {
+    return (
+      <button
+        className="secondary-button test-override-button"
+        disabled={!canVerify || testOverrideBusy || diagnosisBusy || verifyBusy}
+        key={capability.id}
+        onClick={() => onRunTestOverride(capability.id)}
+        type="button"
+      >
+        {testOverrideBusy && lastTestOverrideResult?.kind === capability.id
+          ? `Running ${capability.label}…`
+          : capability.label}
+      </button>
+    );
+  }
 
   return (
     <section className="section-card">
@@ -174,6 +212,55 @@ export function ReviewRunSection({
           {lastVerifyResult ? (
             <p className={`verify-summary ${lastVerifyResult.ok ? "verify-summary-ok" : "verify-summary-fail"}`}>
               {lastVerifyResult.summary}
+            </p>
+          ) : null}
+        </article>
+
+        <article className="panel-card panel-card-wide">
+          <div className="metric-label-row">
+            <span className="metric-label">Test override (replaces Cursor AI test runs)</span>
+            <InfoHint label="How test override works" wide>
+              <p className="permission-guide-copy">
+                Arkitect runs lint, build, typecheck, and test scripts from your connected repo root — the same commands
+                Cursor AI would run in chat, but controlled here.
+              </p>
+              <p className="permission-guide-copy">
+                Use <strong>Full verify</strong> for the complete pipeline, or pick individual suites (unit, integration,
+                all tests).
+              </p>
+            </InfoHint>
+          </div>
+          <p className="summary-copy">
+            {testCatalog?.summary ?? "Connect a local repo path to discover runnable test commands."}
+          </p>
+          <div className="test-override-actions">
+            <button
+              className="ghost-button"
+              disabled={!canVerify || testOverrideBusy}
+              onClick={onDiscoverTests}
+              type="button"
+            >
+              Refresh commands
+            </button>
+            {verifyCapability ? renderCapabilityButton(verifyCapability) : null}
+          </div>
+          {qualityCapabilities.length > 0 ? (
+            <div className="test-override-group">
+              <span className="metric-label">Quality checks</span>
+              <div className="test-override-button-row">{qualityCapabilities.map(renderCapabilityButton)}</div>
+            </div>
+          ) : null}
+          {testCapabilities.length > 0 ? (
+            <div className="test-override-group">
+              <span className="metric-label">Test suites</span>
+              <div className="test-override-button-row">{testCapabilities.map(renderCapabilityButton)}</div>
+            </div>
+          ) : null}
+          {lastTestOverrideResult ? (
+            <p
+              className={`verify-summary ${lastTestOverrideResult.ok ? "verify-summary-ok" : "verify-summary-fail"}`}
+            >
+              {lastTestOverrideResult.summary}
             </p>
           ) : null}
         </article>

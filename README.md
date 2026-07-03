@@ -34,6 +34,23 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 
 ## Commands
 
+Run from the monorepo root (example: `C:\Dev\Arkitect-mcp.com`):
+
+```powershell
+cd C:\Dev\Arkitect-mcp.com
+pnpm install
+pnpm build
+pnpm typecheck
+pnpm lint
+pnpm verify
+pnpm dev:desktop
+pnpm start:desktop
+pnpm dev:site
+pnpm dev:worker
+```
+
+Or run individual scripts after `cd` to the repo root:
+
 - `pnpm install`
 - `pnpm build`
 - `pnpm typecheck`
@@ -70,7 +87,13 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 
 ## Desktop local testing
 
-1. Run `pnpm dev:desktop` for the live Electron + Vite dev flow.
+1. From repo root:
+
+```powershell
+cd C:\Dev\Arkitect-mcp.com
+pnpm dev:desktop
+```
+
 2. In the app, use `Connect Repo` to browse to another local folder or paste a Windows path manually.
 3. Click `Inspect path`, move through the diagnosis steps, then run the results flow locally.
-4. After `pnpm build`, run `pnpm start:desktop` to open the built desktop app without any Windows Store packaging.
+4. After `pnpm build`, from repo root run `pnpm start:desktop` to open the built desktop app without any Windows Store packaging.

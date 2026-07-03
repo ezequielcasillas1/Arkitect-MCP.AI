@@ -8,7 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What changed and why]
 
-### 2026-06-14 - Arkitect Catalog Library
+### 2026-07-03 - MCP Test Runner Tools
+**Status:** PENDING
+**Files:** packages/contracts/src/verification.ts, packages/core/src/test-runner.ts, packages/core/src/pnpm-runner.ts, packages/mcp-server/src/index.ts, package.json, turbo.json, apps/desktop/src/features/results-overview/ResultsOverviewSection.tsx
+**Result:** Added run_tests and run_test_suite MCP tools, root test:unit/test:integration scripts, structured JSON results; stdio auto-exposes new tools; awaiting user verification.
+
 **Status:** PENDING
 **Files:** packages/contracts, packages/core, packages/mcp-server, packages/repo-analyzer, apps/desktop
 **Result:** Encoded the architecture/remix/pattern library with scoring, MCP exposure, and desktop visibility; awaiting user review before any success claim.
@@ -81,9 +85,19 @@ Template:
 ### 2026-07-03 - Desktop GitHub OAuth + Repo Picker
 **Status:** PENDING
 **Files:** packages/contracts/src/github.ts, packages/github/src/oauth.ts, packages/github/src/index.ts, apps/desktop/src/electron/github-oauth-*.ts, apps/desktop/src/electron/main.ts, apps/desktop/src/features/repo-connection/RepoConnectionSection.tsx, apps/desktop/src/App.tsx, apps/desktop/github-oauth.config.example.json
-**Result:** Device-flow OAuth in Electron, encrypted token storage, repo/branch pickers; requires github-oauth.config.json Client ID; awaiting user verification.
+**Result:** Device-flow OAuth in Electron, encrypted token storage, repo/branch pickers; requires github-oauth.config.json Client ID; restart with `cd C:\Dev\Arkitect-mcp.com` then `pnpm dev:desktop` from repo root.
 
 ### 2026-07-03 - Install in Cursor MCP button
 **Status:** PENDING
 **Files:** apps/desktop/src/electron/mcp-cursor-install.ts, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx, packages/contracts/src/mcp.ts
 **Result:** Dual-path MCP screen adds Install in Cursor — writes `.cursor/mcp.json`, opens Cursor deeplink, copy-link fallback; awaiting user verification.
+
+### 2026-07-03 - Test Override Service
+**Status:** PENDING
+**Files:** packages/contracts/src/verification.ts, packages/core/src/test-override.ts, apps/desktop/src/electron/test-override-service.ts, apps/desktop/src/features/review-run/ReviewRunSection.tsx, apps/desktop/src/features/results-overview/ResultsOverviewSection.tsx
+**Result:** Desktop test override discovers package.json scripts and runs lint/build/typecheck/unit/integration/verify via IPC bridge; replaces Cursor AI test runs from Review & Run; Results tests tab shows output.
+
+### 2026-07-03 - Saved Profile Name Suggestions
+**Status:** PENDING
+**Files:** packages/contracts/src/desktop.ts, packages/core/src/profile-name-suggestions.ts, packages/core/src/profile-name-suggestions.test.ts, packages/core/src/index.ts, packages/core/src/browser.ts, apps/desktop/src/features/repo-connection/RepoConnectionSection.tsx
+**Result:** Heuristic preset name suggestions from repo label, route (local/GitHub branch), and inspection stack hints; clickable chips fill Preset name field; AI enrichment deferred per request.md.

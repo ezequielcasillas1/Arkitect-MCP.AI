@@ -17,7 +17,10 @@ import type {
   McpServerLaunchConfig,
   McpBridgeManifest,
   McpCursorInstallResult,
-  CodebaseVerifyResult
+  CodebaseVerifyResult,
+  TestOverrideCatalog,
+  TestOverrideKind,
+  TestOverrideRunResult
 } from "@arkitect/contracts";
 
 interface GitHubConnectSuccess {
@@ -64,6 +67,8 @@ declare global {
       testAiConnection: (credentials: AiProviderCredentials) => Promise<AiConnectionTestResult>;
       runAiDiagnosis: (request: AiDiagnosisRunRequest) => Promise<AiDiagnosisRunResult>;
       runCodebaseVerify: (input: { repoPath: string }) => Promise<CodebaseVerifyResult>;
+      getTestOverrideCatalog: (input: { repoPath: string }) => Promise<TestOverrideCatalog>;
+      runTestOverride: (input: { repoPath: string; kind: TestOverrideKind }) => Promise<TestOverrideRunResult>;
       getMcpConnectionState: () => Promise<McpConnectionState>;
       getMcpLaunchConfig: () => Promise<McpServerLaunchConfig>;
       saveMcpLaunchConfig: (config: McpServerLaunchConfig) => Promise<McpServerLaunchConfig>;

@@ -55,6 +55,18 @@ function createApiError(code: GitHubApiError["code"], message: string): GitHubAp
   return { code, message };
 }
 
+function networkErrorDetail(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return "Network request failed.";
+  }
+
+  if (error.cause instanceof Error && error.cause.message) {
+    return error.cause.message;
+  }
+
+  return error.message || "Network request failed.";
+}
+
 export async function requestGitHubDeviceCode(clientId: string): Promise<GitHubOAuthDeviceStart> {
   let response: Response;
 
@@ -70,8 +82,8 @@ export async function requestGitHubDeviceCode(clientId: string): Promise<GitHubO
         scope: defaultScope
       })
     });
-  } catch {
-    throw createApiError("network_error", "Failed to reach GitHub device authorization.");
+  } catch (error) {
+    throw createApiError("network_error", `Failed to reach GitHub device authorization. (${networkErrorDetail(error)})`);
   }
 
   const payload = (await response.json()) as GitHubDeviceCodeResponse;
@@ -113,10 +125,10 @@ export async function pollGitHubDeviceToken(clientId: string, deviceCode: string
         grant_type: "urn:ietf:params:oauth:grant-type:device_code"
       })
     });
-  } catch {
+  } catch (error) {
     return {
       status: "error",
-      error: createApiError("network_error", "Failed to poll GitHub for authorization.")
+      error: createApiError("network_error", `Failed to poll GitHub for authorization. (${networkErrorDetail(error)})`)
     };
   }
 

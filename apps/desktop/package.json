@@ -5,8 +5,9 @@
   "type": "module",
   "main": "./dist-electron/main.js",
   "scripts": {
-    "dev": "concurrently -k \"tsc -p tsconfig.electron.json --watch --preserveWatchOutput\" \"vite\" \"wait-on http-get://127.0.0.1:5173 file:dist-electron/main.js file:dist-electron/preload.js && cross-env ARKITECT_RENDERER_URL=http://127.0.0.1:5173 electron dist-electron/main.js\"",
-    "start": "electron dist-electron/main.js",
+    "predev": "node scripts/free-dev-port.mjs",
+    "dev": "concurrently -k \"tsc -p tsconfig.electron.json --watch --preserveWatchOutput\" \"vite\" \"wait-on http-get://127.0.0.1:5173 file:dist-electron/main.js file:dist-electron/preload.js && cross-env ARKITECT_RENDERER_URL=http://127.0.0.1:5173 NODE_OPTIONS=--use-system-ca electron dist-electron/main.js\"",
+    "start": "cross-env NODE_OPTIONS=--use-system-ca electron dist-electron/main.js",
     "build": "tsc -p tsconfig.electron.json && tsc -p tsconfig.json --noEmit && vite build",
     "typecheck": "tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"src/**/*.{ts,tsx}\""

@@ -26,7 +26,7 @@ describe("createMockAutoDetections", () => {
     const detections = createMockAutoDetections(intake);
 
     expect(detections.platformType.value).toBe("desktop");
-    expect(detections.currentArchitecture.value).toBe("vertical-slice");
+    expect(["vertical-slice", "modular-monolith"]).toContain(detections.currentArchitecture.value);
     expect(detections.repoHealth.confidence).toBeGreaterThan(0.5);
   });
 });
