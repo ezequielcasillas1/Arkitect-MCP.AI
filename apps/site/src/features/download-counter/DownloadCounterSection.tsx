@@ -1,5 +1,9 @@
 import { Download, Gift, Loader2, Users } from "lucide-react";
 import { recordTrackedDownload } from "../download-tracking";
+import {
+  GITHUB_INSTALLER_URL,
+  GITHUB_RELEASES_URL
+} from "../../lib/arkitect-links";
 import { downloadUrl, downloadUrlState, isDownloadUrlConfigured } from "../../lib/env";
 import { useDownloadCounter } from "./useDownloadCounter";
 
@@ -99,8 +103,22 @@ export function DownloadCounterSection() {
           ) : downloadUrlState === "invalid" ? (
             <>
               <p className="helper-copy" role="status">
-                Download link is misconfigured. Use the install steps below until the site env is updated.
+                Download link is misconfigured. Grab the installer from{" "}
+                <a href={GITHUB_RELEASES_URL} target="_blank" rel="noopener noreferrer">
+                  GitHub Releases
+                </a>{" "}
+                or use the install steps below.
               </p>
+              <a
+                href={GITHUB_INSTALLER_URL}
+                className="primary-button action-button-wide"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => void recordTrackedDownload("arkitect-setup")}
+              >
+                <Download size={18} aria-hidden="true" />
+                Download from GitHub
+              </a>
               <a href="#install-heading" className="secondary-button action-button-wide">
                 See install steps
               </a>
@@ -108,7 +126,15 @@ export function DownloadCounterSection() {
           ) : (
             <>
               <p className="helper-copy">
-                Download link is not configured yet. Continue with the install steps below.
+                Download link is not configured yet. Get{" "}
+                <a href={GITHUB_INSTALLER_URL} target="_blank" rel="noopener noreferrer">
+                  Arkitect-Setup.exe
+                </a>{" "}
+                from{" "}
+                <a href={GITHUB_RELEASES_URL} target="_blank" rel="noopener noreferrer">
+                  GitHub Releases
+                </a>{" "}
+                or continue with the install steps below.
               </p>
               <a href="#install-heading" className="secondary-button action-button-wide">
                 See install steps
@@ -141,7 +167,13 @@ export function DownloadCounterSection() {
         </p>
       ) : null}
 
-      <p className="helper-copy">No credit card required. One free spot per visitor.</p>
+      <p className="helper-copy">
+        No credit card required. One free spot per visitor. Also on{" "}
+        <a href={GITHUB_RELEASES_URL} target="_blank" rel="noopener noreferrer">
+          GitHub Releases
+        </a>
+        .
+      </p>
     </section>
   );
 }

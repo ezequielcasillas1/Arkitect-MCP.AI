@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Download, Plug, ScanSearch, Terminal } from "lucide-react";
+import { GITHUB_RELEASES_URL } from "../lib/arkitect-links";
 import { RevealSection } from "./RevealSection";
 
 const steps = [
@@ -70,6 +71,14 @@ export function InstallSection() {
           <code>{mcpConfig}</code>
         </pre>
       </div>
+
+      <p className="helper-copy">
+        Prefer GitHub? Clone the repo or download from{" "}
+        <a href={GITHUB_RELEASES_URL} target="_blank" rel="noopener noreferrer">
+          GitHub Releases
+        </a>
+        , then build with the steps in the user guide.
+      </p>
     </RevealSection>
   );
 }

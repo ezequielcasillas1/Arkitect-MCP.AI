@@ -2,15 +2,24 @@
 
 Stdio MCP server for Arkitect — diagnosis-first architecture guidance, catalogs, verification, and test tools for local repos.
 
-## Install
+## Download
 
-```bash
-npm install -g @arkitect/mcp-server
-# or run without global install:
-npx -y @arkitect/mcp-server
+| Option | Link |
+|--------|------|
+| **Website** | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
+| **GitHub Releases** | [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
+| **Windows installer** (v0.1.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.0/Arkitect-Setup.exe) |
+
+## Install from source
+
+Clone the repo or download **Source code (zip)** from [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases), then from the monorepo root:
+
+```powershell
+pnpm install
+pnpm --filter @arkitect/mcp-server build
 ```
 
-Requires **Node.js 18+**.
+Requires **Node.js 18+**. Confirm `packages/mcp-server/dist/stdio.js` exists before connecting Cursor.
 
 ## Cursor MCP config
 
@@ -18,8 +27,8 @@ Requires **Node.js 18+**.
 {
   "mcpServers": {
     "arkitect-mcp": {
-      "command": "npx",
-      "args": ["-y", "@arkitect/mcp-server"],
+      "command": "node",
+      "args": ["packages/mcp-server/dist/stdio.js"],
       "env": {
         "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo"
       }
@@ -29,30 +38,3 @@ Requires **Node.js 18+**.
 ```
 
 See [docs/USER_GUIDE.md](../../docs/USER_GUIDE.md) for tools, resources, and troubleshooting.
-
-## Publish to npm (maintainers)
-
-Requires npm login and access to the `@arkitect` scope (create at [npmjs.com/org/create](https://www.npmjs.com/org/create) if needed).
-
-```bash
-pnpm install
-npm login
-pnpm publish:mcp
-```
-
-Publishes `@arkitect/contracts`, `@arkitect/ai`, `@arkitect/core`, `@arkitect/repo-analyzer`, and `@arkitect/mcp-server` in dependency order.
-
-Dry run:
-
-```bash
-pnpm --filter @arkitect/mcp-server... publish --access public --dry-run
-```
-
-## GitHub release artifacts (maintainers)
-
-```bash
-pnpm pack:mcp
-gh release create v0.1.0 dist-release/* --title "Arkitect v0.1.0" --notes "Desktop installer + MCP server npm tarball and portable zip."
-```
-
-Or push a `v*` tag — CI (`.github/workflows/release-desktop.yml`) uploads `Arkitect-Setup.exe`, `arkitect-mcp-server-<version>.tgz`, and the portable zip to the same release.

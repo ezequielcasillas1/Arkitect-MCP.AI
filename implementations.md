@@ -198,7 +198,12 @@ Template:
 **Files:** apps/site/src/features/download-tracking/*, apps/site/src/lib/is-localhost.ts, apps/site/supabase/migrations/0003_arkitect_download_tracking.sql, DownloadCounterSection.tsx, InstructionsPage.tsx, App.tsx, styles.css
 **Result:** Added download-tracking slice with Supabase RPC persistence (total + unique counts per file), click hooks on setup exe and user guide, localhost-only admin at /admin/downloads; migration applied; fixed PL/pgSQL ambiguous column bug in record RPC.
 
-### 2026-07-04 - MCP npm + GitHub release install paths
-**Status:** SUCCESS
-**Files:** packages/mcp-server/package.json, packages/contracts/package.json, packages/ai/package.json, packages/core/package.json, packages/repo-analyzer/package.json, packages/mcp-server/README.md, scripts/package-mcp-release.mjs, package.json, .github/workflows/release-desktop.yml, docs/USER_GUIDE.md, README.md, .gitignore
-**Result:** Added publishConfig/files/bin prep for @arkitect/mcp-server chain, pack:mcp/publish:mcp scripts, CI attaches .tgz + portable zip on v* tags; USER_GUIDE documents npm, GitHub download, and clone install paths.
+### 2026-07-04 - MCP npm publish reverted
+**Status:** REVERTED
+**Files:** package.json, packages/*/package.json, scripts/package-mcp-release.mjs, packages/mcp-server/README.md, .github/workflows/release-desktop.yml, docs/USER_GUIDE.md, README.md, .gitignore
+**Result:** Removed npm/pnpm publish chain, pack:mcp scripts, and CI MCP artifacts per user request; install path is clone + build or GitHub release source zip.
+
+### 2026-07-04 - GitHub/site download link sync
+**Status:** PENDING
+**Files:** README.md, docs/USER_GUIDE.md, packages/mcp-server/README.md, apps/site/src/lib/arkitect-links.ts, DownloadCounterSection.tsx, InstallSection.tsx
+**Result:** Added Download section to root README and MCP README (clone/build, no npm); USER_GUIDE download table; site fallbacks + GitHub Releases links on landing install/download sections. URLs: arkitect-mcp.com, GitHub Releases v0.1.0 Arkitect-Setup.exe.
