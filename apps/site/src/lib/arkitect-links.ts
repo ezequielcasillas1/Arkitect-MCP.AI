@@ -6,6 +6,6 @@ export function githubBlobUrl(repoPath: string): string {
   return `${GITHUB_REPO_BLOB_BASE}/${repoPath.replace(/^\/+/, "")}`;
 }
 export const GITHUB_INSTALLER_URL =
-  `${GITHUB_REPO_URL}/releases/download/v0.1.0/Arkitect-Setup.exe`;
+  `${GITHUB_REPO_URL}/releases/download/v0.1.1/Arkitect-Setup.exe`;
 export const SITE_DOWNLOAD_URL = "https://arkitect-mcp.com/#download-counter-heading";
 export const SITE_INSTRUCTIONS_URL = "https://arkitect-mcp.com/instructions";

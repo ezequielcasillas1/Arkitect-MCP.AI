@@ -62,21 +62,21 @@ Override repo or asset name at build/runtime:
 
 This is a manual download flow (no `electron-updater`). Users run the NSIS installer after download.
 
-## GitHub release v0.1.0
+## GitHub release v0.1.1
 
 After the installer builds locally:
 
 ```bash
-gh release create v0.1.0 \
+gh release create v0.1.1 \
   apps/desktop/release/Arkitect-Setup.exe \
-  --title "Arkitect v0.1.0" \
-  --notes "First Windows desktop installer."
+  --title "Arkitect v0.1.1" \
+  --notes "Expanded pattern catalog, mission orchestration, in-app update check."
 ```
 
 Asset URL format (use in Cloudflare Pages):
 
 ```
-https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.0/Arkitect-Setup.exe
+https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.1/Arkitect-Setup.exe
 ```
 
 ## Cloudflare Pages: VITE_DOWNLOAD_URL
@@ -85,6 +85,6 @@ In Cloudflare dashboard → Pages → `arkitect-site` → Settings → Environme
 
 | Variable | Value |
 |----------|-------|
-| `VITE_DOWNLOAD_URL` | `https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.0/Arkitect-Setup.exe` |
+| `VITE_DOWNLOAD_URL` | `https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.1/Arkitect-Setup.exe` |
 
 Redeploy the site after setting the variable (`pnpm deploy:site` from repo root, or trigger a Pages rebuild).

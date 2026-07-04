@@ -1,7 +1,7 @@
 {
   "name": "arkitect",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Arkitect monorepo foundation scaffold.",
   "packageManager": "pnpm@11.6.0",
   "scripts": {

@@ -217,6 +217,11 @@ Template:
 **Files:** package.json, packages/*/package.json, scripts/package-mcp-release.mjs, packages/mcp-server/README.md, .github/workflows/release-desktop.yml, docs/USER_GUIDE.md, README.md, .gitignore
 **Result:** Removed npm/pnpm publish chain, pack:mcp scripts, and CI MCP artifacts per user request; install path is clone + build or GitHub release source zip.
 
+### 2026-07-04 - Version bump v0.1.1 + download link sync
+**Status:** PENDING
+**Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, apps/site/src/lib/arkitect-links.ts, apps/site/src/features/release-feed/data.ts, apps/site/.env.example, README.md, docs/USER_GUIDE.md, apps/desktop/README.md, apps/site/README.md, packages/mcp-server/{README.md,src/mcp-tool-definitions.ts}, apps/desktop/src/electron/mcp-client-manager.ts
+**Result:** Bumped monorepo from 0.1.0 → 0.1.1; release feed marked 0.1.1 released; GitHub installer URLs updated site-wide. Auto-update uses GitHub latest (no URL change). Cloudflare VITE_DOWNLOAD_URL + gh release v0.1.1 still manual.
+
 ### 2026-07-04 - GitHub/site download link sync
 **Status:** PENDING
 **Files:** README.md, docs/USER_GUIDE.md, packages/mcp-server/README.md, apps/site/src/lib/arkitect-links.ts, DownloadCounterSection.tsx, InstallSection.tsx

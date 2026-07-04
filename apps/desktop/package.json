@@ -1,6 +1,6 @@
 {
   "name": "@arkitect/desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "description": "Arkitect desktop wizard for repo diagnosis and MCP connection.",
   "author": "Arkitect",

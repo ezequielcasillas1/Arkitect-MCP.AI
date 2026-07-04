@@ -4,8 +4,8 @@ import type { ReleaseEntry } from "./types";
 export const releaseFeed: ReleaseEntry[] = [
   {
     version: "0.1.1",
-    releaseDate: null,
-    status: "upcoming",
+    releaseDate: "2026-07-04",
+    status: "released",
     changes: [
       "Expanded design pattern catalog across MCP and desktop surfaces.",
       "Mission orchestration for guided architecture workflows.",
