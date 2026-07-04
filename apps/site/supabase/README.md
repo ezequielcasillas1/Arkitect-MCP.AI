@@ -16,6 +16,8 @@ wrong project before any DDL ran. `user-supabase` must continue to be left alone
   (`download-counter` vertical slice). **Applied.**
 - `migrations/0002_arkitect_reviews.sql` — visitor reviews/feedback table with moderation-friendly
   RLS and a per-visitor rate-limit trigger (`reviews` vertical slice). **Applied.**
+- `migrations/0004_arkitect_reviews_grants.sql` — grants `SELECT`/`INSERT` to `anon`/`authenticated`
+  (missing grants caused PostgREST 401 despite RLS policies). **Applied.**
 
 ## Runtime config
 

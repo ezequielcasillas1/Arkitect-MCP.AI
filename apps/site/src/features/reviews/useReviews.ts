@@ -9,7 +9,8 @@ type Status = "loading" | "ready" | "submitting" | "error";
 interface ReviewsState {
   status: Status;
   reviews: Review[];
-  errorMessage: string | null;
+  loadError: string | null;
+  submitError: string | null;
   successMessage: string | null;
   submit: (input: SubmitReviewInput) => Promise<boolean>;
 }
@@ -17,7 +18,8 @@ interface ReviewsState {
 export function useReviews(): ReviewsState {
   const [status, setStatus] = useState<Status>("loading");
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const guardedSubmitRef = useRef(withPendingGuard(reviewsGateway.submitReview));
 
@@ -29,12 +31,14 @@ export function useReviews(): ReviewsState {
       .then((result) => {
         if (!cancelled) {
           setReviews(result);
+          setLoadError(null);
           setStatus("ready");
         }
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        console.error("[reviews] listReviews failed:", error);
         if (!cancelled) {
-          setErrorMessage("Could not load reviews right now. Please refresh to try again.");
+          setLoadError("Could not load reviews right now. Please refresh to try again.");
           setStatus("error");
         }
       });
@@ -46,22 +50,24 @@ export function useReviews(): ReviewsState {
 
   const submit = useCallback(async (input: SubmitReviewInput) => {
     setStatus("submitting");
-    setErrorMessage(null);
+    setSubmitError(null);
     setSuccessMessage(null);
 
     try {
       const visitorId = getOrCreateVisitorId();
       const created = await guardedSubmitRef.current(input, visitorId);
       setReviews((current) => [created, ...current]);
+      setLoadError(null);
       setSuccessMessage("Thanks for the feedback — your review is live.");
       setStatus("ready");
       return true;
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Could not submit your review.");
+      console.error("[reviews] submitReview failed:", error);
+      setSubmitError(error instanceof Error ? error.message : "Could not submit your review.");
       setStatus("ready");
       return false;
     }
   }, []);
 
-  return { status, reviews, errorMessage, successMessage, submit };
+  return { status, reviews, loadError, submitError, successMessage, submit };
 }

@@ -1,4 +1,5 @@
 import { Download, Gift, Loader2, Users } from "lucide-react";
+import { recordTrackedDownload } from "../download-tracking";
 import { downloadUrl, downloadUrlState, isDownloadUrlConfigured } from "../../lib/env";
 import { useDownloadCounter } from "./useDownloadCounter";
 
@@ -14,6 +15,11 @@ export function DownloadCounterSection() {
   const milestoneCount = Math.round(spotLimit / MILESTONE_STEP);
   const isFull = remaining === 0 && status !== "loading";
   const isBusy = status === "loading" || status === "claiming";
+
+  function handleSetupDownloadClick() {
+    void recordTrackedDownload("arkitect-setup");
+    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+  }
 
   let ctaLabel = "Claim your free spot";
   if (isFull && !hasClaimed) {
@@ -82,16 +88,14 @@ export function DownloadCounterSection() {
         <div className="counter-claim-success">
           <p className="counter-claim-success-text">You&apos;re on the list — grab your download below.</p>
           {isDownloadUrlConfigured ? (
-            <a
-              href={downloadUrl}
+            <button
+              type="button"
               className="primary-button action-button-wide"
-              target="_blank"
-              rel="noopener noreferrer"
-              download
+              onClick={handleSetupDownloadClick}
             >
               <Download size={18} aria-hidden="true" />
               Download Arkitect
-            </a>
+            </button>
           ) : downloadUrlState === "invalid" ? (
             <>
               <p className="helper-copy" role="status">

@@ -6,6 +6,7 @@ import { ConnectSection } from "../components/ConnectSection";
 import { InstallSection } from "../components/InstallSection";
 import { RevealSection } from "../components/RevealSection";
 import { DownloadCounterSection } from "../features/download-counter/DownloadCounterSection";
+import { SeoHead } from "../features/seo";
 
 const ArkitectLogo3D = lazy(() =>
   import("../components/ArkitectLogo3D").then((module) => ({ default: module.ArkitectLogo3D }))
@@ -40,6 +41,7 @@ const heroPills = [
 export function LandingPage() {
   return (
     <div className="content-grid landing-grid">
+      <SeoHead route="/" />
       <section className="hero panel hero-entrance">
         <div className="hero-copy">
           <p className="eyebrow">Arkitect MCP</p>

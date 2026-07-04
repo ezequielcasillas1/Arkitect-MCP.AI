@@ -8,6 +8,10 @@ export function Footer() {
         <NavLink to="/instructions" className="footer-link">
           User guide
         </NavLink>
+        {" · "}
+        <NavLink to="/architecture" className="footer-link">
+          Architecture guide
+        </NavLink>
       </p>
       <p className="helper-copy">arkitect-mcp.com</p>
     </footer>

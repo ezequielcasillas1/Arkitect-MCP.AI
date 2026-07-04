@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
-    "generate:favicon": "node scripts/generate-favicon.mjs",
+    "generate:favicon": "python scripts/generate-favicon.py",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
-    "pages:create": "wrangler pages project create arkitect-site --production-branch=main",
-    "deploy": "wrangler pages deploy dist --project-name=arkitect-site --branch=main --commit-dirty=true",
+    "pages:create": "wrangler pages project create arkitect-site --production-branch=master",
+    "deploy": "wrangler pages deploy dist --project-name=arkitect-site --branch=master --commit-dirty=true",
     "deploy:production": "pnpm build && pnpm deploy"
   },
   "dependencies": {

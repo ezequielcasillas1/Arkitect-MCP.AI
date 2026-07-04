@@ -124,6 +124,12 @@ a {
   max-width: 100%;
 }
 
+.brand-mark-icon {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .brand-mark-text {
   font-weight: 700;
   font-size: 1.05rem;
@@ -489,6 +495,98 @@ a {
 .counter-claim-success-text {
   color: #dce7ff;
   margin: 0;
+}
+
+/* Download tracking admin (localhost only) */
+.admin-downloads-grid {
+  grid-template-columns: 1fr;
+}
+
+.admin-downloads-panel {
+  grid-column: 1 / -1;
+}
+
+.admin-downloads-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-downloads-note {
+  color: #9aa6c2;
+  margin: 8px 0 0;
+  max-width: 52ch;
+}
+
+.admin-downloads-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-downloads-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.admin-downloads-stat {
+  min-width: 140px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(109, 140, 255, 0.18);
+}
+
+.admin-downloads-stat-label {
+  display: block;
+  color: #9aa6c2;
+  font-size: 0.82rem;
+  margin-bottom: 4px;
+}
+
+.admin-downloads-stat strong {
+  color: #f5f8ff;
+  font-size: 1.4rem;
+}
+
+.admin-downloads-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9aa6c2;
+}
+
+.admin-downloads-table-wrap {
+  overflow-x: auto;
+}
+
+.admin-downloads-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-downloads-table th,
+.admin-downloads-table td {
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 1px solid rgba(109, 140, 255, 0.16);
+}
+
+.admin-downloads-table th {
+  color: #9aa6c2;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-downloads-table td {
+  color: #dce7ff;
 }
 
 /* Forms */
@@ -987,6 +1085,31 @@ a {
 .guide-toc-link:hover {
   color: #f0f4ff;
   text-decoration: underline;
+}
+
+.education-external-link {
+  color: #9eb8ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.education-external-link:hover {
+  color: #dbe8ff;
+}
+
+.education-resource-list {
+  margin: 0 0 14px;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+.education-learn-more {
+  color: #b8c7ef;
+}
+
+.education-section-resources {
+  margin-top: 8px;
 }
 
 .guide-content {

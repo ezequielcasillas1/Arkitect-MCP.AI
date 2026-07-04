@@ -1,3 +1,23 @@
+### 2026-07-04 - New Logo Mark: Favicon + Navbar
+**Status:** PENDING
+**Files:** apps/site/public/{arkitect-mark.png,arkitect-mark-nav.png,favicon.ico,favicon-16.png,favicon-32.png,apple-touch-icon.png,_redirects}, apps/site/scripts/{generate-favicon.py,extract-logo-mark.py}, apps/site/index.html, apps/site/package.json, apps/site/src/components/Logo.tsx, apps/site/src/styles.css
+**Result:** Manual chroma-key cutout (numpy/PIL, smoothstep alpha, no jagged edges) of new wireframe "A" mark replaces old placeholder triangle SVG in navbar + all favicon sizes + apple-touch-icon. Removed stale favicon.svg/apple-touch-icon.svg + old resvg-based generator. Build passes. Awaiting user confirmation.
+
+### 2026-07-04 - Reviews Page Load Fix
+**Status:** PENDING
+**Files:** apps/site/supabase/migrations/0004_arkitect_reviews_grants.sql, apps/site/supabase/migrations/0002_arkitect_reviews.sql, apps/site/src/features/reviews/useReviews.ts, apps/site/src/features/reviews/ReviewList.tsx, apps/site/src/pages/ReviewsPage.tsx, apps/site/supabase/README.md
+**Result:** Root cause: `arkitect_reviews` had RLS policies but no `GRANT SELECT/INSERT` for anon — PostgREST returned 401. Applied grants migration to live Supabase; split loadError/submitError in UI; added console.error on failures. Typecheck + build pass; awaiting user confirmation.
+
+### 2026-07-04 - Sitemap HTML Fix (GSC)
+**Status:** PENDING
+**Files:** apps/site/public/_redirects, apps/site/public/_headers
+**Result:** SPA catch-all was rewriting /sitemap.xml and /robots.txt to index.html. Added explicit static rules before /* fallback and _headers for application/xml + text/plain. Build copies valid XML to dist; redeploy required for GSC fix.
+
+### 2026-07-04 - Site SEO + Sitemap
+**Status:** PENDING
+**Files:** apps/site/index.html, apps/site/public/sitemap.xml, apps/site/public/robots.txt, apps/site/src/features/seo/*, apps/site/src/pages/LandingPage.tsx, apps/site/src/pages/ReviewsPage.tsx, apps/site/src/pages/InstructionsPage.tsx
+**Result:** Added sitemap.xml, robots.txt, OG/Twitter/JSON-LD meta, per-route SEO slice. Typecheck + build pass. Ready for Google Search Console submission; awaiting user confirmation.
+
 ### 2026-07-03 - Site Favicon: 3D Logo Mark
 **Status:** PENDING
 **Files:** apps/site/public/favicon.svg, apps/site/public/apple-touch-icon.svg, apps/site/index.html, implementations.md
@@ -151,3 +171,8 @@ Template:
 **Status:** SUCCESS
 **Files:** apps/site/src/pages/InstructionsPage.tsx, apps/site/src/features/instructions/*, apps/site/wrangler.jsonc
 **Result:** Instructions guide renders correctly; Cloudflare Git integration deploys site on push; user confirmed successful.
+
+### 2026-07-04 - Localhost download tracking admin
+**Status:** PENDING
+**Files:** apps/site/src/features/download-tracking/*, apps/site/src/lib/is-localhost.ts, apps/site/supabase/migrations/0003_arkitect_download_tracking.sql, DownloadCounterSection.tsx, InstructionsPage.tsx, App.tsx, styles.css
+**Result:** Added download-tracking slice with Supabase RPC persistence (total + unique counts per file), click hooks on setup exe and user guide, localhost-only admin at /admin/downloads; migration applied; fixed PL/pgSQL ambiguous column bug in record RPC.

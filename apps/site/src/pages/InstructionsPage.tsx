@@ -1,13 +1,16 @@
 import userGuideMarkdown from "../../../../docs/USER_GUIDE.md?raw";
 import { RevealSection } from "../components/RevealSection";
+import { recordTrackedDownload } from "../features/download-tracking";
 import { downloadGuideAsText } from "../features/instructions/download-guide";
 import { MarkdownContent, useGuideHeadings } from "../features/instructions/MarkdownContent";
+import { SeoHead } from "../features/seo";
 
 export function InstructionsPage() {
   const headings = useGuideHeadings(userGuideMarkdown);
 
   return (
     <div className="content-grid instructions-grid">
+      <SeoHead route="/instructions" />
       <RevealSection className="panel hero-entrance instructions-hero" delay={0}>
         <p className="section-label">Instructions</p>
         <h1>Arkitect user guide</h1>
@@ -20,7 +23,10 @@ export function InstructionsPage() {
           <button
             type="button"
             className="secondary-button"
-            onClick={() => downloadGuideAsText(userGuideMarkdown)}
+            onClick={() => {
+              void recordTrackedDownload("user-guide");
+              downloadGuideAsText(userGuideMarkdown);
+            }}
           >
             Download guide (.txt)
           </button>

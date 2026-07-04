@@ -69,3 +69,6 @@ drop trigger if exists arkitect_reviews_rate_limit on public.arkitect_reviews;
 create trigger arkitect_reviews_rate_limit
   before insert on public.arkitect_reviews
   for each row execute function public.arkitect_enforce_review_rate_limit();
+
+grant select on public.arkitect_reviews to anon, authenticated;
+grant insert on public.arkitect_reviews to anon, authenticated;

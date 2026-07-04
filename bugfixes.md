@@ -13,6 +13,11 @@ Template:
 **Files:** apps/site/public/_redirects, apps/site/public/favicon.svg, apps/site/public/favicon.ico, apps/site/index.html, apps/site/scripts/generate-favicon.mjs
 **Result:** SPA catch-all `/* /index.html 200` in `_redirects` rewrote `/favicon.svg` and `/favicon.ico` to HTML on Cloudflare Pages. Added explicit static-asset rules before catch-all, fixed invalid control char in favicon.svg, added favicon.ico (16/32px from logo colors), and expanded index.html link tags.
 
+### 2026-07-04 - Favicon STILL Not Showing After Fix (Debug Pass)
+**Status:** PENDING
+**Files:** apps/site/index.html, apps/site/public/_redirects, apps/site/public/favicon-16.png, apps/site/public/favicon-32.png, apps/site/scripts/generate-favicon.mjs
+**Result:** Verified deployment is fully live — prod `/favicon.ico` MD5 == local MD5 (`367DCAD...`), `/favicon.svg` MD5 matches, all 3 icon URLs return 200 with correct MIME types, and prod `index.html` contains the correct `<link rel="icon">` tags. ICO structure is valid: magic `00 00 01 00`, 2 PNG entries (16×16 601 B + 32×32 1140 B), both starting with `89 50 4E 47`. No React runtime code touches the icons. Root cause is Chrome's per-domain favicon cache holding a "no favicon" entry — Ctrl+Shift+R does not evict it. Mitigations applied: (1) added `?v=3` cache-buster to every icon `<link>` in `index.html`, (2) emitted standalone `favicon-16.png` / `favicon-32.png` next to the ICO with explicit `sizes="16x16"` / `sizes="32x32"` `rel="icon"` links so Chrome resolves a plain PNG for the tab, (3) added static passthrough rules for the PNGs in `_redirects`, (4) `generate-favicon.mjs` now preserves the PNGs instead of deleting them. Not committed — awaits user redeploy + Chrome favicon cache clear (or incognito test).
+
 ### 2026-07-04 - No Download Link After Free Spot Claim
 **Status:** PENDING
 **Files:** apps/site/src/features/download-counter/DownloadCounterSection.tsx, apps/site/src/lib/env.ts, apps/site/.env.example

@@ -35,3 +35,9 @@
 - Reviews: public submit + list, Supabase RLS, per-visitor rate-limit trigger, "connect with me" links.
 - Data-access gateways swap mock/Supabase by env config; Cloudflare Pages build/deploy readiness added.
 - Needs real beaver logo asset and real contact links from Ezequiel (placeholders used for now).
+
+12. Marketing site: architecture & patterns educative page — teach core design patterns and how they relate to software architecture.
+- Route on `apps/site` with vertical slice (`features/education`), SEO + nav link.
+- Simple readable sections: Creational, Structural, Behavioral patterns + architecture styles + SOLID link.
+- Each topic: meaning, architecture connection, trusted external resource link (Refactoring Guru, Fowler, Microsoft Learn, etc.).
+- Static content only; no backend; match existing page layout and design-system styling.

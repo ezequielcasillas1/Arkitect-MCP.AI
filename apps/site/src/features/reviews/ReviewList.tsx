@@ -3,6 +3,7 @@ import type { Review } from "./types";
 interface ReviewListProps {
   reviews: Review[];
   isLoading: boolean;
+  loadError: string | null;
 }
 
 function formatDate(iso: string): string {
@@ -13,9 +14,13 @@ function formatDate(iso: string): string {
   }
 }
 
-export function ReviewList({ reviews, isLoading }: ReviewListProps) {
+export function ReviewList({ reviews, isLoading, loadError }: ReviewListProps) {
   if (isLoading) {
     return <p className="helper-copy">Loading reviews…</p>;
+  }
+
+  if (loadError) {
+    return <p className="counter-error">{loadError}</p>;
   }
 
   if (reviews.length === 0) {
