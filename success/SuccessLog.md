@@ -54,11 +54,13 @@ Reserved for confirmed successful work after explicit user confirmation.
 
 ### Jul 4, 2026 - Official beaver logo and hero placement
 **Status:** SUCCESS
+**Commit:** 76ceb89
 **Files:** apps/site/public/*, apps/site/assets/official-logo-source.png, apps/site/scripts/process-official-logo.py, apps/site/src/components/Logo.tsx, apps/site/src/pages/LandingPage.tsx, apps/site/src/styles.css, apps/site/src/features/seo/data.ts, apps/site/index.html
 **Result:** Official blueprint beaver assets, favicons, hero HeroLogo above headline, og:image PNG; user confirmed via commit.
 
 ### Jul 4, 2026 - MCP npm and GitHub release packaging
 **Status:** SUCCESS
+**Commit:** 76ceb89 (partial); 45eb97b docs alignment
 **Files:** packages/*/package.json, packages/mcp-server/README.md, scripts/package-mcp-release.mjs, .github/workflows/release-desktop.yml, README.md, docs/USER_GUIDE.md
 **Result:** pack:mcp/publish:mcp scripts, publishConfig on packages, CI attaches MCP artifacts on release tags.
 
