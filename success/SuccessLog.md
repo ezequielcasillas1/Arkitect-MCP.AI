@@ -19,3 +19,9 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Commit:** 5e9140a
 **Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx, implementations.md, success/SuccessLog.md
 **Result:** USER_GUIDE and Instructions hero reframed as self-service; System Overview documents swappable reference stack; pushed to origin/master.
+
+### 2026-07-03 - Instructions sticky TOC sidebar
+**Status:** SUCCESS
+**Commit:** 2a5c99d
+**Files:** apps/site/src/styles.css, implementations.md
+**Result:** Sticky "On this page" sidebar fixed via overflow-x clip, reveal transform override, and guide-toc scroll constraints; pushed to origin/master.
