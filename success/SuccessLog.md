@@ -38,3 +38,9 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Commit:** c3ab81a
 **Files:** apps/site/public/_redirects, apps/site/public/favicon.ico, apps/site/public/favicon.svg, apps/site/index.html, apps/site/scripts/generate-favicon.mjs, apps/site/package.json, bugfixes.md
 **Result:** Static favicon rules before SPA catch-all; fixed favicon.svg; added favicon.ico and generate:favicon script; pushed to origin/master.
+
+### 2026-07-04 - New Logo Mark: Favicon + Navbar
+**Status:** SUCCESS
+**Commit:** ebbe2c2
+**Files:** apps/site/public/{arkitect-mark.png,arkitect-mark-nav.png,favicon.ico,favicon-16.png,favicon-32.png,apple-touch-icon.png,_redirects}, apps/site/scripts/{generate-favicon.py,extract-logo-mark.py}, apps/site/index.html, apps/site/package.json, apps/site/src/components/Logo.tsx, apps/site/src/styles.css, implementations.md
+**Result:** Wireframe A mark replaces SVG favicons and navbar logo; PNG favicon links with cache-bust; removed favicon.svg/apple-touch-icon.svg and generate-favicon.mjs; pushed to origin/master.
