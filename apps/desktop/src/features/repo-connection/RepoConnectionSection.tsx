@@ -8,6 +8,7 @@ import type {
   GitHubRepositoryOption,
   RepoInspection,
   SavedProjectProfile,
+  SavedWorkbenchPreset,
   WorkbenchIntakeApplyRequest
 } from "@arkitect/contracts";
 import { suggestProjectProfileNames } from "@arkitect/core";
@@ -61,6 +62,10 @@ interface RepoConnectionSectionProps {
   pendingMcpIntake?: WorkbenchIntakeApplyRequest | null;
   onApplyPendingMcpIntake?: () => void;
   onDismissPendingMcpIntake?: () => void;
+  workbenchPresets?: SavedWorkbenchPreset[];
+  onApplyWorkbenchPreset?: (presetId: string) => void;
+  onApplyAllTestSources?: () => void;
+  onSaveWorkbenchPreset?: (name: string) => void;
 }
 
 function getConnectionStatus(
@@ -172,9 +177,14 @@ export function RepoConnectionSection({
   mcpIntakeMessage,
   pendingMcpIntake,
   onApplyPendingMcpIntake,
-  onDismissPendingMcpIntake
+  onDismissPendingMcpIntake,
+  workbenchPresets = [],
+  onApplyWorkbenchPreset,
+  onApplyAllTestSources,
+  onSaveWorkbenchPreset
 }: RepoConnectionSectionProps) {
   const [profileName, setProfileName] = useState("");
+  const [workbenchPresetName, setWorkbenchPresetName] = useState("Testing for ARK");
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
   const [showPatFallback, setShowPatFallback] = useState(false);
   const [repoFilter, setRepoFilter] = useState("");
@@ -648,6 +658,76 @@ export function RepoConnectionSection({
           )}
         </article>
       </div>
+
+      <article className="panel-card section-spacer">
+        <div className="section-header compact-header">
+          <div>
+            <span className="metric-label">Workbench presets</span>
+            <p className="summary-copy">
+              Full automation presets prefill steps 1–6, run diagnosis + verify, and land on Results.
+            </p>
+          </div>
+        </div>
+
+        <div className="step-actions">
+          <button className="primary-button" onClick={onApplyAllTestSources} type="button">
+            Apply all test sources
+          </button>
+          {workbenchPresets.map((preset) => (
+            <button
+              className={preset.name === "Testing for ARK" ? "primary-button" : "secondary-button"}
+              key={preset.id}
+              onClick={() => onApplyWorkbenchPreset?.(preset.id)}
+              type="button"
+            >
+              Apply {preset.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="preset-form-row section-spacer">
+          <input
+            onChange={(event) => setWorkbenchPresetName(event.target.value)}
+            placeholder="Workbench preset name"
+            type="text"
+            value={workbenchPresetName}
+          />
+          <button
+            className="secondary-button"
+            onClick={() => {
+              if (!workbenchPresetName.trim()) {
+                return;
+              }
+
+              onSaveWorkbenchPreset?.(workbenchPresetName.trim());
+            }}
+            type="button"
+          >
+            Save current setup
+          </button>
+        </div>
+
+        {workbenchPresets.length === 0 ? (
+          <p className="summary-copy">No workbench presets saved yet. Use MCP interview or save the current setup.</p>
+        ) : (
+          <div className="preset-grid">
+            {workbenchPresets.map((preset) => (
+              <article className="preset-card" key={preset.id}>
+                <div className="preset-card-header">
+                  <strong>{preset.name}</strong>
+                  <span className="soft-pill">automation</span>
+                </div>
+                <p className="summary-copy">
+                  {preset.autoRun.diagnosis ? "Diagnosis" : "No diagnosis"}
+                  {preset.autoRun.verify ? " + verify" : ""}
+                  {preset.autoRun.advanceToResults ? " → Results" : ""}
+                </p>
+                <code className="preset-path">{preset.intake.repoPath ?? "No repo path"}</code>
+              </article>
+            ))}
+          </div>
+        )}
+      </article>
 
       <article className="panel-card section-spacer">
         <div className="section-header compact-header">

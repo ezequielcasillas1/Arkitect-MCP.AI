@@ -1,4 +1,4 @@
-import type { AiProviderId, DesktopLibraryState } from "@arkitect/contracts";
+import type { AiProviderCredentials, AiProviderId, DesktopLibraryState, DiagnosisIntake } from "@arkitect/contracts";
 import { createDefaultDesktopLibrary } from "@arkitect/core";
 
 const browserLibraryKey = "arkitect.desktop.library.v1";
@@ -25,6 +25,7 @@ function ensureLibraryShape(value: unknown): DesktopLibraryState {
       ? parsed.architectureProfiles
       : fallback.architectureProfiles,
     providerPresets: Array.isArray(parsed.providerPresets) ? parsed.providerPresets : fallback.providerPresets,
+    workbenchPresets: Array.isArray(parsed.workbenchPresets) ? parsed.workbenchPresets : fallback.workbenchPresets,
     lastOpenedRepoPath: parsed.lastOpenedRepoPath
   };
 }
@@ -78,6 +79,27 @@ export function loadAiSessionCredentials(): AiSessionCredentials {
   } catch {
     return {};
   }
+}
+
+export function resolveAiCredentials(input: {
+  intake: DiagnosisIntake;
+  cursorApiKey?: string;
+  providerKeys?: Partial<Record<AiProviderId, string>>;
+}): AiProviderCredentials {
+  const session = loadAiSessionCredentials();
+  const mergedProviderKeys = {
+    ...(session.providerKeys ?? {}),
+    ...Object.fromEntries(
+      Object.entries(input.providerKeys ?? {}).filter(([, value]) => Boolean(value?.trim()))
+    )
+  } as Partial<Record<AiProviderId, string>>;
+
+  return {
+    preferredProvider: input.intake.ai.preferredProvider,
+    modelName: input.intake.ai.modelName,
+    cursorApiKey: input.cursorApiKey?.trim() || session.cursorApiKey?.trim() || undefined,
+    providerKeys: mergedProviderKeys
+  };
 }
 
 export function saveAiSessionCredentials(credentials: AiSessionCredentials) {

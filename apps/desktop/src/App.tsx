@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import type {
   AiConnectionTestResult,
   AiProviderId,
@@ -20,10 +20,11 @@ import type {
   TestOverrideKind,
   TestOverrideRunResult,
   UserSignalInputs,
-  WorkbenchIntakeApplyRequest
+  WorkbenchIntakeApplyRequest,
+  WorkbenchAutomationPhase
 } from "@arkitect/contracts";
 import { buildDiagnosisFactsBundle } from "@arkitect/ai";
-import { buildRefactoringAnalysisResult, applyPartialIntakeToDraft, createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult } from "@arkitect/core";
+import { buildRefactoringAnalysisResult, applyPartialIntakeToDraft, applyRequestToWorkbenchPreset, createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult, runWorkbenchAutomationPipeline, resolveWorkbenchApplyRequest, upsertWorkbenchPreset, workbenchPresetToApplyRequest, buildTestingForArkApplyRequest } from "@arkitect/core";
 import { arkitectWindowsTheme, buildCssVariables } from "@arkitect/design-system";
 import { githubRouteToRepoInspection, validateGitHubTokenFormat } from "@arkitect/github";
 import { arkitectMcpServer, toDiagnosisMcpPayload, toRefactoringMcpPayload } from "@arkitect/mcp-server";
@@ -57,7 +58,14 @@ import {
   testAiConnectionViaBridge,
   type RuntimeShellInfo
 } from "./lib/desktop-bridge";
-import { createLocalId, loadAiSessionCredentials, loadBrowserLibrary, saveAiSessionCredentials, saveBrowserLibrary } from "./lib/library-persistence";
+import {
+  createLocalId,
+  loadAiSessionCredentials,
+  loadBrowserLibrary,
+  resolveAiCredentials,
+  saveAiSessionCredentials,
+  saveBrowserLibrary
+} from "./lib/library-persistence";
 import {
   clearPendingWorkbenchIntake,
   inferReviewFlagsFromIntake,
@@ -65,6 +73,8 @@ import {
   resolveWorkbenchAdvanceStep,
   subscribeWorkbenchIntake
 } from "./lib/workbench-intake-bridge";
+import { getHighestNavigableIndex, shouldClampActiveStep } from "./lib/workbench-navigation";
+import { loadMcpConnectionState } from "./lib/mcp-bridge";
 
 interface FieldPatch {
   hint?: string;
@@ -155,26 +165,6 @@ function isRepoReady(routeSource: DiagnosisIntake["routeSource"], inspection?: R
   return Boolean(
     inspection?.source === routeSource && inspection.exists && inspection.isDirectory && inspection.validationErrors.length === 0
   );
-}
-
-function getHighestNavigableIndex(
-  repoReady: boolean,
-  settingsReviewed: boolean,
-  hasResults: boolean
-): number {
-  if (hasResults) {
-    return 6;
-  }
-
-  if (settingsReviewed) {
-    return 5;
-  }
-
-  if (repoReady) {
-    return 3;
-  }
-
-  return 0;
 }
 
 function getStepLockReason(
@@ -283,6 +273,8 @@ export function App() {
   const [selectedRepoFullName, setSelectedRepoFullName] = useState("");
   const [mcpIntakeMessage, setMcpIntakeMessage] = useState("");
   const [pendingMcpIntake, setPendingMcpIntake] = useState<WorkbenchIntakeApplyRequest | null>(null);
+  const [automationPhase, setAutomationPhase] = useState<WorkbenchAutomationPhase>("idle");
+  const [automationMessage, setAutomationMessage] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -467,10 +459,18 @@ export function App() {
   useEffect(() => {
     const activeIndex = stepOrder.findIndex((step) => step.id === activeStep);
 
-    if (activeIndex > highestNavigableIndex && activeStep !== "mcp-connection") {
+    if (
+      shouldClampActiveStep({
+        activeStep,
+        activeIndex,
+        highestNavigableIndex,
+        automationPhase,
+        hasRunOutput: hasResults
+      })
+    ) {
       setActiveStep(stepOrder[highestNavigableIndex].id);
     }
-  }, [activeStep, highestNavigableIndex]);
+  }, [activeStep, highestNavigableIndex, automationPhase, hasResults]);
 
   const sidebarSteps = useMemo<FlowSidebarStep[]>(
     () =>
@@ -539,9 +539,15 @@ export function App() {
     });
   }
 
-  async function applyMcpWorkbenchIntake(payload: WorkbenchIntakeApplyRequest) {
-    const partial = payload.intake;
-    const reviewFlags = inferReviewFlagsFromIntake(partial, payload.markStepsReviewed);
+  async function applyWorkbenchPayload(payload: WorkbenchIntakeApplyRequest) {
+    const resolvedPayload = resolveWorkbenchApplyRequest(payload);
+    const partial = resolvedPayload.intake;
+    const mcpState = await loadMcpConnectionState();
+    const mcpSessionConnected = mcpState.status === "connected" && mcpState.path === "external";
+    const reviewFlags = inferReviewFlagsFromIntake(partial, resolvedPayload.markStepsReviewed, mcpSessionConnected);
+
+    setAutomationPhase("prefilling");
+    setAutomationMessage("Prefilling workbench from your preferences…");
 
     if (partial.routeSource) {
       setRepoConnectionMode(partial.routeSource);
@@ -551,6 +557,7 @@ export function App() {
       setRepoSummaryTouched(true);
     }
 
+    let workingIntake = applyPartialIntakeToDraft(draft, partial);
     let repoReadyAfterApply = false;
 
     if (partial.routeSource === "github-api" && partial.githubRoute) {
@@ -561,27 +568,40 @@ export function App() {
       setGithubRepo(route.target.repo);
       setGithubBranch(route.target.branch);
       setSelectedRepoFullName(route.target.fullName);
-      setDraft((current) => ({
-        ...applyPartialIntakeToDraft(current, partial),
+      workingIntake = {
+        ...applyPartialIntakeToDraft(workingIntake, partial),
         repoInspection: inspection
-      }));
+      };
+      setDraft(workingIntake);
       setGithubConnection({
         status: "success",
-        message: `Loaded ${route.target.fullName} from MCP interview.`
+        message: `Loaded ${route.target.fullName} from workbench automation.`
       });
       repoReadyAfterApply = isRepoReady("github-api", inspection);
     } else {
       resetGitHubFeedback();
-      setDraft((current) => applyPartialIntakeToDraft(current, partial));
+      setDraft(workingIntake);
 
       if (partial.repoInspection) {
+        workingIntake = { ...workingIntake, repoInspection: partial.repoInspection };
+        setDraft(workingIntake);
         repoReadyAfterApply = isRepoReady("local-path", partial.repoInspection);
       } else {
         const path = partial.repoPath?.trim() || draft.repoPath;
 
         if (path) {
-          await inspectRepoPath(path, false, true);
-          repoReadyAfterApply = true;
+          const inspection = await inspectRepoPath(path, false, true);
+          workingIntake = {
+            ...workingIntake,
+            routeSource: "local-path",
+            repoPath: inspection.path,
+            repoName: inspection.repoName,
+            githubRoute: undefined,
+            repoInspection: inspection,
+            repoSummary: repoSummaryTouched ? workingIntake.repoSummary : inspection.summary
+          };
+          setDraft(workingIntake);
+          repoReadyAfterApply = isRepoReady("local-path", inspection);
         }
       }
     }
@@ -598,23 +618,165 @@ export function App() {
       setSettingsReviewed(true);
     }
 
-    setActiveStep(
-      resolveWorkbenchAdvanceStep({
-        advanceToStep: payload.advanceToStep,
-        repoReady: repoReadyAfterApply,
-        profileReviewed: Boolean(reviewFlags.profile),
-        policyReviewed: Boolean(reviewFlags.policy),
-        settingsReviewed: Boolean(reviewFlags.settings)
-      })
-    );
+    if (resolvedPayload.saveAsPreset?.trim()) {
+      setLibrary((current) =>
+        upsertWorkbenchPreset(
+          current,
+          applyRequestToWorkbenchPreset(resolvedPayload, resolvedPayload.saveAsPreset!.trim(), createLocalId),
+          current.workbenchPresets.find(
+            (preset) => preset.name.toLowerCase() === resolvedPayload.saveAsPreset!.trim().toLowerCase()
+          )?.id
+        )
+      );
+    }
 
+    const autoRun = resolvedPayload.autoRun ?? {};
+    const hasAutomation = Boolean(autoRun.diagnosis || autoRun.verify || autoRun.advanceToResults);
+
+    if (!hasAutomation) {
+      setActiveStep(
+        resolveWorkbenchAdvanceStep({
+          advanceToStep: resolvedPayload.advanceToStep,
+          repoReady: repoReadyAfterApply,
+          profileReviewed: Boolean(reviewFlags.profile),
+          policyReviewed: Boolean(reviewFlags.policy),
+          settingsReviewed: Boolean(reviewFlags.settings)
+        })
+      );
+      setMcpIntakeMessage(
+        resolvedPayload.source === "mcp-tool"
+          ? "Workbench prefilled from MCP apply_workbench_intake."
+          : "Workbench prefilled from Cursor MCP interview."
+      );
+      setAutomationPhase("complete");
+      setAutomationMessage("");
+      setPendingMcpIntake(null);
+      await clearPendingWorkbenchIntake();
+      return;
+    }
+
+    const automationRepoPath =
+      workingIntake.routeSource === "local-path"
+        ? workingIntake.repoPath
+        : workingIntake.repoInspection?.path ?? workingIntake.repoPath;
+
+    let aiConnectionFailureMessage = "";
+
+    const pipelineResult = await runWorkbenchAutomationPipeline(resolvedPayload, reviewFlags, {
+      testAiConnection: async () => {
+        setAutomationPhase("testing-ai");
+        setAutomationMessage("Testing Composer connection from saved session key…");
+
+        const credentials = buildAiCredentials(workingIntake);
+        const sessionKey = loadAiSessionCredentials().cursorApiKey?.trim();
+
+        if (!cursorApiKey.trim() && sessionKey) {
+          setCursorApiKey(sessionKey);
+        }
+
+        if (credentials.preferredProvider === "composer-2.5" && !credentials.cursorApiKey?.trim()) {
+          aiConnectionFailureMessage = "Cursor API Key is required for Composer diagnosis.";
+          setSettingsReviewed(false);
+          return false;
+        }
+
+        const runtime = shellInfo?.runtime ?? "browser";
+        const result = await testAiConnectionViaBridge(credentials, runtime);
+
+        setAiConnection({
+          status: result.connected ? "connected" : "error",
+          message: result.message,
+          lastResult: result
+        });
+
+        if (result.connected) {
+          setSettingsReviewed(true);
+        } else {
+          aiConnectionFailureMessage = result.message;
+          setSettingsReviewed(false);
+        }
+
+        return result.connected;
+      },
+      runDiagnosis: async () => {
+        setAutomationPhase("running-diagnosis");
+        setAutomationMessage("Running diagnosis…");
+        await runDiagnosis({ advanceToResults: !autoRun.verify, intake: workingIntake });
+      },
+      runVerify: async () => {
+        setAutomationPhase("running-verify");
+        setAutomationMessage("Running codebase verify…");
+        return runCodebaseVerify({
+          advanceToResults: Boolean(autoRun.advanceToResults),
+          repoPath: automationRepoPath
+        });
+      },
+      goToStep: (step) => {
+        if (step) {
+          setActiveStep(step);
+        }
+      }
+    });
+
+    setAutomationPhase(pipelineResult.phase);
+    setAutomationMessage(aiConnectionFailureMessage || pipelineResult.message);
     setMcpIntakeMessage(
-      payload.source === "mcp-tool"
-        ? "Workbench prefilled from MCP apply_workbench_intake."
-        : "Workbench prefilled from Cursor MCP interview."
+      pipelineResult.ok
+        ? "Workbench automation completed through Results."
+        : aiConnectionFailureMessage || pipelineResult.message
     );
     setPendingMcpIntake(null);
     await clearPendingWorkbenchIntake();
+  }
+
+  async function applyAllTestSourcesAutoFill() {
+    await applyWorkbenchPayload(buildTestingForArkApplyRequest());
+  }
+
+  async function applyMcpWorkbenchIntake(payload: WorkbenchIntakeApplyRequest) {
+    await applyWorkbenchPayload(payload);
+  }
+
+  async function applyWorkbenchPresetById(presetId: string) {
+    const preset = library.workbenchPresets.find((item) => item.id === presetId);
+
+    if (!preset) {
+      return;
+    }
+
+    await applyWorkbenchPayload(workbenchPresetToApplyRequest(preset));
+  }
+
+  async function saveCurrentWorkbenchPreset(name: string) {
+    const trimmed = name.trim();
+
+    if (!trimmed) {
+      return;
+    }
+
+    const payload: WorkbenchIntakeApplyRequest = {
+      source: "cursor-interview",
+      intake: draft,
+      markStepsReviewed: {
+        profile: profileReviewed,
+        policy: policyReviewed,
+        settings: settingsReviewed,
+        mcp: true
+      },
+      autoRun: {
+        diagnosis: true,
+        verify: true,
+        advanceToResults: true
+      }
+    };
+
+    setLibrary((current) =>
+      upsertWorkbenchPreset(
+        current,
+        applyRequestToWorkbenchPreset(payload, trimmed, createLocalId),
+        current.workbenchPresets.find((preset) => preset.name.toLowerCase() === trimmed.toLowerCase())?.id
+      )
+    );
   }
 
   async function hydratePendingMcpIntake() {
@@ -812,6 +974,8 @@ export function App() {
       if (advanceStep && isRepoReady("local-path", inspection)) {
         setActiveStep("project-profile");
       }
+
+      return inspection;
     } finally {
       setInspectionBusy(false);
     }
@@ -1049,26 +1213,25 @@ export function App() {
     }
   }
 
-  function buildAiCredentials() {
-    return {
-      preferredProvider: draft.ai.preferredProvider,
-      modelName: draft.ai.modelName,
-      cursorApiKey: cursorApiKey.trim() || undefined,
-      providerKeys: Object.fromEntries(
-        Object.entries(providerKeys).filter(([, value]) => Boolean(value?.trim()))
-      ) as Partial<Record<AiProviderId, string>>
-    };
+  function buildAiCredentials(intake: DiagnosisIntake = draft) {
+    return resolveAiCredentials({ intake, cursorApiKey, providerKeys });
   }
 
-  async function testAiConnection() {
+  async function testAiConnection(intake: DiagnosisIntake = draft) {
     const runtime = shellInfo?.runtime ?? "browser";
+    const credentials = buildAiCredentials(intake);
+    const sessionKey = loadAiSessionCredentials().cursorApiKey?.trim();
+
+    if (!cursorApiKey.trim() && sessionKey) {
+      setCursorApiKey(sessionKey);
+    }
 
     setAiConnection({
       status: "testing",
       message: "Validating provider connection…"
     });
 
-    const result = await testAiConnectionViaBridge(buildAiCredentials(), runtime);
+    const result = await testAiConnectionViaBridge(credentials, runtime);
 
     setAiConnection({
       status: result.connected ? "connected" : "error",
@@ -1077,24 +1240,25 @@ export function App() {
     });
   }
 
-  async function runDiagnosis() {
+  async function runDiagnosis(options?: { advanceToResults?: boolean; intake?: DiagnosisIntake }) {
     setDiagnosisBusy(true);
 
     try {
-      const baseline = createDiagnosisResult(draft, createMockAutoDetections(draft));
+      const intake = options?.intake ?? draft;
+      const baseline = createDiagnosisResult(intake, createMockAutoDetections(intake));
       const runtime = shellInfo?.runtime ?? "browser";
-      const credentials = buildAiCredentials();
+      const credentials = buildAiCredentials(intake);
       const facts = buildDiagnosisFactsBundle(baseline);
-      const localRepoPath =
-        draft.routeSource === "local-path"
-          ? draft.repoPath
-          : draft.repoInspection?.path ?? draft.repoPath;
+      const localRepoPathForRun =
+        intake.routeSource === "local-path"
+          ? intake.repoPath
+          : intake.repoInspection?.path ?? intake.repoPath;
 
       const aiResult = await runAiDiagnosisViaBridge(
         {
           facts,
           credentials,
-          repoPath: localRepoPath
+          repoPath: localRepoPathForRun
         },
         runtime
       );
@@ -1109,7 +1273,10 @@ export function App() {
       setSettingsReviewed(true);
       setLastRun(runResult);
       setLastRunAt(new Date().toISOString());
-      setActiveStep("results-overview");
+
+      if (options?.advanceToResults !== false) {
+        setActiveStep("results-overview");
+      }
 
       if (aiResult.enrichment?.status === "success" && aiConnection.status !== "connected") {
         setAiConnection({
@@ -1152,20 +1319,27 @@ export function App() {
     }
   }
 
-  async function runCodebaseVerify() {
-    if (!canVerify) {
-      return;
+  async function runCodebaseVerify(options?: { advanceToResults?: boolean; repoPath?: string }) {
+    const targetRepoPath = options?.repoPath ?? localRepoPath;
+
+    if (!targetRepoPath.trim()) {
+      return false;
     }
 
     setVerifyBusy(true);
 
     try {
       const runtime = shellInfo?.runtime ?? "browser";
-      const result = await runCodebaseVerifyViaBridge({ repoPath: localRepoPath }, runtime);
+      const result = await runCodebaseVerifyViaBridge({ repoPath: targetRepoPath }, runtime);
 
       setLastVerifyResult(result);
       setLastVerifyAt(new Date().toISOString());
-      setActiveStep("results-overview");
+
+      if (options?.advanceToResults !== false) {
+        setActiveStep("results-overview");
+      }
+
+      return result.ok;
     } finally {
       setVerifyBusy(false);
     }
@@ -1188,12 +1362,15 @@ export function App() {
     void window.arkitectDesktop?.setMcpDefaultRepoPath?.(draft.repoPath);
   }, [draft.repoPath, draft.routeSource]);
 
+  const applyWorkbenchPayloadRef = useRef(applyWorkbenchPayload);
+  applyWorkbenchPayloadRef.current = applyWorkbenchPayload;
+
   useEffect(() => {
     void hydratePendingMcpIntake();
 
     const unsubscribe = subscribeWorkbenchIntake((payload) => {
       setPendingMcpIntake(payload);
-      void applyMcpWorkbenchIntake(payload);
+      void applyWorkbenchPayloadRef.current(payload);
     });
 
     return unsubscribe;
@@ -1249,6 +1426,15 @@ export function App() {
               <span className={`status-pill ${libraryStatus === "error" ? "status-attention" : "status-visible"}`}>
                 Library {libraryStatus}
               </span>
+              {automationPhase !== "idle" ? (
+                <span
+                  className={`status-pill ${
+                    automationPhase === "blocked" ? "status-attention" : "status-visible"
+                  }`}
+                >
+                  {automationMessage || automationPhase}
+                </span>
+              ) : null}
             </div>
           </header>
 
@@ -1428,6 +1614,10 @@ export function App() {
                 setPendingMcpIntake(null);
                 void clearPendingWorkbenchIntake();
               }}
+              workbenchPresets={library.workbenchPresets}
+              onApplyWorkbenchPreset={(presetId) => void applyWorkbenchPresetById(presetId)}
+              onApplyAllTestSources={() => void applyAllTestSourcesAutoFill()}
+              onSaveWorkbenchPreset={(name) => void saveCurrentWorkbenchPreset(name)}
             />
           ) : null}
 

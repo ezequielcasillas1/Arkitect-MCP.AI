@@ -5,18 +5,22 @@ import type {
   AiDiagnosisFactsBundle,
   AiProviderCredentials
 } from "@arkitect/contracts";
-import {
-  buildDiagnosisPrompt,
-  createErrorEnrichment,
-  mergeAiEnrichment,
-  parseAiDiagnosisResponse,
-  resolveCursorModelId
-} from "@arkitect/ai";
+import { resolveCursorModelId, createErrorEnrichment } from "@arkitect/ai";
+import { listCursorModelsViaRest, resolveCursorModelFromList } from "./cursor-rest-client.js";
+import { runCursorDiagnosisViaWorker } from "./cursor-sdk-spawn.js";
 
 function mapCursorError(error: unknown): { code: AiConnectionErrorCode; message: string } {
   const message = error instanceof Error ? error.message : "Cursor SDK request failed.";
 
-  if (/auth|api key|unauthorized|401|403/i.test(message)) {
+  if (/bindings file|node_sqlite3/i.test(message)) {
+    return {
+      code: "provider_error",
+      message:
+        "Cursor SDK native dependency is missing. Run pnpm install from the repo root, then restart Arkitect Desktop."
+    };
+  }
+
+  if (/auth|api key|unauthorized|401|403|invalid cursor api key/i.test(message)) {
     return { code: "invalid_key", message };
   }
 
@@ -31,10 +35,6 @@ function mapCursorError(error: unknown): { code: AiConnectionErrorCode; message:
   return { code: "provider_error", message };
 }
 
-function extractAssistantText(result: { result?: string | null; status?: string }): string {
-  return result.result?.trim() ?? "";
-}
-
 export async function testCursorConnection(
   credentials: AiProviderCredentials,
   apiKey: string
@@ -43,11 +43,10 @@ export async function testCursorConnection(
   const modelId = resolveCursorModelId(credentials.modelName);
 
   try {
-    const { Cursor } = await import("@cursor/sdk");
-    const models = await Cursor.models.list({ apiKey });
-    const resolved = models.find((model) => model.id === modelId) ?? models.find((model) => model.id.includes("composer"));
+    const models = await listCursorModelsViaRest(apiKey);
+    const resolvedModelId = resolveCursorModelFromList(models, modelId);
 
-    if (!resolved) {
+    if (!resolvedModelId) {
       return {
         ok: false,
         connected: false,
@@ -64,8 +63,8 @@ export async function testCursorConnection(
       connected: true,
       provider: credentials.preferredProvider,
       modelName: credentials.modelName,
-      resolvedModelId: resolved.id,
-      message: `Connected to Cursor. Model ${resolved.id} is available.`,
+      resolvedModelId,
+      message: `Connected to Cursor. Model ${resolvedModelId} is available.`,
       latencyMs: Date.now() - started
     };
   } catch (error) {
@@ -89,52 +88,21 @@ export async function runCursorDiagnosis(
   apiKey: string,
   repoPath: string
 ): Promise<AiDiagnosisEnrichment> {
-  const started = Date.now();
-  const modelId = resolveCursorModelId(credentials.modelName);
-  const prompt = buildDiagnosisPrompt(facts);
-
   try {
-    const { Agent } = await import("@cursor/sdk");
-    const result = await Agent.prompt(prompt, {
+    return await runCursorDiagnosisViaWorker({
+      facts,
+      credentials,
       apiKey,
-      model: { id: modelId },
-      local: { cwd: repoPath }
-    });
-
-    if (result.status === "error") {
-      return createErrorEnrichment(
-        credentials.preferredProvider,
-        credentials.modelName,
-        "provider_error",
-        "Cursor agent run failed before producing a diagnosis."
-      );
-    }
-
-    const raw = extractAssistantText(result);
-    const parsed = parseAiDiagnosisResponse(raw);
-
-    if (!parsed) {
-      return createErrorEnrichment(
-        credentials.preferredProvider,
-        credentials.modelName,
-        "parse_error",
-        "Could not parse AI diagnosis JSON from model response."
-      );
-    }
-
-    return mergeAiEnrichment(facts.ruleDecision.warnings, facts.ruleDecision.nextSteps, {
-      status: "success",
-      provider: credentials.preferredProvider,
-      modelName: credentials.modelName,
-      summary: parsed.summary,
-      reasoning: parsed.reasoning,
-      nextActions: parsed.nextActions,
-      latencyMs: Date.now() - started,
-      generatedAt: new Date().toISOString()
+      repoPath
     });
   } catch (error) {
     const mapped = mapCursorError(error);
 
-    return createErrorEnrichment(credentials.preferredProvider, credentials.modelName, mapped.code, mapped.message);
+    return createErrorEnrichment(
+      credentials.preferredProvider,
+      credentials.modelName,
+      mapped.code,
+      mapped.message
+    );
   }
 }

@@ -5,5 +5,5 @@ allowBuilds:
   electron-winstaller: true
   esbuild: true
   sharp: true
-  sqlite3: false
+  sqlite3: true
   workerd: true

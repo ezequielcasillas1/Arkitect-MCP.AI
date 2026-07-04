@@ -133,9 +133,11 @@ export async function registerWithDesktopBridge(input: {
   }
 
   if (!manifest) {
-    console.error(
-      "[arkitect-mcp] Desktop bridge registration timed out. Start Arkitect Desktop first, then reload MCP tools."
-    );
+    if (process.env.ARKITECT_DEBUG_BRIDGE === "1") {
+      console.error(
+        "[arkitect-mcp] Desktop bridge registration timed out. Start Arkitect Desktop first, then reload MCP tools."
+      );
+    }
     return null;
   }
 

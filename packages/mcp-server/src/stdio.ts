@@ -28,12 +28,24 @@ async function main() {
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({
-    tools: arkitect.tools.map(({ name, description, inputSchema, outputSchema }) => ({
-      name,
-      description,
-      inputSchema,
-      outputSchema
-    }))
+    tools: arkitect.tools.map(({ name, description, inputSchema, outputSchema }) => {
+      const tool: {
+        name: string;
+        description: string;
+        inputSchema: Record<string, unknown>;
+        outputSchema?: Record<string, unknown>;
+      } = {
+        name,
+        description,
+        inputSchema
+      };
+
+      if (process.env.ARKITECT_INCLUDE_OUTPUT_SCHEMA === "1") {
+        tool.outputSchema = outputSchema;
+      }
+
+      return tool;
+    })
   }));
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
@@ -72,18 +84,16 @@ async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  void registerWithDesktopBridge({
-    serverName: arkitect.info.name,
-    serverVersion: arkitect.info.version,
-    tools: arkitect.tools.map(({ name, description }) => ({ name, description })),
-    resources: arkitect.resources.map(({ uri, name, description }) => ({ name, description, uri }))
-  }).then((registration) => {
-    if (registration) {
-      console.error(
-        `[arkitect-mcp] Registered with desktop bridge (session ${registration.sessionId}).`
-      );
-    }
-  });
+  if (process.env.ARKITECT_SKIP_DESKTOP_BRIDGE !== "1") {
+    setTimeout(() => {
+      void registerWithDesktopBridge({
+        serverName: arkitect.info.name,
+        serverVersion: arkitect.info.version,
+        tools: arkitect.tools.map(({ name, description }) => ({ name, description })),
+        resources: arkitect.resources.map(({ uri, name, description }) => ({ name, description, uri }))
+      });
+    }, 500);
+  }
 }
 
 main().catch((error) => {

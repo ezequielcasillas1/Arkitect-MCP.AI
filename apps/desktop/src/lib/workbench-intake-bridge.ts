@@ -62,10 +62,14 @@ export function resolveWorkbenchAdvanceStep(input: {
 
 export function inferReviewFlagsFromIntake(
   intake: WorkbenchIntakeApplyRequest["intake"],
-  explicit?: WorkbenchIntakeReviewFlags
+  explicit?: WorkbenchIntakeReviewFlags,
+  mcpSessionConnected = false
 ): WorkbenchIntakeReviewFlags {
   if (explicit) {
-    return explicit;
+    return {
+      ...explicit,
+      mcp: explicit.mcp ?? (mcpSessionConnected ? true : explicit.mcp)
+    };
   }
 
   const hasProfileSignals = Boolean(intake.userInput && Object.keys(intake.userInput).length > 0);
@@ -80,6 +84,7 @@ export function inferReviewFlagsFromIntake(
   return {
     profile: hasProfileSignals,
     policy: hasPolicySignals,
-    settings: hasSettingsSignals
+    settings: hasSettingsSignals,
+    mcp: mcpSessionConnected
   };
 }

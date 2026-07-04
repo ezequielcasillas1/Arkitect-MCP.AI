@@ -24,8 +24,11 @@ import {
   createDiagnosisSignals,
   mergeDiagnosisIntake,
   runCodebaseVerification,
-  runRepoTests
+  runRepoTests,
+  buildTestingForArkApplyRequest,
+  resolveWorkbenchApplyRequest
 } from "@arkitect/core";
+import { normalizeWorkbenchIntakeRequest } from "./workbench-intake-normalize.js";
 import { postWorkbenchIntake } from "./desktop-bridge-client.js";
 import { MockRepositoryAnalyzer } from "@arkitect/repo-analyzer";
 import { toDiagnosisMcpPayload } from "./diagnosis-payload.js";
@@ -46,28 +49,6 @@ let lastRefactoringAnalysis: ReturnType<typeof toRefactoringMcpPayload> | null =
 
 function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake {
   return mergeDiagnosisIntake(partial);
-}
-
-function normalizeWorkbenchIntakeRequest(input: Record<string, unknown>): WorkbenchIntakeApplyRequest {
-  if (input.intake && typeof input.intake === "object") {
-    return input as WorkbenchIntakeApplyRequest;
-  }
-
-  const {
-    markStepsReviewed,
-    advanceToStep,
-    source,
-    sessionId,
-    ...intakeFields
-  } = input;
-
-  return {
-    source: source as WorkbenchIntakeApplyRequest["source"],
-    sessionId: typeof sessionId === "string" ? sessionId : undefined,
-    advanceToStep: advanceToStep as WorkbenchIntakeApplyRequest["advanceToStep"],
-    markStepsReviewed: markStepsReviewed as WorkbenchIntakeApplyRequest["markStepsReviewed"],
-    intake: intakeFields as Partial<DiagnosisIntake>
-  };
 }
 
 function toArchitectureCatalogPayload(): CatalogMcpPayload<ArchitectureCatalogEntry> {
@@ -226,7 +207,7 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
       return createJsonToolResult(result);
     },
     apply_workbench_intake: async (input) => {
-      const request = normalizeWorkbenchIntakeRequest(input as Record<string, unknown>);
+      const request = resolveWorkbenchApplyRequest(normalizeWorkbenchIntakeRequest(input as Record<string, unknown>));
       const merged = mergeIntake(request.intake);
       const bridgeResponse = await postWorkbenchIntake({
         ...request,
@@ -250,12 +231,16 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
           userInput: merged.userInput
         },
         markStepsReviewed: request.markStepsReviewed,
+        autoRun: request.autoRun,
+        saveAsPreset: request.saveAsPreset,
         advanceToStep: request.advanceToStep,
+        examplePreset: buildTestingForArkApplyRequest(),
         cursorGuidance: bridgeResponse.ok
           ? [
               "Desktop workbench intake applied. Review prefilled steps in Arkitect Desktop.",
-              "Confirm repo inspection on Connect Repo before running diagnosis.",
-              "API keys on AI / Execution still require manual entry unless already saved."
+              "When autoRun is enabled, Desktop runs diagnosis + verify and lands on Results.",
+              "API keys are read from Desktop session storage only — never send keys via MCP.",
+              "Use saveAsPreset to persist a reusable workbench preset such as Testing for ARK."
             ]
           : [
               "Start Arkitect Desktop and keep the MCP bridge listening, then retry apply_workbench_intake.",

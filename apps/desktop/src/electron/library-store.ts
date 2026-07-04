@@ -22,6 +22,7 @@ function ensureLibraryShape(value: unknown): DesktopLibraryState {
       ? parsed.architectureProfiles
       : fallback.architectureProfiles,
     providerPresets: Array.isArray(parsed.providerPresets) ? parsed.providerPresets : fallback.providerPresets,
+    workbenchPresets: Array.isArray(parsed.workbenchPresets) ? parsed.workbenchPresets : fallback.workbenchPresets,
     lastOpenedRepoPath: parsed.lastOpenedRepoPath
   };
 }

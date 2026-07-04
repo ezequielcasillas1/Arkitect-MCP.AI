@@ -55,6 +55,15 @@ describe("createArkitectMcpServer", () => {
     expect(toolNames).toContain("list_refactoring_techniques");
     expect(toolNames).toContain("apply_workbench_intake");
   });
+
+  it("accepts autoRun on apply_workbench_intake schema", () => {
+    const server = createArkitectMcpServer();
+    const tool = server.tools.find((entry) => entry.name === "apply_workbench_intake");
+
+    expect(tool).toBeDefined();
+    expect(JSON.stringify(tool!.inputSchema)).toContain("autoRun");
+    expect(JSON.stringify(tool!.inputSchema)).toContain("saveAsPreset");
+  });
 });
 
 describe("diagnose_repository tool", () => {

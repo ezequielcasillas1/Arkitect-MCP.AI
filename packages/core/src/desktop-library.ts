@@ -1,6 +1,13 @@
-import type { DesktopLibraryState, SavedArchitectureProfile, SavedProviderPreset } from "@arkitect/contracts";
+import type {
+  DesktopLibraryState,
+  SavedArchitectureProfile,
+  SavedProviderPreset,
+  SavedWorkbenchPreset,
+  SavedWorkbenchPresetInput
+} from "@arkitect/contracts";
+import { createDefaultIntake } from "./diagnosis-result.js";
 
-export const desktopLibraryVersion = 1;
+export const desktopLibraryVersion = 2;
 
 function timestamp() {
   return new Date().toISOString();
@@ -58,6 +65,45 @@ function createStarterProviderPresets(now: string): SavedProviderPreset[] {
   ];
 }
 
+function createStarterWorkbenchPresets(now: string): SavedWorkbenchPreset[] {
+  const intake = createDefaultIntake("C:\\Dev\\Arkitect-mcp.com");
+
+  return [
+    {
+      id: "starter-testing-for-ark",
+      name: "Testing for ARK",
+      intake: {
+        routeSource: "local-path",
+        repoPath: intake.repoPath,
+        repoName: intake.repoName,
+        repoSummary: intake.repoSummary,
+        requestedOutcome: intake.requestedOutcome,
+        executionPermission: "apply-structural-changes",
+        userInput: intake.userInput,
+        catalogPreferences: intake.catalogPreferences,
+        ai: {
+          ...intake.ai,
+          preferredProvider: "composer-2.5",
+          modelName: "composer-2.5"
+        }
+      },
+      markStepsReviewed: {
+        profile: true,
+        policy: true,
+        settings: true,
+        mcp: true
+      },
+      autoRun: {
+        diagnosis: true,
+        verify: true,
+        advanceToResults: true
+      },
+      createdAt: now,
+      updatedAt: now
+    }
+  ];
+}
+
 export function createDefaultDesktopLibrary(): DesktopLibraryState {
   const now = timestamp();
 
@@ -65,6 +111,7 @@ export function createDefaultDesktopLibrary(): DesktopLibraryState {
     version: desktopLibraryVersion,
     projectProfiles: [],
     architectureProfiles: createStarterArchitectureProfiles(now),
-    providerPresets: createStarterProviderPresets(now)
+    providerPresets: createStarterProviderPresets(now),
+    workbenchPresets: createStarterWorkbenchPresets(now)
   };
 }

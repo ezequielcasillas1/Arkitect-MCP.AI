@@ -140,7 +140,10 @@ export const refactoringAnalysisOutputSchema = {
 export const workbenchIntakeInputSchema = {
   type: "object",
   properties: {
-    intake: diagnosisToolInputSchema,
+    intake: {
+      type: "object",
+      properties: diagnosisToolInputSchema.properties
+    },
     repoPath: { type: "string" },
     repoName: { type: "string" },
     repoSummary: { type: "string" },
@@ -154,15 +157,36 @@ export const workbenchIntakeInputSchema = {
       type: "string",
       enum: ["read-only", "generate-plan", "propose-changes", "apply-safe-changes", "apply-structural-changes"]
     },
-    catalogPreferences: diagnosisToolInputSchema.properties.catalogPreferences,
+    catalogPreferences: {
+      type: "object",
+      properties: {
+        selectedRemixId: { type: "string" },
+        complexityProfile: { type: "string" },
+        requirementTags: { type: "array", items: { type: "string" } }
+      }
+    },
     userInput: { type: "object" },
     markStepsReviewed: {
       type: "object",
       properties: {
         profile: { type: "boolean" },
         policy: { type: "boolean" },
-        settings: { type: "boolean" }
+        settings: { type: "boolean" },
+        mcp: { type: "boolean" }
       }
+    },
+    autoRun: {
+      type: "object",
+      properties: {
+        diagnosis: { type: "boolean" },
+        verify: { type: "boolean" },
+        advanceToResults: { type: "boolean" }
+      }
+    },
+    saveAsPreset: { type: "string" },
+    applyAllTestSources: {
+      type: "boolean",
+      description: "Merge the canonical Testing for ARK full automation config (prefill + diagnosis + verify + Results)."
     },
     advanceToStep: {
       type: "string",
@@ -336,7 +360,7 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
     {
       name: "apply_workbench_intake",
       description:
-        "Push interview-gathered diagnosis intake into the Arkitect Desktop workbench. Requires Arkitect Desktop running with the local bridge active.",
+        "Push interview-gathered diagnosis intake into the Arkitect Desktop workbench. Supports autoRun (diagnosis, verify, results) and saveAsPreset. Requires Arkitect Desktop running with the local bridge active.",
       inputSchema: workbenchIntakeInputSchema,
       outputSchema: workbenchIntakeOutputSchema
     }

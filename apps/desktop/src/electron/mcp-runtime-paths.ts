@@ -43,7 +43,21 @@ export function resolveMcpStdioPath(): string {
 }
 
 export function resolveMcpNodeCommand(): string {
-  return app.isPackaged ? process.execPath : "node";
+  if (app.isPackaged) {
+    return process.execPath;
+  }
+
+  if (process.platform === "win32") {
+    const candidates = [
+      process.env.ARKITECT_NODE_PATH,
+      "C:\\Program Files\\nodejs\\node.exe",
+      "C:\\Program Files (x86)\\nodejs\\node.exe"
+    ].filter(Boolean) as string[];
+
+    return candidates.find((candidate) => existsSync(candidate)) ?? "node";
+  }
+
+  return "node";
 }
 
 export function withMcpNodeSpawnEnv(env: Record<string, string> = {}): Record<string, string> {

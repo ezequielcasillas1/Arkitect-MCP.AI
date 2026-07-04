@@ -1,8 +1,9 @@
 import type { AiProviderId } from "./ai.js";
 import type { ArchitectureCatalogId, ComplexityProfile, RemixProfileId } from "./catalog.js";
-import type { RepoInspection } from "./diagnosis.js";
-import type { DiagnosisRouteSource, ExecutionPermission, UserSignalInputs } from "./taxonomy.js";
+import type { DiagnosisIntake, RepoInspection } from "./diagnosis.js";
 import type { GitHubRoutePayload } from "./github.js";
+import type { DiagnosisRouteSource, ExecutionPermission, UserSignalInputs } from "./taxonomy.js";
+import type { WorkbenchAutoRunFlags, WorkbenchIntakeReviewFlags } from "./workbench-intake.js";
 
 export type ProfileNameSuggestionSource = "repo-inspection" | "route-context" | "stack-hint";
 
@@ -24,6 +25,23 @@ export interface ProfileNameSuggestionInput {
   };
   repoInspection?: RepoInspection;
   existingProfileNames: string[];
+}
+
+export interface SavedWorkbenchPreset {
+  id: string;
+  name: string;
+  intake: Partial<DiagnosisIntake>;
+  markStepsReviewed: WorkbenchIntakeReviewFlags;
+  autoRun: WorkbenchAutoRunFlags;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SavedWorkbenchPresetInput {
+  name: string;
+  intake: Partial<DiagnosisIntake>;
+  markStepsReviewed?: WorkbenchIntakeReviewFlags;
+  autoRun?: WorkbenchAutoRunFlags;
 }
 
 export interface SavedProjectProfile {
@@ -72,5 +90,6 @@ export interface DesktopLibraryState {
   projectProfiles: SavedProjectProfile[];
   architectureProfiles: SavedArchitectureProfile[];
   providerPresets: SavedProviderPreset[];
+  workbenchPresets: SavedWorkbenchPreset[];
   lastOpenedRepoPath?: string;
 }

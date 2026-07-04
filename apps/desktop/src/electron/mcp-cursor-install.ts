@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { shell } from "electron";
 import type { McpCursorInstallResult } from "@arkitect/contracts";
-import { resolveDevRepoRoot, resolveMcpNodeCommand, resolveMcpStdioPath } from "./mcp-runtime-paths.js";
+import { resolveDevRepoRoot, resolveMcpNodeCommand, resolveMcpStdioPath, withMcpNodeSpawnEnv } from "./mcp-runtime-paths.js";
 
 const serverName = "arkitect-mcp";
 
@@ -43,14 +43,18 @@ function buildCursorInstallDeeplink(name: string, config: CursorInstallTransport
 }
 
 function buildServerEntry(stdioPath: string, repoPath: string, env: Record<string, string>) {
+  const baseEnv = {
+    ARKITECT_ANALYZER: env.ARKITECT_ANALYZER === "real" ? "real" : "mock",
+    ...(repoPath ? { ARKITECT_DEFAULT_REPO_PATH: repoPath } : {}),
+    ...Object.fromEntries(
+      Object.entries(env).filter(([key]) => key !== "ARKITECT_ANALYZER" && key !== "ARKITECT_DEFAULT_REPO_PATH")
+    )
+  };
+
   return {
     command: resolveMcpNodeCommand(),
     args: [stdioPath],
-    env: {
-      ARKITECT_ANALYZER: env.ARKITECT_ANALYZER === "real" ? "real" : "mock",
-      ...(repoPath ? { ARKITECT_DEFAULT_REPO_PATH: repoPath } : {}),
-      ...Object.fromEntries(Object.entries(env).filter(([key]) => key !== "ARKITECT_ANALYZER" && key !== "ARKITECT_DEFAULT_REPO_PATH"))
-    }
+    env: withMcpNodeSpawnEnv(baseEnv)
   };
 }
 
