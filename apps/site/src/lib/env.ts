@@ -1,3 +1,5 @@
+import { GITHUB_INSTALLER_URL } from "./arkitect-links";
+
 export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
@@ -30,3 +32,8 @@ export const downloadUrlState = downloadUrlConfig.state;
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 export const isDownloadUrlConfigured = downloadUrlState === "configured";
+
+/** VITE_DOWNLOAD_URL when set; otherwise latest GitHub release installer. */
+export function resolveDownloadUrl(): string {
+  return isDownloadUrlConfigured ? downloadUrl : GITHUB_INSTALLER_URL;
+}

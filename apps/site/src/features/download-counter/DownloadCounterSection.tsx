@@ -1,10 +1,7 @@
 import { Download, Gift, Loader2, Users } from "lucide-react";
 import { recordTrackedDownload } from "../download-tracking";
-import {
-  GITHUB_INSTALLER_URL,
-  GITHUB_RELEASES_URL
-} from "../../lib/arkitect-links";
-import { downloadUrl, downloadUrlState, isDownloadUrlConfigured } from "../../lib/env";
+import { GITHUB_INSTALLER_URL, GITHUB_RELEASES_URL } from "../../lib/arkitect-links";
+import { downloadUrlState, isDownloadUrlConfigured, resolveDownloadUrl } from "../../lib/env";
 import { ReleaseFeedSection } from "../release-feed";
 import { useDownloadCounter } from "./useDownloadCounter";
 
@@ -23,7 +20,7 @@ export function DownloadCounterSection() {
 
   function handleSetupDownloadClick() {
     void recordTrackedDownload("arkitect-setup");
-    window.open(downloadUrl, "_blank", "noopener,noreferrer");
+    window.open(resolveDownloadUrl(), "_blank", "noopener,noreferrer");
   }
 
   let ctaLabel = "Claim your free spot";
@@ -99,7 +96,7 @@ export function DownloadCounterSection() {
               onClick={handleSetupDownloadClick}
             >
               <Download size={18} aria-hidden="true" />
-              Download Arkitect
+              Download latest Arkitect
             </button>
           ) : downloadUrlState === "invalid" ? (
             <>
@@ -111,14 +108,14 @@ export function DownloadCounterSection() {
                 or use the install steps below.
               </p>
               <a
-                href={GITHUB_INSTALLER_URL}
+                href={resolveDownloadUrl()}
                 className="primary-button action-button-wide"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => void recordTrackedDownload("arkitect-setup")}
               >
                 <Download size={18} aria-hidden="true" />
-                Download from GitHub
+                Download latest Arkitect
               </a>
               <a href="#install-heading" className="secondary-button action-button-wide">
                 See install steps
