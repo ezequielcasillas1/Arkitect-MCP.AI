@@ -2,6 +2,13 @@
 
 Reserved for confirmed successful work after explicit user confirmation.
 
+
+### Jul 4, 2026 - BYOK messaging fix
+**Status:** SUCCESS
+**Commit:** 6465c74
+**Files:** apps/site/src/features/about/data.ts, apps/site/src/features/legal/data.ts, apps/site/src/features/seo/data.ts, apps/site/src/pages/LandingPage.tsx, packages/ai/src/provider-catalog.ts, implementations.md
+**Result:** Removed post-free-tier BYOK framing; clarified users always supply AI keys; committed 6465c74.
+
 ### 2026-06-16 - MCP Desktop Bridge and Connection
 **Status:** SUCCESS
 **Commit:** bcba639
@@ -44,3 +51,14 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Commit:** ebbe2c2
 **Files:** apps/site/public/{arkitect-mark.png,arkitect-mark-nav.png,favicon.ico,favicon-16.png,favicon-32.png,apple-touch-icon.png,_redirects}, apps/site/scripts/{generate-favicon.py,extract-logo-mark.py}, apps/site/index.html, apps/site/package.json, apps/site/src/components/Logo.tsx, apps/site/src/styles.css, implementations.md
 **Result:** Wireframe A mark replaces SVG favicons and navbar logo; PNG favicon links with cache-bust; removed favicon.svg/apple-touch-icon.svg and generate-favicon.mjs; pushed to origin/master.
+
+### Jul 4, 2026 - Official beaver logo and hero placement
+**Status:** SUCCESS
+**Files:** apps/site/public/*, apps/site/assets/official-logo-source.png, apps/site/scripts/process-official-logo.py, apps/site/src/components/Logo.tsx, apps/site/src/pages/LandingPage.tsx, apps/site/src/styles.css, apps/site/src/features/seo/data.ts, apps/site/index.html
+**Result:** Official blueprint beaver assets, favicons, hero HeroLogo above headline, og:image PNG; user confirmed via commit.
+
+### Jul 4, 2026 - MCP npm and GitHub release packaging
+**Status:** SUCCESS
+**Files:** packages/*/package.json, packages/mcp-server/README.md, scripts/package-mcp-release.mjs, .github/workflows/release-desktop.yml, README.md, docs/USER_GUIDE.md
+**Result:** pack:mcp/publish:mcp scripts, publishConfig on packages, CI attaches MCP artifacts on release tags.
+

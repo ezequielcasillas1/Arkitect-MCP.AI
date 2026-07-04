@@ -201,6 +201,14 @@ a {
   max-width: 100%;
 }
 
+.hero-brand-logo {
+  display: block;
+  width: clamp(160px, 32vw, 240px);
+  height: auto;
+  margin: 0 0 18px;
+  object-fit: contain;
+}
+
 .hero-visual {
   display: grid;
   gap: 16px;

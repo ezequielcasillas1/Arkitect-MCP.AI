@@ -1,16 +1,12 @@
-import { lazy, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { Layers, Sparkles, Zap } from "lucide-react";
 import { providerCatalog, createRecommendedModel } from "@arkitect/ai";
 import { ConnectSection } from "../components/ConnectSection";
 import { InstallSection } from "../components/InstallSection";
+import { HeroLogo } from "../components/Logo";
 import { RevealSection } from "../components/RevealSection";
 import { DownloadCounterSection } from "../features/download-counter/DownloadCounterSection";
 import { SeoHead } from "../features/seo";
-
-const ArkitectLogo3D = lazy(() =>
-  import("../components/ArkitectLogo3D").then((module) => ({ default: module.ArkitectLogo3D }))
-);
 
 const recommendation = createRecommendedModel();
 
@@ -44,6 +40,7 @@ export function LandingPage() {
       <SeoHead route="/" />
       <section className="hero panel hero-entrance">
         <div className="hero-copy">
+          <HeroLogo />
           <p className="eyebrow">Arkitect MCP</p>
           <h1>Design the structure before the code starts drifting.</h1>
           <p className="lede">
@@ -64,9 +61,6 @@ export function LandingPage() {
           </div>
         </div>
         <div className="hero-visual">
-          <Suspense fallback={<div className="hero-logo-placeholder" aria-hidden="true" />}>
-            <ArkitectLogo3D />
-          </Suspense>
           <div className="hero-card">
             {heroPills.map((pill) => (
               <span key={pill.label} className="pill">

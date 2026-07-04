@@ -1,12 +1,23 @@
+### 2026-07-04 - Hero Beaver Logo Above Headline
+**Status:** SUCCESS
+**Files:** apps/site/src/components/Logo.tsx, apps/site/src/pages/LandingPage.tsx, apps/site/src/styles.css
+**Result:** Added large transparent `arkitect-mark.png` (240px max, responsive clamp) above "Arkitect MCP" eyebrow in hero-copy; removed ArkitectLogo3D wireframe from hero-visual. Awaiting user confirmation.
+
 ### 2026-07-04 - BYOK / Free-Tier Messaging Fix
-**Status:** PENDING
-**Files:** apps/site/src/features/legal/data.ts, apps/site/src/features/about/data.ts, apps/site/src/features/seo/data.ts, apps/site/src/pages/LandingPage.tsx, packages/ai/src/provider-catalog.ts
-**Result:** Removed "After the free tier" BYOK framing; clarified users always bring their own AI keys and free tier is product access only. Awaiting user confirmation.
+**Status:** SUCCESS
+**Commit:** 6465c74
+**Files:** apps/site/src/features/about/data.ts, apps/site/src/features/legal/data.ts, apps/site/src/features/seo/data.ts, apps/site/src/pages/LandingPage.tsx, packages/ai/src/provider-catalog.ts, implementations.md
+**Result:** BYOK messaging aligned site-wide; free tier framed as product access only; user confirmed via commit 6465c74.
 
 ### 2026-07-04 - Architecture & Design Patterns Educative Page
 **Status:** PENDING
 **Files:** instructions/request.md, apps/site/src/features/education/*, apps/site/src/pages/ArchitecturePage.tsx, apps/site/src/App.tsx, apps/site/src/components/NavBar.tsx, apps/site/src/components/Footer.tsx, apps/site/src/features/seo/{types.ts,data.ts}, apps/site/public/sitemap.xml, apps/site/src/styles.css
 **Result:** Added `/architecture` route with vertical-slice education content (creational/structural/behavioral patterns, architecture styles, SOLID) and trusted external links; nav + SEO + sitemap updated. Awaiting user confirmation.
+
+### 2026-07-04 - Official Beaver Logo: Dark Blue Theme
+**Status:** SUCCESS
+**Files:** apps/site/public/{arkitect-logo-full.png,arkitect-mark.png,arkitect-mark-nav.png,favicon.ico,favicon-16.png,favicon-32.png,apple-touch-icon.png}, apps/site/assets/official-logo-source.png, apps/site/scripts/process-official-logo.py, apps/site/index.html, apps/site/src/components/Logo.tsx, apps/site/src/features/seo/data.ts, apps/site/package.json
+**Result:** Official beaver blueprint logo processed with bg darkened to #111521 (site nav surface); transparent mark + all favicon/touch/navbar assets regenerated; SEO og:image fixed to PNG; cache-bust v=5. Build passes; awaiting user confirmation.
 
 ### 2026-07-04 - New Logo Mark: Favicon + Navbar
 **Status:** PENDING
@@ -186,3 +197,8 @@ Template:
 **Status:** PENDING
 **Files:** apps/site/src/features/download-tracking/*, apps/site/src/lib/is-localhost.ts, apps/site/supabase/migrations/0003_arkitect_download_tracking.sql, DownloadCounterSection.tsx, InstructionsPage.tsx, App.tsx, styles.css
 **Result:** Added download-tracking slice with Supabase RPC persistence (total + unique counts per file), click hooks on setup exe and user guide, localhost-only admin at /admin/downloads; migration applied; fixed PL/pgSQL ambiguous column bug in record RPC.
+
+### 2026-07-04 - MCP npm + GitHub release install paths
+**Status:** SUCCESS
+**Files:** packages/mcp-server/package.json, packages/contracts/package.json, packages/ai/package.json, packages/core/package.json, packages/repo-analyzer/package.json, packages/mcp-server/README.md, scripts/package-mcp-release.mjs, package.json, .github/workflows/release-desktop.yml, docs/USER_GUIDE.md, README.md, .gitignore
+**Result:** Added publishConfig/files/bin prep for @arkitect/mcp-server chain, pack:mcp/publish:mcp scripts, CI attaches .tgz + portable zip on v* tags; USER_GUIDE documents npm, GitHub download, and clone install paths.

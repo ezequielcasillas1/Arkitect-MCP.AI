@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "generate:favicon": "python scripts/generate-favicon.py",
+    "process:logo": "python scripts/process-official-logo.py",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "pages:create": "wrangler pages project create arkitect-site --production-branch=master",

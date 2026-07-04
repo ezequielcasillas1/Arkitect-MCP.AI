@@ -2,7 +2,7 @@ import type { RouteSeoKey, SeoMeta } from "./types";
 
 export const siteOrigin = "https://arkitect-mcp.com";
 
-export const defaultOgImage = "/apple-touch-icon.svg";
+export const defaultOgImage = "/apple-touch-icon.png";
 
 export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/": {
