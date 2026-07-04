@@ -116,3 +116,8 @@ Template:
 **Status:** PENDING
 **Files:** packages/contracts/src/desktop.ts, packages/core/src/profile-name-suggestions.ts, packages/core/src/profile-name-suggestions.test.ts, packages/core/src/index.ts, packages/core/src/browser.ts, apps/desktop/src/features/repo-connection/RepoConnectionSection.tsx
 **Result:** Heuristic preset name suggestions from repo label, route (local/GitHub branch), and inspection stack hints; clickable chips fill Preset name field; AI enrichment deferred per request.md.
+
+### 2026-07-03 - Instructions page fix + Cloudflare Pages Git auto-deploy
+**Status:** SUCCESS
+**Files:** apps/site/src/pages/InstructionsPage.tsx, apps/site/src/features/instructions/*, apps/site/wrangler.jsonc
+**Result:** Instructions guide renders correctly; Cloudflare Git integration deploys site on push; user confirmed successful.
