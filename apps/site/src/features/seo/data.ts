@@ -50,10 +50,10 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/terms": {
     title: "Terms of Use — Arkitect MCP",
     description:
-      "Terms for using the Arkitect desktop app, MCP server, and marketing site — including free tier, BYOK orchestration, and acceptable use.",
+      "Terms for using the Arkitect desktop app, MCP server, and marketing site — including free product tier, bring-your-own AI keys, and acceptable use.",
     canonicalPath: "/terms",
     ogImage: defaultOgImage,
-    keywords: "Arkitect terms of use, MCP terms, free tier, BYOK, acceptable use"
+    keywords: "Arkitect terms of use, MCP terms, free tier, bring your own key, acceptable use"
   },
   "/privacy": {
     title: "Privacy Policy — Arkitect MCP",

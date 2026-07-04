@@ -23,7 +23,7 @@ export const aboutBlocks: AboutBlock[] = [
     title: "Desktop app + MCP server",
     paragraphs: [
       "Arkitect ships as a desktop application and an MCP server you can wire into Cursor. Core tools — diagnosis, catalog recommendations, verification — run locally via @arkitect/core without Arkitect-hosted AI.",
-      "Agent orchestration patterns (driving the tool loop, implementing guidance, editing code) require an AI agent — typically Cursor's built-in AI or your own provider key in the desktop app. The first 1,000 users get free, unlimited desktop and MCP usage; after that, orchestration uses bring-your-own-key for AI providers.",
+      "Agent orchestration patterns (driving the tool loop, implementing guidance, editing code) require an AI agent — typically Cursor's built-in AI in chat or your own provider API key in the desktop app. Arkitect never supplies managed AI keys; the free tier is product access for the first 1,000 users, not subsidized inference.",
       "Two paths, same core: connect in Cursor chat or follow the desktop wizard — repo, profile, policy, MCP, review — and reach the same diagnosis-backed outcomes."
     ]
   },

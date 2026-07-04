@@ -26,17 +26,17 @@ export const termsDocument: LegalDocument = {
       id: "free-tier",
       title: "Free tier (first 1,000 users)",
       paragraphs: [
-        "Arkitect desktop and MCP usage is free and unlimited for the first 1,000 registered users. This includes diagnosis, catalog recommendations, verification, and other core MCP tools.",
+        "Arkitect desktop and MCP product access is free and unlimited for the first 1,000 registered users. This includes diagnosis, catalog recommendations, verification, and other core MCP tools — not managed AI inference.",
         "Core MCP analysis runs locally via @arkitect/core on your machine. It does not require Arkitect-provided AI or a cloud AI backend."
       ]
     },
     {
-      id: "post-cap-byok",
-      title: "After the free tier",
+      id: "ai-provider-keys",
+      title: "Your AI provider & API keys",
       paragraphs: [
-        "Once the 1,000-user free tier is reached, continued use of agent-driven orchestration workflows requires you to supply your own AI provider API key (bring your own key — BYOK).",
-        "Orchestration patterns — where an AI agent drives the workflow loop, calls MCP tools, implements cursorGuidance, and edits code — require an AI agent. That agent is typically Cursor's built-in AI, or in the desktop app your own key for providers such as Cursor, Anthropic, OpenAI, Gemini, or Groq.",
-        "The MCP server itself does not require Arkitect-hosted AI. AI is required for the agent orchestration loop, not for running diagnosis, catalogs, or verification locally."
+        "Arkitect does not provide managed AI keys. From day one, agent orchestration uses your own AI provider — typically Cursor's built-in AI when using Arkitect as MCP in chat, or your own API key in the desktop app for providers such as Cursor, Anthropic, OpenAI, Gemini, or Groq.",
+        "Orchestration patterns — where an AI agent drives the workflow loop, calls MCP tools, implements cursorGuidance, and edits code — require an AI agent you configure. The MCP server itself does not require Arkitect-hosted AI.",
+        "AI is required for the agent orchestration loop, not for running diagnosis, catalogs, or verification locally."
       ]
     },
     {
@@ -115,7 +115,7 @@ export const privacyDocument: LegalDocument = {
       id: "ai-keys",
       title: "Third-party AI keys",
       paragraphs: [
-        "When you use agent orchestration, API keys for providers (Cursor, Anthropic, OpenAI, Gemini, Groq, etc.) are stored locally in the desktop app on your device — not transmitted to or stored by Arkitect servers.",
+        "When you use agent orchestration, API keys for providers (Cursor, Anthropic, OpenAI, Gemini, Groq, etc.) are stored locally in the desktop app on your device from the start — not transmitted to or stored by Arkitect servers.",
         "Requests made with your keys go directly to the provider you choose, subject to that provider's privacy policy and terms."
       ]
     },

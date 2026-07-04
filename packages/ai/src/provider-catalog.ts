@@ -5,9 +5,9 @@ export const providerCatalog: AiProviderDescriptor[] = [
     id: "composer-2.5",
     label: "Composer 2.5",
     recommended: true,
-    inputMode: "arkitect-managed",
+    inputMode: "bring-your-own-key",
     notes: [
-      "Use a Cursor API Key; Composer is the selected model family/build.",
+      "Use your Cursor API Key; Composer is the selected model family/build.",
       "Arkitect recommends composer-2.5 by default and can recognize newer Composer-family builds when available."
     ]
   },

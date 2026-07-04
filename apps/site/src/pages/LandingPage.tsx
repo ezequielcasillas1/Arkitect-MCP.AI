@@ -115,8 +115,10 @@ export function LandingPage() {
         <p className="section-label">AI Defaults</p>
         <h2>Provider-agnostic by default.</h2>
         <p>
-          {recommendation.modelName} via {recommendation.provider} is the recommended default. Bring
-          your own provider keys any time without changing how Arkitect reasons about your repo.
+          You always connect your own provider API keys in the desktop app — or use Cursor&apos;s
+          built-in AI when Arkitect runs as MCP in chat. {recommendation.modelName} via{" "}
+          {recommendation.provider} is the recommended default. Provider choice does not change how
+          Arkitect reasons about your repo.
         </p>
         <div className="provider-grid">
           {providerCatalog.map((provider) => (

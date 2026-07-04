@@ -1,7 +1,7 @@
-### 2026-07-04 - Terms, Privacy & About Pages
+### 2026-07-04 - BYOK / Free-Tier Messaging Fix
 **Status:** PENDING
-**Files:** apps/site/src/features/legal/*, apps/site/src/features/about/*, apps/site/src/pages/{TermsPage,PrivacyPage,AboutPage}.tsx, apps/site/src/App.tsx, apps/site/src/components/{NavBar,Footer}.tsx, apps/site/src/features/seo/{types.ts,data.ts}, apps/site/public/sitemap.xml, apps/site/src/styles.css
-**Result:** Added `/terms`, `/privacy`, `/about` routes with vertical slices; legal shared layout + placeholder copy (AI/BYOK/free-tier accurate); About in nav+footer, Terms/Privacy footer-only; SEO + sitemap updated. Typecheck + build pass. Awaiting user confirmation.
+**Files:** apps/site/src/features/legal/data.ts, apps/site/src/features/about/data.ts, apps/site/src/features/seo/data.ts, apps/site/src/pages/LandingPage.tsx, packages/ai/src/provider-catalog.ts
+**Result:** Removed "After the free tier" BYOK framing; clarified users always bring their own AI keys and free tier is product access only. Awaiting user confirmation.
 
 ### 2026-07-04 - Architecture & Design Patterns Educative Page
 **Status:** PENDING
