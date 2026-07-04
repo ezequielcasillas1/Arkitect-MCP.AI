@@ -1,6 +1,10 @@
 import { Download, Gift, Loader2, Users } from "lucide-react";
 import { recordTrackedDownload } from "../download-tracking";
-import { ARKITECT_RELEASE_VERSION, GITHUB_INSTALLER_URL, GITHUB_RELEASES_URL } from "../../lib/arkitect-links";
+import {
+  GITHUB_INSTALLER_URL,
+  GITHUB_PUBLISHED_INSTALLER_VERSION,
+  GITHUB_RELEASES_URL
+} from "../../lib/arkitect-links";
 import { downloadUrlState, hasDownloadUrl, isDownloadUrlConfigured, resolveDownloadUrl } from "../../lib/env";
 import { ReleaseFeedSection } from "../release-feed";
 import { useDownloadCounter } from "./useDownloadCounter";
@@ -96,7 +100,7 @@ export function DownloadCounterSection() {
               onClick={handleSetupDownloadClick}
             >
               <Download size={18} aria-hidden="true" />
-              Download Arkitect v{ARKITECT_RELEASE_VERSION}
+              Download Arkitect v{GITHUB_PUBLISHED_INSTALLER_VERSION}
             </button>
           ) : downloadUrlState === "invalid" ? (
             <>
@@ -115,7 +119,7 @@ export function DownloadCounterSection() {
                 onClick={() => void recordTrackedDownload("arkitect-setup")}
               >
                 <Download size={18} aria-hidden="true" />
-                Download Arkitect v{ARKITECT_RELEASE_VERSION}
+                Download Arkitect v{GITHUB_PUBLISHED_INSTALLER_VERSION}
               </a>
               <a href="#install-heading" className="secondary-button action-button-wide">
                 See install steps

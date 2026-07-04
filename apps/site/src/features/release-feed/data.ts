@@ -5,7 +5,7 @@ export const releaseFeed: ReleaseEntry[] = [
   {
     version: "0.2.1",
     releaseDate: "2026-07-04",
-    status: "released",
+    status: "upcoming",
     changes: [
       "Fixed ERR_MODULE_NOT_FOUND for zod when Cursor mcp.json launches packaged MCP stdio from Arkitect-Setup.exe (v0.2.1).",
       "Bundled zod and zod-to-json-schema as direct @arkitect/mcp-server deps; electron-builder asarUnpack for node_modules resolution.",

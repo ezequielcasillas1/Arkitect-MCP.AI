@@ -34,7 +34,7 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 export const isDownloadUrlConfigured = downloadUrlState === "configured";
 export const hasDownloadUrl = downloadUrlState !== "invalid";
 
-/** VITE_DOWNLOAD_URL when set; otherwise latest GitHub release installer. */
+/** VITE_DOWNLOAD_URL when set; otherwise GITHUB_INSTALLER_URL (published installer on GitHub). */
 export function resolveDownloadUrl(): string {
   return isDownloadUrlConfigured ? downloadUrl : GITHUB_INSTALLER_URL;
 }
