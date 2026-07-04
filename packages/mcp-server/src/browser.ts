@@ -1,4 +1,4 @@
-import { getCatalogCounts, createRefactoringCatalogPayload } from "@arkitect/core";
+import { getCatalogCounts, createRefactoringCatalogPayload, listDesignPrinciples } from "@arkitect/core";
 import {
   assembleMcpServer,
   createMcpResources,
@@ -15,7 +15,8 @@ export type { ArkitectMcpServer };
 export function createArkitectMcpServer(): ArkitectMcpServer {
   const counts = {
     ...getCatalogCounts(),
-    refactoringTechniques: createRefactoringCatalogPayload().total
+    refactoringTechniques: createRefactoringCatalogPayload().total,
+    designPrinciples: listDesignPrinciples().length
   };
   const tools = createMcpToolTemplates().map((template) => ({
     ...template,

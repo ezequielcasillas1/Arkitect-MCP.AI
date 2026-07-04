@@ -33,7 +33,11 @@ Template:
 **Files:** apps/site/supabase/migrations/0001_arkitect_download_counter.sql
 **Result:** `arkitect_claim_download_slot` failed with Postgres 42702 ("column reference claimed_count is ambiguous") because `RETURNS TABLE(claimed_count, spot_limit, ...)` creates OUT params with the same names as the table columns. Fixed by aliasing the table (`AS c`) in the UPDATE; verified increment, dedup, and cap behavior afterward.
 
-### 2026-07-04 - Arkitect-mcp Dogfooding: MCP Tools Fail Output Schema Check
+### 2026-07-04 - Desktop Dev Startup Exits Immediately
+**Status:** PENDING
+**Files:** apps/desktop/scripts/free-dev-port.mjs, apps/desktop/src/electron/mcp-bridge-server.ts, apps/desktop/src/electron/main.ts
+**Result:** Stale Electron held MCP bridge port 47821; `mcpService.start()` threw EADDRINUSE as an unhandled rejection before `createWindow()`, so Electron quit and concurrently killed vite/tsc. Predev now frees 5173 + 47821; bridge retries alternate ports; main catches bridge start failures so the window still opens.
+
 **Status:** PENDING
 **Files:** packages/mcp-server/src/stdio.ts
 **Result:** All six arkitect-mcp tools (diagnose_repository, list_diagnosis_strategies, list_design_patterns, list_remix_profiles, list_architecture_catalog, get_last_diagnosis) declare an `outputSchema` but `toMcpToolResult`/`toMcpToolContent` only ever return text `content`, never `structuredContent`. Every call from this session errored with "has an output schema but did not return structured content" (reproduced twice, in two separate calling sessions). Matches a gap already flagged in implementations.md on 2026-06-16; still unresolved. Not fixed here (out of scope for the site build) — flagging for a follow-up fix.

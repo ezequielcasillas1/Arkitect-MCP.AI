@@ -1,3 +1,13 @@
+### 2026-07-04 - Marketing site /mcp page
+**Status:** PENDING
+**Files:** apps/site/src/pages/McpPage.tsx, apps/site/src/features/mcp-page/{types.ts,data.ts,AutoFillCallout.tsx,McpToolsSection.tsx,McpVersionHistorySection.tsx,index.ts}, apps/site/src/App.tsx, apps/site/src/components/{NavBar.tsx,Footer.tsx}, apps/site/src/features/seo/{types.ts,data.ts}, apps/site/public/sitemap.xml, apps/site/src/styles.css
+**Result:** New `/mcp` route documents all 16 MCP tools grouped by domain (diagnosis, catalogs, pattern intelligence, refactoring, verification, workbench intake) with per-tool purpose/usage/example, prominent auto-fill via Cursor AI agent-chat callout (apply_workbench_intake), and version history (0.1.1, 0.1.0, 0.0.x stdio milestone). Nav + footer link, SEO meta, and sitemap updated; typecheck passes.
+
+### 2026-07-04 - Pattern Intelligence Orchestration (Refactoring Guru PDF)
+**Status:** PENDING
+**Files:** packages/contracts/src/{pattern-intelligence.ts,index.ts,mcp.ts}, packages/core/src/pattern-intelligence/{pattern-intelligence-catalog,design-principles-catalog,pattern-relation-graph,pattern-recommendation,pattern-intelligence-lookup,index}.ts (+ tests), packages/core/src/{index,browser}.ts, packages/mcp-server/src/{mcp-tool-definitions,index,browser,diagnosis-payload}.ts, instructions/request.md
+**Result:** New `pattern-intelligence` vertical slice with 22 GoF pattern entries (intent/applicability/steps/pros/cons/relations), 8 principles (SOLID + 3 general), relation graph + complexity-aware recommender + lookup. Exposed via MCP tools `get_pattern_intelligence`, `list_design_principles`, `recommend_patterns` and resource `arkitect://catalog/design-principles`. Diagnosis payload enriched additively with `patternRelationChains` and `patternAdrSummary`.
+
 ### 2026-07-04 - Download latest Arkitect CTA
 **Status:** PENDING
 **Files:** apps/site/src/lib/env.ts, apps/site/src/features/download-counter/DownloadCounterSection.tsx
@@ -232,7 +242,17 @@ Template:
 **Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, apps/site/src/lib/arkitect-links.ts, apps/site/src/features/release-feed/data.ts, apps/site/.env.example, README.md, docs/USER_GUIDE.md, apps/desktop/README.md, apps/site/README.md, packages/mcp-server/{README.md,src/mcp-tool-definitions.ts}, apps/desktop/src/electron/mcp-client-manager.ts
 **Result:** Bumped monorepo from 0.1.0 → 0.1.1; release feed marked 0.1.1 released; GitHub installer URLs updated site-wide. Auto-update uses GitHub latest (no URL change). GitHub Release Desktop CI published v0.1.1 + Arkitect-Setup.exe. Cloudflare VITE_DOWNLOAD_URL + deploy:site still manual.
 
+### 2026-07-04 - Version bump v0.2.0 + download link sync
+**Status:** PENDING
+**Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, apps/site/src/lib/arkitect-links.ts, apps/site/src/features/release-feed/data.ts, apps/site/src/features/mcp-page/data.ts, apps/site/.env.example, README.md, docs/USER_GUIDE.md, apps/desktop/README.md, apps/site/README.md, packages/mcp-server/{README.md,src/mcp-tool-definitions.ts}, apps/desktop/src/electron/mcp-client-manager.ts
+**Result:** Bumped monorepo 0.1.1 → 0.2.0 for Pattern Intelligence release; release feed + MCP page history updated; GitHub installer URLs synced to v0.2.0. GitHub Release v0.2.0 + Cloudflare VITE_DOWNLOAD_URL still manual.
+
 ### 2026-07-04 - GitHub/site download link sync
 **Status:** PENDING
 **Files:** README.md, docs/USER_GUIDE.md, packages/mcp-server/README.md, apps/site/src/lib/arkitect-links.ts, DownloadCounterSection.tsx, InstallSection.tsx
 **Result:** Added Download section to root README and MCP README (clone/build, no npm); USER_GUIDE download table; site fallbacks + GitHub Releases links on landing install/download sections. URLs: arkitect-mcp.com, GitHub Releases v0.1.0 Arkitect-Setup.exe.
+
+### 2026-07-04 - Marketing site v0.2.0 copy polish
+**Status:** SUCCESS
+**Files:** apps/site/src/features/release-feed/data.ts, apps/site/src/features/mcp-page/data.ts, apps/site/src/pages/LandingPage.tsx, apps/site/src/features/seo/data.ts
+**Result:** Release feed, MCP version history, landing lede, and home SEO highlight pattern intelligence tools, relation chains, and ADR summaries for v0.2.0.

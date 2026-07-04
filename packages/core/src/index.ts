@@ -9,5 +9,6 @@ export * from "./requirement-tag-suggestions.js";
 export * from "./profile-name-suggestions.js";
 export * from "./refactoring-techniques-catalog.js";
 export * from "./refactoring-analysis.js";
+export * from "./pattern-intelligence/index.js";
 export * from "./intake-merge.js";
 export * from "./workbench-automation.js";

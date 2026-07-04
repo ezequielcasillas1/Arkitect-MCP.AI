@@ -9,6 +9,10 @@ import type {
   RemixProfileCatalogEntry
 } from "@arkitect/contracts";
 import type { WorkbenchIntakeApplyRequest } from "@arkitect/contracts";
+import type {
+  PatternIntelligenceLookupRequest,
+  PatternRecommendationRequest
+} from "@arkitect/contracts";
 import {
   buildRefactoringAnalysisResult,
   createDiagnosisResult,
@@ -17,8 +21,11 @@ import {
   getCatalogCounts,
   listArchitectureCatalog,
   listDesignPatternCatalog,
+  listDesignPrinciples,
   listDiagnosisStrategies,
   listRemixProfileCatalog,
+  lookupPatternIntelligence,
+  recommendPatterns,
   buildRequirementTagSuggestionInput,
   suggestRequirementTags,
   createDiagnosisSignals,
@@ -152,10 +159,20 @@ export async function analyzeRefactoring(input: RefactoringAnalysisInput = {}) {
   return payload;
 }
 
+function toDesignPrinciplesPayload() {
+  const items = listDesignPrinciples();
+  return {
+    summary: `Arkitect exposes ${items.length} design principles (SOLID plus general OO principles) sourced from Refactoring Guru for pattern orchestration.`,
+    total: items.length,
+    items
+  };
+}
+
 export function createArkitectMcpServer(): ArkitectMcpServer {
   const counts = {
     ...getCatalogCounts(),
-    refactoringTechniques: createRefactoringCatalogPayload().total
+    refactoringTechniques: createRefactoringCatalogPayload().total,
+    designPrinciples: listDesignPrinciples().length
   };
   const resources = createMcpResources(counts);
   const executeByName: Record<string, (input: unknown) => Promise<ReturnType<typeof createJsonToolResult>>> = {
@@ -204,6 +221,15 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
     },
     analyze_refactoring_opportunities: async (input) => {
       const result = await analyzeRefactoring(input as RefactoringAnalysisInput);
+      return createJsonToolResult(result);
+    },
+    get_pattern_intelligence: async (input) => {
+      const result = lookupPatternIntelligence((input as PatternIntelligenceLookupRequest) ?? {});
+      return createJsonToolResult(result);
+    },
+    list_design_principles: async () => createJsonToolResult(toDesignPrinciplesPayload()),
+    recommend_patterns: async (input) => {
+      const result = recommendPatterns((input as PatternRecommendationRequest) ?? {});
       return createJsonToolResult(result);
     },
     apply_workbench_intake: async (input) => {
@@ -275,6 +301,8 @@ export async function readArkitectMcpResource(uri: string): Promise<unknown> {
       return toPatternCatalogPayload();
     case "arkitect://catalog/refactoring":
       return createRefactoringCatalogPayload();
+    case "arkitect://catalog/design-principles":
+      return toDesignPrinciplesPayload();
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }

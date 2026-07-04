@@ -13,6 +13,10 @@ export function Footer() {
           User guide
         </NavLink>
         {" · "}
+        <NavLink to="/mcp" className="footer-link">
+          MCP tools
+        </NavLink>
+        {" · "}
         <NavLink to="/architecture" className="footer-link">
           Architecture guide
         </NavLink>

@@ -122,7 +122,12 @@ app.whenReady().then(async () => {
   }
 
   const mcpService = getMcpConnectionService();
-  await mcpService.start();
+
+  try {
+    await mcpService.start();
+  } catch (error) {
+    console.error("[arkitect-desktop] MCP bridge failed to start:", error);
+  }
 
   ipcMain.handle("arkitect:get-shell-info", () => ({
     shell: "electron",

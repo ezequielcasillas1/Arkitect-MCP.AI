@@ -10,6 +10,7 @@ export type RouteSeoKey =
   | "/"
   | "/reviews"
   | "/instructions"
+  | "/mcp"
   | "/architecture"
   | "/about"
   | "/terms"

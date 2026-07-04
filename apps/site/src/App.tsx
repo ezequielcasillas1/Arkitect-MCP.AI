@@ -7,6 +7,7 @@ import { LandingPage } from "./pages/LandingPage";
 import { ReviewsPage } from "./pages/ReviewsPage";
 import { InstructionsPage } from "./pages/InstructionsPage";
 import { ArchitecturePage } from "./pages/ArchitecturePage";
+import { McpPage } from "./pages/McpPage";
 import { AboutPage } from "./pages/AboutPage";
 import { TermsPage } from "./pages/TermsPage";
 import { PrivacyPage } from "./pages/PrivacyPage";
@@ -23,6 +24,7 @@ export function App() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/reviews" element={<ReviewsPage />} />
           <Route path="/instructions" element={<InstructionsPage />} />
+          <Route path="/mcp" element={<McpPage />} />
           <Route path="/architecture" element={<ArchitecturePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/terms" element={<TermsPage />} />

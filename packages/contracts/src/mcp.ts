@@ -1,5 +1,6 @@
 import type { ArchitectureCatalogEntry, DesignPatternCatalogEntry, RemixProfileCatalogEntry } from "./catalog.js";
 import type { DiagnosisResult } from "./diagnosis.js";
+import type { PatternRelationChainEntry } from "./pattern-intelligence.js";
 
 export interface McpTextContent {
   type: "text";
@@ -35,6 +36,8 @@ export interface DiagnosisMcpPayload {
   summary: string;
   diagnosis: DiagnosisResult;
   cursorGuidance: string[];
+  patternRelationChains?: PatternRelationChainEntry[];
+  patternAdrSummary?: string;
 }
 
 export interface CatalogMcpPayload<TEntry> {

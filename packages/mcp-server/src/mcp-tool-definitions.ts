@@ -5,6 +5,7 @@ interface CatalogCounts {
   remixProfiles: number;
   designPatterns: number;
   refactoringTechniques: number;
+  designPrinciples: number;
 }
 
 export interface ArkitectMcpServer {
@@ -19,7 +20,7 @@ export interface ArkitectMcpServer {
 
 export const MCP_SERVER_INFO = {
   name: "arkitect-mcp",
-  version: "0.1.1",
+  version: "0.2.0",
   description: "Scaffolded Arkitect MCP surface for diagnosis-first architecture context."
 } as const;
 
@@ -224,6 +225,64 @@ export const refactoringCatalogOutputSchema = {
   }
 };
 
+export const patternIntelligenceLookupInputSchema = {
+  type: "object",
+  properties: {
+    patternId: { type: "string" },
+    family: { type: "string", enum: ["creational", "structural", "behavioral"] },
+    principleId: { type: "string" }
+  }
+};
+
+export const patternIntelligenceLookupOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    patterns: { type: "array", items: { type: "object" } },
+    principles: { type: "array", items: { type: "object" } }
+  }
+};
+
+export const designPrinciplesOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    total: { type: "number" },
+    items: { type: "array", items: { type: "object" } }
+  }
+};
+
+export const patternRecommendationInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" },
+    repoSummary: { type: "string" },
+    requestedOutcome: { type: "string" },
+    requirementTags: { type: "array", items: { type: "string" } },
+    architectureId: { type: "string" },
+    remixId: { type: "string" },
+    complexityProfile: {
+      type: "string",
+      enum: ["minimal", "balanced", "structured", "enterprise"]
+    },
+    seedPatternIds: { type: "array", items: { type: "string" } }
+  }
+};
+
+export const patternRecommendationOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    recommendedPatterns: { type: "array", items: { type: "object" } },
+    deferredPatterns: { type: "array", items: { type: "object" } },
+    antiPatternWarnings: { type: "array", items: { type: "string" } },
+    patternAffinityScore: { type: "number" },
+    overEngineeringRisk: { type: "string" },
+    relationChains: { type: "array", items: { type: "object" } },
+    adrSummary: { type: "string" }
+  }
+};
+
 export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[] {
   return [
     {
@@ -255,6 +314,11 @@ export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[]
       uri: "arkitect://catalog/refactoring",
       name: "Refactoring Technique Catalog",
       description: `The ${counts.refactoringTechniques}-entry Refactoring Guru technique library for agent-orchestrated analysis.`
+    },
+    {
+      uri: "arkitect://catalog/design-principles",
+      name: "Design Principles Catalog",
+      description: `The ${counts.designPrinciples}-entry design principles library (SOLID plus general OO principles) sourced from Refactoring Guru.`
     }
   ];
 }
@@ -356,6 +420,27 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
         "Analyze structural smells, rank Refactoring Guru techniques, and return an orchestration plan for Cursor agents. Reports only — does not auto-refactor.",
       inputSchema: refactoringAnalysisInputSchema,
       outputSchema: refactoringAnalysisOutputSchema
+    },
+    {
+      name: "get_pattern_intelligence",
+      description:
+        "Return deep design pattern intelligence (intent, applicability, implementation steps, pros/cons, relations) sourced from Refactoring Guru. Optionally filter by patternId, family, or principleId.",
+      inputSchema: patternIntelligenceLookupInputSchema,
+      outputSchema: patternIntelligenceLookupOutputSchema
+    },
+    {
+      name: "list_design_principles",
+      description:
+        "Return the encoded design principle catalog (SOLID plus general OO principles) with related patterns for orchestration.",
+      inputSchema: { type: "object", properties: {} },
+      outputSchema: designPrinciplesOutputSchema
+    },
+    {
+      name: "recommend_patterns",
+      description:
+        "Recommend design patterns for the given intake using requirement signals, complexity profile, and Refactoring Guru relations. Returns recommended, deferred, relation chains, anti-pattern warnings, and an ADR summary.",
+      inputSchema: patternRecommendationInputSchema,
+      outputSchema: patternRecommendationOutputSchema
     },
     {
       name: "apply_workbench_intake",

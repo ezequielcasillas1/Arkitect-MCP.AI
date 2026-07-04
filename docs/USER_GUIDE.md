@@ -44,7 +44,7 @@ The marketing site ([arkitect-mcp.com](https://arkitect-mcp.com/#download-counte
 | Package | `@arkitect/mcp-server` |
 | Entrypoint | `packages/mcp-server/dist/stdio.js` |
 | Transport | Stdio (`@modelcontextprotocol/sdk`) |
-| Server name | `arkitect-mcp` (v0.1.1) |
+| Server name | `arkitect-mcp` (v0.2.0) |
 | Tools | 10 (diagnosis, catalogs, tags, verification, tests) |
 | Resources | 5 (`arkitect://` URIs) |
 
@@ -141,7 +141,7 @@ You can mix paths: connect MCP in desktop, decide in chat.
 |--------|------|
 | Website (free spot + installer) | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
 | GitHub Releases | [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
-| Windows installer (v0.1.1) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.1/Arkitect-Setup.exe) |
+| Windows installer (v0.2.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.2.0/Arkitect-Setup.exe) |
 
 **GitHub source (no clone):** On [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases), download **Source code (zip)** for a tagged version, extract, then run the commands below from that folder.
 
@@ -528,4 +528,4 @@ Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern:
 
 ---
 
-*Last updated: July 2026 — arkitect-mcp v0.1.1.*
+*Last updated: July 2026 — arkitect-mcp v0.2.0.*

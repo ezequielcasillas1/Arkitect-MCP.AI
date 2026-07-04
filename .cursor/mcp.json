@@ -1,14 +1,14 @@
-﻿{
+{
   "mcpServers": {
     "arkitect-mcp": {
-      "command": "node",
-      "args": ["packages/mcp-server/dist/stdio.js"]
-    },
-    "supabase-arkitect": {
-      "url": "https://mcp.supabase.com/mcp?project_ref=asekzhygyqqkyytcbzyc"
-    },
-    "cloudflare-api": {
-      "url": "https://mcp.cloudflare.com/mcp"
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Dev\\Arkitect-mcp.com\\packages\\mcp-server\\dist\\stdio.js"
+      ],
+      "env": {
+        "ARKITECT_ANALYZER": "mock",
+        "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\Arkitect-mcp.com"
+      }
     }
   }
 }

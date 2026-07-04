@@ -8,7 +8,7 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/": {
     title: "Arkitect MCP — Architecture-first AI for Cursor & desktop repos",
     description:
-      "Arkitect MCP is an architecture reasoning server for Cursor. Diagnose repo health, guide refactors, and orchestrate any AI provider. Free for the first 1,000 users.",
+      "Arkitect MCP v0.2.0 ? architecture reasoning for Cursor with pattern intelligence (recommend_patterns, relation chains, ADR summaries), diagnosis, and refactor guidance. Free for the first 1,000 users.",
     canonicalPath: "/",
     ogImage: defaultOgImage,
     keywords:
@@ -29,6 +29,15 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
     canonicalPath: "/instructions",
     ogImage: defaultOgImage,
     keywords: "Arkitect user guide, install MCP server, Cursor MCP setup, architecture reasoning, MCP orchestration"
+  },
+  "/mcp": {
+    title: "MCP Tools & Versions — Arkitect MCP",
+    description:
+      "Every Arkitect MCP tool with usage and example prompts, the new Cursor agent-chat workbench auto-fill, and the full version history of the project.",
+    canonicalPath: "/mcp",
+    ogImage: defaultOgImage,
+    keywords:
+      "Arkitect MCP tools, Cursor MCP, apply_workbench_intake, diagnose_repository, recommend_patterns, MCP version history, workbench auto-fill"
   },
   "/architecture": {
     title: "Architecture & Design Patterns — Arkitect MCP",

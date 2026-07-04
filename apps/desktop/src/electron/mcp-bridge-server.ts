@@ -76,14 +76,55 @@ export class McpBridgeServer {
       void this.handleRequest(request, response);
     });
 
-    await new Promise<void>((resolve, reject) => {
-      this.server?.once("error", reject);
-      this.server?.listen(this.port, "127.0.0.1", () => resolve());
-    });
-
+    await this.bindListenPort();
     await this.persistManifest();
 
     this.staleTimer = setInterval(() => this.evictStaleExternalSession(), 10_000);
+  }
+
+  private bindListenPort(): Promise<void> {
+    const preferredPort = this.port;
+    const candidates = [preferredPort];
+
+    for (let offset = 1; offset <= 10; offset += 1) {
+      candidates.push(preferredPort + offset);
+    }
+
+    candidates.push(0);
+
+    return new Promise((resolve, reject) => {
+      const attempt = (index: number) => {
+        if (index >= candidates.length) {
+          reject(new Error(`Unable to bind MCP bridge after ${candidates.length} attempts.`));
+          return;
+        }
+
+        const port = candidates[index];
+
+        const onError = (error: NodeJS.ErrnoException) => {
+          if (error.code === "EADDRINUSE") {
+            attempt(index + 1);
+            return;
+          }
+
+          reject(error);
+        };
+
+        this.server?.once("error", onError);
+        this.server?.listen(port, "127.0.0.1", () => {
+          this.server?.removeListener("error", onError);
+          const address = this.server?.address();
+
+          if (address && typeof address === "object") {
+            this.port = address.port;
+          }
+
+          resolve();
+        });
+      };
+
+      attempt(0);
+    });
   }
 
   async stop() {

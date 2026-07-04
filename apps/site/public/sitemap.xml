@@ -19,6 +19,12 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://arkitect-mcp.com/mcp</loc>
+    <lastmod>2026-07-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://arkitect-mcp.com/architecture</loc>
     <lastmod>2026-07-04</lastmod>
     <changefreq>monthly</changefreq>

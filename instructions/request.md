@@ -6,6 +6,9 @@
 4. Prefer vertical slices and modular package boundaries for new implementation work.
 5. Keep implementation notes concise in `implementations.md`.
 6. Keep the encoded architecture, remix, and pattern catalog shared across contracts, core, MCP, and desktop.
+- Pattern intelligence vertical slice (`packages/core/src/pattern-intelligence/`) owns deep GoF intent/applicability/relations plus SOLID principles.
+- MCP tools `get_pattern_intelligence`, `list_design_principles`, `recommend_patterns` expose orchestration data.
+- Diagnosis payload adds `patternRelationChains` and `patternAdrSummary` additively for Cursor agents.
 
 7. Chat-driven MCP auto-configuration — user describes MCP servers in chat; Arkitect parses intent and writes/updates MCP launch config.
 - Detect stdio vs remote transport, command, args, env from natural language.

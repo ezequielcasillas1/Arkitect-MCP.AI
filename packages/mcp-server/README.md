@@ -8,7 +8,7 @@ Stdio MCP server for Arkitect — diagnosis-first architecture guidance, catalog
 |--------|------|
 | **Website** | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
 | **GitHub Releases** | [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
-| **Windows installer** (v0.1.1) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.1.1/Arkitect-Setup.exe) |
+| **Windows installer** (v0.2.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.2.0/Arkitect-Setup.exe) |
 
 The desktop app can also check GitHub Releases from the sidebar (**Check for updates**) and open the latest installer download.
 

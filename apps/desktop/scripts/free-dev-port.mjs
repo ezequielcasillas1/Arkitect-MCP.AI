@@ -1,8 +1,8 @@
 import { execSync } from "node:child_process";
 
-const port = 5173;
+const devPorts = [5173, 47821];
 
-function freePortOnWindows() {
+function freePortOnWindows(port) {
   let output = "";
 
   try {
@@ -31,7 +31,7 @@ function freePortOnWindows() {
   }
 }
 
-function freePortOnUnix() {
+function freePortOnUnix(port) {
   try {
     execSync(`lsof -ti:${port} | xargs -r kill -9`, { shell: true, stdio: "ignore" });
   } catch {
@@ -39,8 +39,10 @@ function freePortOnUnix() {
   }
 }
 
-if (process.platform === "win32") {
-  freePortOnWindows();
-} else {
-  freePortOnUnix();
+for (const port of devPorts) {
+  if (process.platform === "win32") {
+    freePortOnWindows(port);
+  } else {
+    freePortOnUnix(port);
+  }
 }

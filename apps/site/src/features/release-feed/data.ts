@@ -3,6 +3,16 @@ import type { ReleaseEntry } from "./types";
 /** Newest first. Update this file when shipping a release. */
 export const releaseFeed: ReleaseEntry[] = [
   {
+    version: "0.2.0",
+    releaseDate: "2026-07-04",
+    status: "released",
+    changes: [
+      "Pattern Intelligence MCP: get_pattern_intelligence, list_design_principles, recommend_patterns ? relation chains and ADR summaries from repo intake.",
+      "22 GoF patterns + 8 SOLID/OO principles, relation graph, and complexity-aware recommender.",
+      "Refactoring Guru orchestration plus Cursor workbench auto-fill (apply_workbench_intake)."
+    ]
+  },
+  {
     version: "0.1.1",
     releaseDate: "2026-07-04",
     status: "released",
