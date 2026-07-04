@@ -22,6 +22,11 @@ body {
     linear-gradient(180deg, #090b10 0%, #0f1320 100%);
 }
 
+#root {
+  width: 100%;
+  min-width: 0;
+}
+
 body.nav-menu-open {
   overflow: hidden;
 }
@@ -49,10 +54,18 @@ a {
 
 .site-shell {
   min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 24px 28px 56px;
   display: flex;
   flex-direction: column;
   gap: 28px;
+}
+
+.site-shell > main {
+  width: 100%;
+  min-width: 0;
 }
 
 .site-nav {
@@ -60,6 +73,9 @@ a {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 14px 20px;
   border-radius: 16px;
   background: rgba(17, 21, 33, 0.72);
@@ -104,6 +120,8 @@ a {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .brand-mark-text {
@@ -173,6 +191,8 @@ a {
 .hero-visual {
   position: relative;
   z-index: 1;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .hero-visual {
@@ -190,6 +210,11 @@ a {
   border: 1px solid rgba(109, 140, 255, 0.18);
   box-shadow: inset 0 0 40px rgba(109, 140, 255, 0.06);
   overflow: hidden;
+}
+
+.hero-logo-canvas canvas {
+  display: block;
+  max-width: 100%;
 }
 
 .hero-logo-placeholder {
@@ -251,6 +276,8 @@ a {
 .content-grid {
   display: grid;
   gap: 20px;
+  width: 100%;
+  min-width: 0;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -260,6 +287,8 @@ a {
 
 .panel {
   padding: 24px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .eyebrow,
@@ -276,6 +305,7 @@ a {
 .flow-list {
   color: #dbe3f7;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .flow-list {
@@ -626,6 +656,8 @@ a {
 .connect-link-text {
   display: grid;
   gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .connect-link-text strong {
@@ -692,6 +724,11 @@ a {
   display: block;
   margin-bottom: 4px;
   color: #f5f8ff;
+  overflow-wrap: anywhere;
+}
+
+.install-step > div {
+  min-width: 0;
 }
 
 .install-step p {
@@ -703,6 +740,7 @@ a {
 
 .install-config-block {
   margin-top: 20px;
+  max-width: 100%;
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid rgba(109, 140, 255, 0.22);
@@ -723,10 +761,17 @@ a {
 .install-config-code {
   margin: 0;
   padding: 16px;
+  max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   font-size: 0.84rem;
   line-height: 1.55;
   color: #dce7ff;
+}
+
+.install-config-code code {
+  display: block;
+  white-space: pre;
 }
 
 /* Counter enhancements */
@@ -803,6 +848,8 @@ a {
 .reveal-section {
   opacity: 0;
   transform: translateY(32px);
+  min-width: 0;
+  max-width: 100%;
   transition:
     opacity 650ms cubic-bezier(0.22, 1, 0.36, 1),
     transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -1060,6 +1107,11 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .hero {
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
   .hero-logo-canvas,
   .hero-logo-placeholder {
     max-width: 100%;
@@ -1073,18 +1125,6 @@ a {
   .guide-toc {
     position: static;
   }
-}
-
-@media (max-width: 768px) {
-  .site-shell {
-    padding: 16px 16px 40px;
-    gap: 20px;
-  }
-
-  .site-nav {
-    top: 12px;
-    padding: 12px 14px;
-  }
 
   .nav-toggle {
     display: inline-flex;
@@ -1096,6 +1136,7 @@ a {
     top: calc(100% + 8px);
     left: 0;
     right: 0;
+    z-index: 25;
     padding: 12px;
     border-radius: 14px;
     background: rgba(17, 21, 33, 0.96);
@@ -1108,7 +1149,6 @@ a {
   }
 
   .site-nav {
-    position: sticky;
     flex-wrap: wrap;
   }
 
@@ -1127,6 +1167,18 @@ a {
     width: 100%;
     padding: 12px 14px;
     border-radius: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-shell {
+    padding: 16px max(16px, env(safe-area-inset-right)) 40px max(16px, env(safe-area-inset-left));
+    gap: 20px;
+  }
+
+  .site-nav {
+    top: 12px;
+    padding: 12px 14px;
   }
 
   .hero,
@@ -1174,11 +1226,20 @@ a {
   .guide-content .guide-h2 {
     font-size: 1.2rem;
   }
+
+  .reveal-section.reveal-left,
+  .reveal-section.reveal-right {
+    transform: translateY(32px);
+  }
+
+  .pill {
+    max-width: 100%;
+  }
 }
 
 @media (max-width: 480px) {
   .site-shell {
-    padding: 12px 12px 32px;
+    padding: 12px max(12px, env(safe-area-inset-right)) 32px max(12px, env(safe-area-inset-left));
     gap: 16px;
   }
 
