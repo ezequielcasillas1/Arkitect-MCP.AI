@@ -41,3 +41,21 @@
 - Simple readable sections: Creational, Structural, Behavioral patterns + architecture styles + SOLID link.
 - Each topic: meaning, architecture connection, trusted external resource link (Refactoring Guru, Fowler, Microsoft Learn, etc.).
 - Static content only; no backend; match existing page layout and design-system styling.
+
+13. Marketing site: Terms of Use page — legal terms for using Arkitect and the site.
+- Route on `apps/site`; footer/nav link; SEO metadata via existing `features/seo` slice.
+- Static content page; vertical slice (`features/legal` or shared legal slice).
+- Build plan mode: agent asks user about section layout, headings, and content structure before implementation.
+- Content supplied by Ezequiel; placeholder copy until final text is ready.
+
+14. Marketing site: Privacy Policy page — how user data is collected, stored, and used.
+- Route on `apps/site`; footer/nav link; SEO metadata via existing `features/seo` slice.
+- Cover Supabase, download tracking, reviews, and any third-party services in scope.
+- Build plan mode: agent asks user about section layout, headings, and content structure before implementation.
+- Content supplied by Ezequiel; placeholder copy until final text is ready.
+
+15. Marketing site: About section — who Arkitect is, mission, and contact context.
+- Route or dedicated section on `apps/site`; nav/footer link; SEO metadata.
+- Vertical slice (`features/about`); static content; match existing page layout and design-system styling.
+- Build plan mode: agent asks user about layout (page vs section), tone, and key blocks (story, team, links).
+- Content supplied by Ezequiel; connect-with-me / contact links aligned with reviews slice.

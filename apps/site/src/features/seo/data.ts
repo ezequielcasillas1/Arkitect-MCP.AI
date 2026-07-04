@@ -38,5 +38,29 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
     ogImage: defaultOgImage,
     keywords:
       "software architecture, design patterns, SOLID, hexagonal architecture, MVC, microservices, creational patterns, behavioral patterns"
+  },
+  "/about": {
+    title: "About — Arkitect MCP",
+    description:
+      "Learn about Arkitect's mission, local-first MCP diagnosis, desktop app, and free tier for the first 1,000 users.",
+    canonicalPath: "/about",
+    ogImage: defaultOgImage,
+    keywords: "About Arkitect, architecture tool, MCP server, local repo diagnosis, Cursor MCP"
+  },
+  "/terms": {
+    title: "Terms of Use — Arkitect MCP",
+    description:
+      "Terms for using the Arkitect desktop app, MCP server, and marketing site — including free tier, BYOK orchestration, and acceptable use.",
+    canonicalPath: "/terms",
+    ogImage: defaultOgImage,
+    keywords: "Arkitect terms of use, MCP terms, free tier, BYOK, acceptable use"
+  },
+  "/privacy": {
+    title: "Privacy Policy — Arkitect MCP",
+    description:
+      "How Arkitect handles reviews, download tracking, local MCP analysis, and third-party AI keys stored on your device.",
+    canonicalPath: "/privacy",
+    ogImage: defaultOgImage,
+    keywords: "Arkitect privacy policy, Supabase, local MCP, AI API keys, Cloudflare"
   }
 };

@@ -6,4 +6,11 @@ export interface SeoMeta {
   keywords?: string;
 }
 
-export type RouteSeoKey = "/" | "/reviews" | "/instructions" | "/architecture";
+export type RouteSeoKey =
+  | "/"
+  | "/reviews"
+  | "/instructions"
+  | "/architecture"
+  | "/about"
+  | "/terms"
+  | "/privacy";

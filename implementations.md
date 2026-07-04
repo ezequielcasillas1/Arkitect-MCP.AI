@@ -1,3 +1,13 @@
+### 2026-07-04 - Terms, Privacy & About Pages
+**Status:** PENDING
+**Files:** apps/site/src/features/legal/*, apps/site/src/features/about/*, apps/site/src/pages/{TermsPage,PrivacyPage,AboutPage}.tsx, apps/site/src/App.tsx, apps/site/src/components/{NavBar,Footer}.tsx, apps/site/src/features/seo/{types.ts,data.ts}, apps/site/public/sitemap.xml, apps/site/src/styles.css
+**Result:** Added `/terms`, `/privacy`, `/about` routes with vertical slices; legal shared layout + placeholder copy (AI/BYOK/free-tier accurate); About in nav+footer, Terms/Privacy footer-only; SEO + sitemap updated. Typecheck + build pass. Awaiting user confirmation.
+
+### 2026-07-04 - Architecture & Design Patterns Educative Page
+**Status:** PENDING
+**Files:** instructions/request.md, apps/site/src/features/education/*, apps/site/src/pages/ArchitecturePage.tsx, apps/site/src/App.tsx, apps/site/src/components/NavBar.tsx, apps/site/src/components/Footer.tsx, apps/site/src/features/seo/{types.ts,data.ts}, apps/site/public/sitemap.xml, apps/site/src/styles.css
+**Result:** Added `/architecture` route with vertical-slice education content (creational/structural/behavioral patterns, architecture styles, SOLID) and trusted external links; nav + SEO + sitemap updated. Awaiting user confirmation.
+
 ### 2026-07-04 - New Logo Mark: Favicon + Navbar
 **Status:** PENDING
 **Files:** apps/site/public/{arkitect-mark.png,arkitect-mark-nav.png,favicon.ico,favicon-16.png,favicon-32.png,apple-touch-icon.png,_redirects}, apps/site/scripts/{generate-favicon.py,extract-logo-mark.py}, apps/site/index.html, apps/site/package.json, apps/site/src/components/Logo.tsx, apps/site/src/styles.css

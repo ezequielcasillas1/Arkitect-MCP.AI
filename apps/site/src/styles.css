@@ -1112,6 +1112,18 @@ a {
   margin-top: 8px;
 }
 
+.about-grid {
+  grid-template-columns: 1fr;
+}
+
+.about-block + .about-block {
+  margin-top: 20px;
+}
+
+.legal-content .guide-h2:first-of-type {
+  margin-top: 0;
+}
+
 .guide-content {
   min-width: 0;
   color: #dbe3f7;
