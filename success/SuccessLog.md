@@ -64,3 +64,14 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Files:** packages/*/package.json, packages/mcp-server/README.md, scripts/package-mcp-release.mjs, .github/workflows/release-desktop.yml, README.md, docs/USER_GUIDE.md
 **Result:** pack:mcp/publish:mcp scripts, publishConfig on packages, CI attaches MCP artifacts on release tags.
 
+### Jul 4, 2026 - v0.2.0 pattern intelligence + site marketing
+**Status:** SUCCESS
+**Commit:** 03e4952
+**Files:** packages/core/src/pattern-intelligence/*, packages/contracts/src/pattern-intelligence.ts, packages/mcp-server/src/*, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/{LandingPage,McpPage}.tsx, apps/site/src/lib/arkitect-links.ts, implementations.md
+**Result:** Pattern intelligence MCP tools shipped at v0.2.0; marketing site release feed, /mcp history, landing lede, and home SEO highlight recommend_patterns, relation chains, and ADR summaries; site build passes.
+
+### 2026-07-04 - MCP Marketing Page
+**Status:** SUCCESS
+**Files:** apps/site/src/pages/McpPage.tsx, apps/site/src/features/mcp-page/*, App.tsx, NavBar.tsx, Footer.tsx, seo/{types,data}.ts, sitemap.xml, styles.css, implementations.md
+**Result:** New /mcp page documents 16 MCP tools grouped by domain, auto-fill via Cursor agent chat callout, and full version history. Wired into SPA router, nav, footer, SEO, sitemap. Typecheck passed.
+
