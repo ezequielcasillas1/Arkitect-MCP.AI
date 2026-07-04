@@ -9,7 +9,7 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 | **Website** (claim a free spot, then download) | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
 | **User guide & MCP setup** | [arkitect-mcp.com/instructions](https://arkitect-mcp.com/instructions) |
 | **GitHub Releases** (installer + source zip) | [github.com/ezequielcasillas1/Arkitect-MCP.AI/releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
-| **Windows installer** (direct, v0.2.1) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.2.1/Arkitect-Setup.exe) |
+| **Windows installer** (direct, v2.1.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v2.1.0/Arkitect-Setup.exe) |
 
 **Install from source:** clone this repo (or download **Source code (zip)** from [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases)), then follow [docs/USER_GUIDE.md](docs/USER_GUIDE.md). No npm registry — build locally with `pnpm install` and `pnpm --filter @arkitect/mcp-server build`.
 

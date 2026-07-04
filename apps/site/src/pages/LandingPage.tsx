@@ -30,7 +30,7 @@ const pillars = [
 
 const heroPills = [
   { label: "Free for the first 1,000 users" },
-  { label: "v0.2.1 — installer MCP packaging fix" },
+  { label: "v2.1.0 — installer MCP packaging fix" },
   { label: "MCP-native for Cursor" }
 ];
 

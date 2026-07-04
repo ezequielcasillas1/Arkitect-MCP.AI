@@ -257,7 +257,7 @@ Template:
 **Files:** README.md, docs/USER_GUIDE.md, packages/mcp-server/README.md, apps/site/src/lib/arkitect-links.ts, DownloadCounterSection.tsx, InstallSection.tsx
 **Result:** Added Download section to root README and MCP README (clone/build, no npm); USER_GUIDE download table; site fallbacks + GitHub Releases links on landing install/download sections. URLs: arkitect-mcp.com, GitHub Releases v0.1.0 Arkitect-Setup.exe.
 
-### 2026-07-04 - Marketing site v0.2.0 copy polish
+### 2026-07-04 - Version renumber v2.1.0 + download CTA sync
 **Status:** SUCCESS
-**Files:** apps/site/src/features/release-feed/data.ts, apps/site/src/features/mcp-page/data.ts, apps/site/src/pages/LandingPage.tsx, apps/site/src/features/seo/data.ts
-**Result:** Release feed, MCP version history, landing lede, and home SEO highlight pattern intelligence tools, relation chains, and ADR summaries for v0.2.0.
+**Files:** package.json (monorepo), apps/site/src/lib/arkitect-links.ts, apps/site/.env.production, release-feed/mcp-page/seo/landing, MCP tool version constants
+**Result:** Renumbered monorepo 0.2.1 → 2.1.0; fixed GITHUB_PUBLISHED_INSTALLER_VERSION (was stuck at 0.2.0 causing "Download Arkitect v0.2.0"); synced download URLs, version history, and package versions to 2.1.0. GitHub Release v2.1.0 + Cloudflare deploy still manual.
