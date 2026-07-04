@@ -13,6 +13,11 @@ Template:
 **Files:** apps/site/src/features/download-counter/DownloadCounterSection.tsx, apps/site/src/lib/env.ts, apps/site/.env.example
 **Result:** Claim flow only disabled the button to "You're on the list" with no post-claim download CTA. Added env-backed `VITE_DOWNLOAD_URL` and a success block with download link after claim; install-steps fallback when URL unset.
 
+### 2026-07-04 - Claim Hook Marks Full Counter as Claimed
+**Status:** PENDING
+**Files:** apps/site/src/features/download-counter/useDownloadCounter.ts
+**Result:** When all 1,000 spots were taken, `claim()` still set `hasClaimed` and localStorage even though RPC/mock returned `alreadyClaimed: false`. Hook now only marks claimed when `alreadyClaimed` is true; otherwise shows "All free spots have been claimed."
+
 ### 2026-07-04 - Ambiguous Column in Download Claim RPC
 **Status:** PENDING
 **Files:** apps/site/supabase/migrations/0001_arkitect_download_counter.sql

@@ -56,8 +56,14 @@ export function useDownloadCounter(): DownloadCounterState {
       const visitorId = getOrCreateVisitorId();
       const result = await guardedClaimRef.current(visitorId);
       setStats({ claimedCount: result.claimedCount, spotLimit: result.spotLimit });
-      setHasClaimed(true);
-      window.localStorage.setItem(CLAIMED_FLAG_KEY, "true");
+
+      if (result.alreadyClaimed) {
+        setHasClaimed(true);
+        window.localStorage.setItem(CLAIMED_FLAG_KEY, "true");
+      } else {
+        setErrorMessage("All free spots have been claimed.");
+      }
+
       setStatus("ready");
     } catch {
       setErrorMessage("We couldn't claim your free spot just now. Please try again in a moment.");
