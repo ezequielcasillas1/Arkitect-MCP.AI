@@ -1,3 +1,8 @@
+### 2026-07-04 - Download latest Arkitect CTA
+**Status:** PENDING
+**Files:** apps/site/src/lib/env.ts, apps/site/src/features/download-counter/DownloadCounterSection.tsx
+**Result:** Primary download CTAs renamed to "Download latest Arkitect"; added resolveDownloadUrl() (VITE_DOWNLOAD_URL or GITHUB_INSTALLER_URL v0.1.1). v0.1.1 link was already correct in arkitect-links.ts.
+
 ### 2026-07-04 - Workbench Auto-Fill Through Step 7
 **Status:** PENDING
 **Files:** packages/contracts/src/{workbench-intake,desktop}.ts, packages/core/src/{workbench-automation,desktop-library}.ts, apps/desktop/src/{App.tsx,features/repo-connection/RepoConnectionSection.tsx,lib/workbench-intake-bridge.ts}, packages/mcp-server/src/{index,mcp-tool-definitions}.ts
@@ -219,13 +224,13 @@ Template:
 
 
 ### 2026-07-04 - Release CI typecheck fix
-**Status:** PARTIAL
+**Status:** SUCCESS
 **Files:** apps/desktop/src/lib/workbench-intake-bridge.test.ts
 **Result:** Fixed missing complexityProfile and providerAgnostic in test fixture; retagged v0.1.1 after failed Release Desktop workflow.
 ### 2026-07-04 - Version bump v0.1.1 + download link sync
-**Status:** PARTIAL
+**Status:** SUCCESS
 **Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, apps/site/src/lib/arkitect-links.ts, apps/site/src/features/release-feed/data.ts, apps/site/.env.example, README.md, docs/USER_GUIDE.md, apps/desktop/README.md, apps/site/README.md, packages/mcp-server/{README.md,src/mcp-tool-definitions.ts}, apps/desktop/src/electron/mcp-client-manager.ts
-**Result:** Bumped monorepo from 0.1.0 → 0.1.1; release feed marked 0.1.1 released; GitHub installer URLs updated site-wide. Auto-update uses GitHub latest (no URL change). Cloudflare VITE_DOWNLOAD_URL + gh release v0.1.1 still manual.
+**Result:** Bumped monorepo from 0.1.0 → 0.1.1; release feed marked 0.1.1 released; GitHub installer URLs updated site-wide. Auto-update uses GitHub latest (no URL change). GitHub Release Desktop CI published v0.1.1 + Arkitect-Setup.exe. Cloudflare VITE_DOWNLOAD_URL + deploy:site still manual.
 
 ### 2026-07-04 - GitHub/site download link sync
 **Status:** PENDING
