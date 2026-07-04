@@ -1,3 +1,8 @@
+### 2026-07-03 - Site Favicon: 3D Logo Mark
+**Status:** PENDING
+**Files:** apps/site/public/favicon.svg, apps/site/public/apple-touch-icon.svg, apps/site/index.html, implementations.md
+**Result:** Added SVG favicon + apple-touch-icon derived from ArkitectLogo3D ArchStructure (gate/N wireframe, #6d8cff/#a9c0ff on #111521). Wired link rel in index.html; Vite copies public assets to dist root. Build passes; awaiting user confirmation.
+
 ### 2026-07-03 - USER_GUIDE MCP-Only Rewrite
 **Status:** PENDING
 **Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx, implementations.md
