@@ -32,3 +32,9 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Files:** apps/site/public/favicon.svg, apps/site/public/apple-touch-icon.svg, apps/site/index.html, implementations.md
 **Result:** SVG favicon and apple-touch-icon from Arkitect wireframe mark; theme-color and link tags in index.html; pushed to origin/master.
 
+
+### 2026-07-04 - Favicon Not Showing in Production
+**Status:** SUCCESS
+**Commit:** c3ab81a
+**Files:** apps/site/public/_redirects, apps/site/public/favicon.ico, apps/site/public/favicon.svg, apps/site/index.html, apps/site/scripts/generate-favicon.mjs, apps/site/package.json, bugfixes.md
+**Result:** Static favicon rules before SPA catch-all; fixed favicon.svg; added favicon.ico and generate:favicon script; pushed to origin/master.
