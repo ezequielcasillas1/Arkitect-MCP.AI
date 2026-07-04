@@ -57,8 +57,14 @@ describe("inferReviewFlagsFromIntake", () => {
     expect(
       inferReviewFlagsFromIntake({
         userInput: { platformType: { hint: "desktop", confirmed: true } },
-        catalogPreferences: { requirementTags: ["mcp"] },
-        ai: { preferredProvider: "composer-2.5", modelName: "composer-2.5", allowUserSuppliedKeys: true, fallbackProviders: [] }
+        catalogPreferences: { complexityProfile: "balanced", requirementTags: ["mcp"] },
+        ai: {
+          preferredProvider: "composer-2.5",
+          modelName: "composer-2.5",
+          allowUserSuppliedKeys: true,
+          providerAgnostic: false,
+          fallbackProviders: []
+        }
       })
     ).toEqual({
       profile: true,
