@@ -1,6 +1,13 @@
-# Implementations
+### 2026-07-03 - USER_GUIDE MCP-Only Rewrite
+**Status:** PENDING
+**Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx, implementations.md
+**Result:** Rewrote USER_GUIDE to focus exclusively on desktop MCP + agent orchestration (Cursor). Removed Supabase/site/deploy tutorials; added bidirectional workflow diagram, orchestration patterns, tool/resource refs, MCP-only troubleshooting. Updated Instructions hero copy. Awaiting user confirmation.
 
-Use concise implementation notes after review.
+### 2026-07-03 - Instructions Page: Sticky TOC Sidebar
+**Status:** PENDING
+**Files:** apps/site/src/styles.css
+**Result:** Fixed sticky "On this page" sidebar — removed transform on `.instructions-layout.reveal-section` (transform breaks sticky), switched html/body to `overflow-x: clip`, added `align-self: start`, `max-height`, `overflow-y: auto` on `.guide-toc`. Mobile unchanged (static at ≤900px).
+
 
 Template:
 ### [Date] - [Feature]

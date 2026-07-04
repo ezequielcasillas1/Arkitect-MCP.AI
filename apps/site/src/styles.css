@@ -10,13 +10,13 @@
 }
 
 html {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow-x: clip;
   background:
     radial-gradient(circle at top, rgba(109, 140, 255, 0.22), transparent 32%),
     linear-gradient(180deg, #090b10 0%, #0f1320 100%);
@@ -936,11 +936,21 @@ a {
   grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
   gap: 28px;
   align-items: start;
+  overflow: visible;
+}
+
+/* transform on .reveal-section breaks position:sticky — keep fade-only for this block */
+.instructions-layout.reveal-section,
+.instructions-layout.reveal-section.reveal-visible {
+  transform: none;
 }
 
 .guide-toc {
   position: sticky;
   top: 88px;
+  align-self: start;
+  max-height: calc(100vh - 88px - 24px);
+  overflow-y: auto;
   padding: 16px;
   border-radius: 14px;
   border: 1px solid rgba(109, 140, 255, 0.18);
