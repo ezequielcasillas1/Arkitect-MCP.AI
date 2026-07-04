@@ -7,7 +7,7 @@ export const releaseFeed: ReleaseEntry[] = [
     releaseDate: "2026-07-04",
     status: "released",
     changes: [
-      "Pattern Intelligence MCP: get_pattern_intelligence, list_design_principles, recommend_patterns ? relation chains and ADR summaries from repo intake.",
+      "Pattern Intelligence MCP: get_pattern_intelligence, list_design_principles, recommend_patterns — relation chains and ADR summaries from repo intake.",
       "22 GoF patterns + 8 SOLID/OO principles, relation graph, and complexity-aware recommender.",
       "Refactoring Guru orchestration plus Cursor workbench auto-fill (apply_workbench_intake)."
     ]

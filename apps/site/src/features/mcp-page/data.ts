@@ -208,9 +208,9 @@ export const mcpVersionHistory: McpVersionEntry[] = [
     version: "0.2.0",
     releaseDate: "2026-07-04",
     status: "released",
-    title: "Pattern intelligence ? design-pattern orchestration for Cursor",
+    title: "Pattern intelligence — design-pattern orchestration for Cursor",
     summary:
-      "Premium pattern intelligence in MCP: deep GoF + principle catalogs, relation chains, complexity-aware recommend_patterns with ADR summaries ? plus workbench auto-fill and refactoring reports.",
+      "Premium pattern intelligence in MCP: deep GoF + principle catalogs, relation chains, complexity-aware recommend_patterns with ADR summaries — plus workbench auto-fill and refactoring reports.",
     highlights: [
       "Pattern intelligence slice: 22 GoF patterns, 8 principles, relation graph; recommend_patterns returns chains, warnings, and ADR summaries.",
       "MCP tools added: get_pattern_intelligence, list_design_principles, recommend_patterns.",

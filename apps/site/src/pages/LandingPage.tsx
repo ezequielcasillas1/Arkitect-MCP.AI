@@ -45,7 +45,7 @@ export function LandingPage() {
           <h1>Design the structure before the code starts drifting.</h1>
           <p className="lede">
             Arkitect is a desktop-first architecture reasoning tool with an MCP server Cursor and other
-            AI clients can call directly ? diagnosis, pattern intelligence, catalog recommendations, and guidance, grounded in
+            AI clients can call directly—diagnosis, pattern intelligence, catalog recommendations, and guidance, grounded in
             your actual repo.
           </p>
           <div className="hero-actions">
