@@ -28,3 +28,10 @@
 - Core `suggestRequirementTags` API; included in diagnosis payload and MCP `suggest_requirement_tags` tool.
 - Desktop Architecture Policy shows suggested chips with apply-one / apply-all actions.
 - AI enrichment of tag suggestions deferred until provider flow is wired.
+
+11. Marketing site: download counter + reviews — extend `apps/site` with pricing/CTA and feedback.
+- Two vertical slices (`features/download-counter`, `features/reviews`), own types/data-access/UI.
+- Counter: "free for first 1,000" claim, Supabase-backed, capped + dedup'd, milestone progress bar.
+- Reviews: public submit + list, Supabase RLS, per-visitor rate-limit trigger, "connect with me" links.
+- Data-access gateways swap mock/Supabase by env config; Cloudflare Pages build/deploy readiness added.
+- Needs real beaver logo asset and real contact links from Ezequiel (placeholders used for now).

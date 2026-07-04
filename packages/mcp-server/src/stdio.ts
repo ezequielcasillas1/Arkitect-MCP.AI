@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-import type { ArkitectMcpToolResult, McpToolContent } from "@arkitect/contracts";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -10,20 +9,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { createArkitectMcpServer, readArkitectMcpResource } from "./index.js";
 import { registerWithDesktopBridge } from "./desktop-bridge-client.js";
-
-function toMcpToolContent(content: McpToolContent) {
-  if (content.type === "text") {
-    return { type: "text" as const, text: content.text };
-  }
-
-  return { type: "text" as const, text: JSON.stringify(content.json, null, 2) };
-}
-
-function toMcpToolResult(result: ArkitectMcpToolResult) {
-  return {
-    content: result.content.map(toMcpToolContent)
-  };
-}
+import { toMcpToolResult } from "./mcp-result-mapper.js";
 
 async function main() {
   const arkitect = createArkitectMcpServer();

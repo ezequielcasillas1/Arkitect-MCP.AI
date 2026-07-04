@@ -32,6 +32,10 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 - Worker runtime: `Cloudflare Workers`
 - Shared language/tooling: `TypeScript + ESLint`
 
+## User guide
+
+For a full tutorial on the marketing site, Supabase setup, MCP server configuration, and common workflows, see **[docs/USER_GUIDE.md](docs/USER_GUIDE.md)**.
+
 ## Commands
 
 Run from the monorepo root (example: `C:\Dev\Arkitect-mcp.com`):

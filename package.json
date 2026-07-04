@@ -11,6 +11,7 @@
     "dev:desktop": "pnpm --filter @arkitect/desktop dev",
     "start:desktop": "pnpm --filter @arkitect/desktop start",
     "dev:site": "pnpm --filter @arkitect/site dev",
+    "deploy:site": "pnpm --filter @arkitect/site deploy:production",
     "dev:worker": "pnpm --filter @arkitect/licensing-worker dev",
     "test": "turbo run test",
     "test:unit": "turbo run test:unit",

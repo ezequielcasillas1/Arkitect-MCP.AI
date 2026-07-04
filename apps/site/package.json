@@ -7,18 +7,29 @@
     "dev": "vite",
     "build": "tsc -p tsconfig.json --noEmit && vite build",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "lint": "eslint \"src/**/*.{ts,tsx}\""
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "pages:create": "wrangler pages project create arkitect-site --production-branch=main",
+    "deploy": "wrangler pages deploy dist --project-name=arkitect-site --branch=main --commit-dirty=true",
+    "deploy:production": "pnpm build && pnpm deploy"
   },
   "dependencies": {
     "@arkitect/ai": "workspace:*",
     "@arkitect/design-system": "workspace:*",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@supabase/supabase-js": "^2.110.0",
+    "lucide-react": "^1.18.0",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.18.1",
+    "three": "^0.185.1"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.0",
     "@vitejs/plugin-react": "^6.0.2",
-    "vite": "^8.0.16"
+    "vite": "^8.0.16",
+    "wrangler": "^4.100.0"
   }
 }

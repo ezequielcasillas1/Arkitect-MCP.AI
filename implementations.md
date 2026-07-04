@@ -8,6 +8,16 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What changed and why]
 
+### 2026-07-04 - MCP structuredContent Fix
+**Status:** PENDING
+**Files:** packages/mcp-server/src/mcp-result-mapper.ts, packages/mcp-server/src/stdio.ts, packages/mcp-server/src/mcp-server.test.ts, packages/mcp-server/src/mcp-result-mapper.test.ts
+**Result:** `toMcpToolResult` now lifts each tool's `{type:"json"}` content into a spec-compliant `structuredContent` object; verified against all 10 tools' outputSchema in tests. Typecheck/lint/build/tests pass; live MCP server still needs a Cursor restart to load the rebuilt dist before it's confirmed end-to-end.
+
+### 2026-07-04 - Marketing Site: Download Counter + Reviews
+**Status:** PENDING
+**Files:** apps/site/src/features/download-counter/*, apps/site/src/features/reviews/*, apps/site/src/lib/*, apps/site/src/components/*, apps/site/src/pages/*, apps/site/src/App.tsx, apps/site/src/main.tsx, apps/site/src/styles.css, apps/site/supabase/migrations/*, apps/site/wrangler.jsonc, apps/site/public/_redirects, instructions/request.md
+**Result:** Extended `@arkitect/site` with two vertical slices (download-counter, reviews) reusing the existing dark-blue `@arkitect/design-system` theme; Supabase-backed via a dedicated new project (capped/dedup'd counter RPCs, moderation-friendly reviews RLS + rate-limit trigger), with mock-gateway fallback via Strategy pattern when unconfigured. Cloudflare Pages build/deploy files added; domain routing still blocked (no Cloudflare MCP connected). Typecheck, lint, and production build all pass; awaiting user confirmation before any success claim.
+
 ### 2026-07-03 - MCP Test Runner Tools
 **Status:** PENDING
 **Files:** packages/contracts/src/verification.ts, packages/core/src/test-runner.ts, packages/core/src/pnpm-runner.ts, packages/mcp-server/src/index.ts, package.json, turbo.json, apps/desktop/src/features/results-overview/ResultsOverviewSection.tsx
@@ -96,6 +106,11 @@ Template:
 **Status:** PENDING
 **Files:** packages/contracts/src/verification.ts, packages/core/src/test-override.ts, apps/desktop/src/electron/test-override-service.ts, apps/desktop/src/features/review-run/ReviewRunSection.tsx, apps/desktop/src/features/results-overview/ResultsOverviewSection.tsx
 **Result:** Desktop test override discovers package.json scripts and runs lint/build/typecheck/unit/integration/verify via IPC bridge; replaces Cursor AI test runs from Review & Run; Results tests tab shows output.
+
+### 2026-07-03 - Cloudflare Pages deploy setup
+**Status:** PARTIAL
+**Files:** apps/site/package.json, package.json, apps/site/README.md
+**Result:** Added deploy:production/pages:create scripts; build verified. Wrangler login/API blocked by VPN/proxy — user must auth off VPN, deploy, then attach arkitect-mcp.com in dashboard.
 
 ### 2026-07-03 - Saved Profile Name Suggestions
 **Status:** PENDING
