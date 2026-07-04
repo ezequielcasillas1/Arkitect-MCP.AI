@@ -242,6 +242,11 @@ Template:
 **Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, apps/site/src/lib/arkitect-links.ts, apps/site/src/features/release-feed/data.ts, apps/site/.env.example, README.md, docs/USER_GUIDE.md, apps/desktop/README.md, apps/site/README.md, packages/mcp-server/{README.md,src/mcp-tool-definitions.ts}, apps/desktop/src/electron/mcp-client-manager.ts
 **Result:** Bumped monorepo from 0.1.0 → 0.1.1; release feed marked 0.1.1 released; GitHub installer URLs updated site-wide. Auto-update uses GitHub latest (no URL change). GitHub Release Desktop CI published v0.1.1 + Arkitect-Setup.exe. Cloudflare VITE_DOWNLOAD_URL + deploy:site still manual.
 
+### 2026-07-04 - v0.2.1 installer MCP zod packaging fix
+**Status:** SUCCESS
+**Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, mcp-tool-definitions.ts, mcp-client-manager.ts, mcp-runtime-paths.ts, electron-builder.yml, arkitect-links.ts, release-feed/data.ts, mcp-page/data.ts, seo/data.ts, LandingPage.tsx, DownloadCounterSection.tsx, .env.production, README.md, docs/USER_GUIDE.md, apps/desktop/README.md
+**Result:** Bumped monorepo 0.2.0 → 0.2.1; fixed packaged MCP stdio zod ERR_MODULE_NOT_FOUND via direct deps, asarUnpack, and NODE_PATH; marketing site version history + download URLs synced to v0.2.1.
+
 ### 2026-07-04 - Version bump v0.2.0 + download link sync
 **Status:** PENDING
 **Files:** package.json, apps/{desktop,site,licensing-worker}/package.json, packages/*/package.json, apps/site/src/lib/arkitect-links.ts, apps/site/src/features/release-feed/data.ts, apps/site/src/features/mcp-page/data.ts, apps/site/.env.example, README.md, docs/USER_GUIDE.md, apps/desktop/README.md, apps/site/README.md, packages/mcp-server/{README.md,src/mcp-tool-definitions.ts}, apps/desktop/src/electron/mcp-client-manager.ts

@@ -205,6 +205,19 @@ export const mcpToolGroups: McpToolGroup[] = [
 
 export const mcpVersionHistory: McpVersionEntry[] = [
   {
+    version: "0.2.1",
+    releaseDate: "2026-07-04",
+    status: "released",
+    title: "Installer MCP packaging fix — zod resolution for Cursor stdio",
+    summary:
+      "Patch release fixing packaged desktop MCP stdio when Cursor mcp.json points at Arkitect-Setup.exe bundled stdio.js.",
+    highlights: [
+      "Fixed ERR_MODULE_NOT_FOUND for zod when Cursor mcp.json launches packaged MCP stdio from Arkitect-Setup.exe (v0.2.1).",
+      "Bundled zod and zod-to-json-schema as direct @arkitect/mcp-server deps; electron-builder asarUnpack for node_modules resolution.",
+      "NODE_PATH in mcp-runtime-paths.ts so the Windows installer layout resolves SDK peer deps for Cursor stdio spawns."
+    ]
+  },
+  {
     version: "0.2.0",
     releaseDate: "2026-07-04",
     status: "released",

@@ -60,13 +60,32 @@ export function resolveMcpNodeCommand(): string {
   return "node";
 }
 
+function resolvePackagedNodeModulesPath(): string | undefined {
+  const candidates = [
+    join(process.resourcesPath, "app.asar.unpacked", "node_modules"),
+    join(process.resourcesPath, "app", "node_modules")
+  ];
+
+  return candidates.find((candidate) => existsSync(candidate));
+}
+
 export function withMcpNodeSpawnEnv(env: Record<string, string> = {}): Record<string, string> {
   if (!app.isPackaged) {
     return env;
   }
 
+  const nodeModules = resolvePackagedNodeModulesPath();
+  const separator = process.platform === "win32" ? ";" : ":";
+  const existingNodePath = env.NODE_PATH ?? process.env.NODE_PATH ?? "";
+  const nodePath = nodeModules
+    ? existingNodePath
+      ? `${nodeModules}${separator}${existingNodePath}`
+      : nodeModules
+    : existingNodePath;
+
   return {
     ...env,
-    ELECTRON_RUN_AS_NODE: "1"
+    ELECTRON_RUN_AS_NODE: "1",
+    ...(nodePath ? { NODE_PATH: nodePath } : {})
   };
 }

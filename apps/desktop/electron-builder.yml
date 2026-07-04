@@ -13,6 +13,8 @@ files:
 asarUnpack:
   - node_modules/@arkitect/**/*
   - node_modules/@modelcontextprotocol/**/*
+  - node_modules/zod/**/*
+  - node_modules/zod-to-json-schema/**/*
 win:
   target:
     - nsis

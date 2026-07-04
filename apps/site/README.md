@@ -22,9 +22,8 @@ pnpm dev:site
 - Set `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` as Pages environment variables (values are
   publishable, safe to set in the dashboard).
 - Set `VITE_DOWNLOAD_URL` to the public GitHub release asset URL after publishing
-  `Arkitect-Setup.exe` (example:
-  `https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v0.2.0/Arkitect-Setup.exe`).
-  Redeploy after changing this value.
+  `Arkitect-Setup.exe`. Committed default: `apps/site/.env.production` (v0.2.1 installer URL).
+  For Cloudflare Pages Git integration, mirror the same value in dashboard → Environment variables.
 - **Custom domain** (`arkitect-mcp.com`): attach in Cloudflare dashboard → Pages → `arkitect-site` →
   Custom domains, or after first deploy via dashboard. `apps/licensing-worker` reserves
   `/oauth/*`, `/webhooks/*`, `/licenses/*`, `/entitlements/*` as Worker routes — no conflict with Pages

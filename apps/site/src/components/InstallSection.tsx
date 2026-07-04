@@ -41,8 +41,9 @@ export function InstallSection() {
       <p className="section-label">Get Started</p>
       <h2 id="install-heading">Install Arkitect in four steps</h2>
       <p className="install-lede">
+        Download the Windows installer after claiming a free spot, or clone from GitHub and build locally.
         Desktop-first architecture reasoning with an MCP server your Cursor agent can call — diagnosis,
-        catalog recommendations, and guidance grounded in your repo.
+        pattern intelligence, catalog recommendations, and guidance grounded in your repo.
       </p>
 
       <ol className="install-steps">

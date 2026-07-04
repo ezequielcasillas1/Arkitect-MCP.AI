@@ -1,7 +1,7 @@
 import { Download, Gift, Loader2, Users } from "lucide-react";
 import { recordTrackedDownload } from "../download-tracking";
-import { GITHUB_INSTALLER_URL, GITHUB_RELEASES_URL } from "../../lib/arkitect-links";
-import { downloadUrlState, isDownloadUrlConfigured, resolveDownloadUrl } from "../../lib/env";
+import { ARKITECT_RELEASE_VERSION, GITHUB_INSTALLER_URL, GITHUB_RELEASES_URL } from "../../lib/arkitect-links";
+import { downloadUrlState, hasDownloadUrl, isDownloadUrlConfigured, resolveDownloadUrl } from "../../lib/env";
 import { ReleaseFeedSection } from "../release-feed";
 import { useDownloadCounter } from "./useDownloadCounter";
 
@@ -89,14 +89,14 @@ export function DownloadCounterSection() {
       {hasClaimed ? (
         <div className="counter-claim-success">
           <p className="counter-claim-success-text">You&apos;re on the list — grab your download below.</p>
-          {isDownloadUrlConfigured ? (
+          {hasDownloadUrl ? (
             <button
               type="button"
               className="primary-button action-button-wide"
               onClick={handleSetupDownloadClick}
             >
               <Download size={18} aria-hidden="true" />
-              Download latest Arkitect
+              Download Arkitect v{ARKITECT_RELEASE_VERSION}
             </button>
           ) : downloadUrlState === "invalid" ? (
             <>
@@ -115,7 +115,7 @@ export function DownloadCounterSection() {
                 onClick={() => void recordTrackedDownload("arkitect-setup")}
               >
                 <Download size={18} aria-hidden="true" />
-                Download latest Arkitect
+                Download Arkitect v{ARKITECT_RELEASE_VERSION}
               </a>
               <a href="#install-heading" className="secondary-button action-button-wide">
                 See install steps

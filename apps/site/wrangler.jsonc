@@ -3,4 +3,6 @@
   "name": "arkitect-site",
   "compatibility_date": "2026-06-14",
   "pages_build_output_dir": "dist"
+  // Production download URL: apps/site/.env.production (VITE_DOWNLOAD_URL).
+  // Cloudflare Pages Git builds: mirror the same var in dashboard → arkitect-site → Environment variables.
 }

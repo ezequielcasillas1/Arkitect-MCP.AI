@@ -1,6 +1,6 @@
 {
   "name": "@arkitect/mcp-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "type": "module",
   "bin": {
     "arkitect-mcp": "./dist/stdio.js"
@@ -22,7 +22,8 @@
     "@arkitect/contracts": "workspace:*",
     "@arkitect/core": "workspace:*",
     "@arkitect/repo-analyzer": "workspace:*",
-    "@modelcontextprotocol/sdk": "^1.27.0"
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "zod": "^3.25.28"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
