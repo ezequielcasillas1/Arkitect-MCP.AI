@@ -1088,6 +1088,7 @@ export function App() {
     <div className="desktop-shell" style={themeStyle}>
       <div className="app-layout">
         <FlowSidebar
+          isElectron={shellInfo?.runtime === "electron"}
           activeStep={activeStep}
           onStepSelect={(stepId) => {
             const step = sidebarSteps.find((item) => item.id === stepId);

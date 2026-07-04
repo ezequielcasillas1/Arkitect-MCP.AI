@@ -48,6 +48,20 @@ Packaged builds enable integrity checks by default. Dev mode skips them unless y
 
 **Limitations:** Electron apps can be reverse-engineered. This raises the bar against casual tampering and repackaging; it is not unbreakable DRM.
 
+## Check for updates (in-app)
+
+The desktop sidebar includes **Check for updates**. It queries GitHub Releases for `ezequielcasillas1/Arkitect-MCP.AI`, compares against `app.getVersion()`, and opens `Arkitect-Setup.exe` in the default browser when a newer release is available.
+
+Override repo or asset name at build/runtime:
+
+| Variable | Default |
+|----------|---------|
+| `ARKITECT_UPDATE_REPO_OWNER` | `ezequielcasillas1` |
+| `ARKITECT_UPDATE_REPO_NAME` | `Arkitect-MCP.AI` |
+| `ARKITECT_UPDATE_ASSET_NAME` | `Arkitect-Setup.exe` |
+
+This is a manual download flow (no `electron-updater`). Users run the NSIS installer after download.
+
 ## GitHub release v0.1.0
 
 After the installer builds locally:

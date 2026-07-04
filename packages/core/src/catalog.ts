@@ -246,6 +246,166 @@ export const architectureCatalog: ArchitectureCatalogEntry[] = [
     highAffinityPatterns: ["strategy", "composite", "facade", "decorator"],
     relatedArchitectures: ["modular-monolith", "event-driven", "microservices"],
     detectionKeywords: ["microkernel", "plugin", "extension", "kernel", "plugin architecture"]
+  },
+  {
+    id: "onion-architecture",
+    displayName: "Onion Architecture",
+    category: "foundation",
+    summary: "Layers the application around the domain model with dependencies flowing inward and infrastructure implementing inner interfaces.",
+    bestFor: ["Domain-centric apps", "Persistence-ignorant cores", "Teams separating domain from ORM details"],
+    useCases: ["Enterprise line-of-business apps", "DDD-style services", "Framework-swappable backends"],
+    strengths: ["Clear inward dependency flow", "Domain stays persistence-ignorant", "Natural repository and UoW seams"],
+    tradeoffs: ["Layer ceremony for simple CRUD", "Mapping between layers adds overhead"],
+    warnings: ["Do not confuse folder layers with real boundaries.", "Keep infrastructure adapters thin."],
+    compatiblePlatforms: ["web", "api", "desktop", "hybrid", "library"],
+    compatibleWorkloads: ["architecture-foundation", "migration", "repo-recovery", "diagnosis"],
+    highAffinityPatterns: ["factory-method", "adapter", "facade", "strategy"],
+    relatedArchitectures: ["clean-architecture", "hexagonal", "domain-driven-design", "repository-pattern", "unit-of-work"],
+    detectionKeywords: ["onion architecture", "onion", "domain model inward", "persistence ignorant", "onion layer"]
+  },
+  {
+    id: "monolithic",
+    displayName: "Monolithic Architecture",
+    category: "foundation",
+    summary: "Builds the entire application as a single deployable unit with shared memory, process, and codebase.",
+    bestFor: ["Early-stage products", "Small teams", "Simple operational footprint"],
+    useCases: ["MVPs", "Internal tools", "Single-team SaaS before scale pressure"],
+    strengths: ["Simplest deployment", "Low operational overhead", "Fast local development loop"],
+    tradeoffs: ["Scaling limits", "Release contention grows with team size", "Harder to isolate failures at scale"],
+    warnings: ["Use modular boundaries inside the monolith early.", "Plan strangler paths before scale forces a rewrite."],
+    compatiblePlatforms: ["web", "api", "desktop", "hybrid"],
+    compatibleWorkloads: ["architecture-foundation", "feature-delivery", "bug-fix", "diagnosis"],
+    highAffinityPatterns: ["facade", "strategy", "mediator", "decorator"],
+    relatedArchitectures: ["modular-monolith", "layered", "vertical-slice", "strangler-fig"],
+    detectionKeywords: ["monolith", "monolithic", "single deployable", "single process", "one codebase"]
+  },
+  {
+    id: "soa",
+    displayName: "Service-Oriented Architecture (SOA)",
+    category: "foundation",
+    summary: "Organizes capabilities as loosely coupled, discoverable services with standardized contracts, often coordinated through an enterprise bus.",
+    bestFor: ["Enterprise integration", "Shared service governance", "Interop across heterogeneous systems"],
+    useCases: ["Enterprise ERP integration", "Shared platform services", "Multi-vendor ecosystems"],
+    strengths: ["Standardized contracts", "Service reuse", "Governed interoperability"],
+    tradeoffs: ["ESB bottlenecks", "Heavier governance than microservices", "Can accumulate shared mutable state"],
+    warnings: ["Do not treat SOA as microservices with an ESB.", "Keep service ownership explicit."],
+    compatiblePlatforms: ["api", "web", "hybrid", "worker"],
+    compatibleWorkloads: ["architecture-foundation", "migration", "diagnosis"],
+    highAffinityPatterns: ["adapter", "facade", "proxy", "bridge"],
+    relatedArchitectures: ["microservices", "api-gateway", "event-driven", "layered"],
+    detectionKeywords: ["soa", "service-oriented", "enterprise service bus", "esb", "discoverable service", "service contract"]
+  },
+  {
+    id: "unit-of-work",
+    displayName: "Unit of Work",
+    category: "data-access",
+    summary: "Tracks object changes during a business transaction and coordinates a single atomic write to persistence.",
+    bestFor: ["Aggregate consistency", "Transaction boundaries", "Application service write paths"],
+    useCases: ["DDD aggregate persistence", "Multi-entity commits", "ORM session coordination"],
+    strengths: ["Clear transaction scope", "Pairs naturally with repositories", "Keeps ORM details out of domain"],
+    tradeoffs: ["Adds abstraction over simple saves", "Lifecycle management complexity"],
+    warnings: ["Use only when multiple writes must commit atomically.", "Do not leak UoW into read-only query paths."],
+    compatiblePlatforms: ["api", "web", "desktop", "hybrid", "library"],
+    compatibleWorkloads: ["feature-delivery", "migration", "repo-recovery", "diagnosis"],
+    highAffinityPatterns: ["facade", "proxy", "command"],
+    relatedArchitectures: ["repository-pattern", "onion-architecture", "clean-architecture", "domain-driven-design"],
+    detectionKeywords: ["unit of work", "unit-of-work", "uow", "transaction boundary", "atomic write", "aggregate consistency"]
+  },
+  {
+    id: "anti-corruption-layer",
+    displayName: "Anti-Corruption Layer",
+    category: "supporting",
+    summary: "Translates between your domain model and an external or legacy system so foreign concepts do not leak into your bounded context.",
+    bestFor: ["Legacy integration", "Bounded context isolation", "Third-party model translation"],
+    useCases: ["Migrating off legacy APIs", "Integrating partner systems", "Protecting ubiquitous language"],
+    strengths: ["Preserves domain language", "Isolates foreign models", "Strategic adapter at context boundaries"],
+    tradeoffs: ["Translation mapping cost", "Maintenance as external systems evolve"],
+    warnings: ["Do not skip the ACL when foreign models pollute domain code.", "Keep translation logic explicit and testable."],
+    compatiblePlatforms: ["api", "worker", "hybrid", "web"],
+    compatibleWorkloads: ["migration", "feature-delivery", "architecture-foundation", "diagnosis"],
+    highAffinityPatterns: ["adapter", "facade", "bridge", "proxy"],
+    relatedArchitectures: ["domain-driven-design", "hexagonal", "strangler-fig", "soa"],
+    detectionKeywords: ["anti-corruption", "anti corruption layer", "acl", "bounded context integration", "legacy integration", "domain isolation", "foreign model"]
+  },
+  {
+    id: "circuit-breaker",
+    displayName: "Circuit Breaker",
+    category: "supporting",
+    summary: "Wraps remote calls with a breaker that opens after repeated failures, preventing cascading outages and allowing downstream recovery.",
+    bestFor: ["Distributed resilience", "External dependency protection", "Fault-tolerant service calls"],
+    useCases: ["Microservice HTTP clients", "Payment provider calls", "Third-party API integration"],
+    strengths: ["Prevents cascade failures", "Fast-fail under stress", "Supports graceful degradation"],
+    tradeoffs: ["Tuning thresholds takes effort", "False opens if thresholds are wrong"],
+    warnings: ["Pair with retries and timeouts thoughtfully.", "Monitor breaker state in production."],
+    compatiblePlatforms: ["api", "worker", "hybrid", "web"],
+    compatibleWorkloads: ["feature-delivery", "migration", "diagnosis"],
+    highAffinityPatterns: ["proxy", "decorator", "chain-of-responsibility", "state"],
+    relatedArchitectures: ["microservices", "soa", "api-gateway", "event-driven"],
+    detectionKeywords: ["circuit breaker", "circuit-breaker", "resilience", "cascading failure", "fault tolerance", "fallback", "bulkhead"]
+  },
+  {
+    id: "saga",
+    displayName: "Saga",
+    category: "supporting",
+    summary: "Coordinates a long-running distributed transaction as local steps with compensating actions when a step fails.",
+    bestFor: ["Distributed workflows", "Eventually consistent transactions", "Multi-service business processes"],
+    useCases: ["Order fulfillment", "Booking workflows", "Cross-service financial flows"],
+    strengths: ["Avoids two-phase commit", "Fits microservice boundaries", "Explicit failure compensation"],
+    tradeoffs: ["Complex orchestration or choreography", "Idempotency and observability are mandatory"],
+    warnings: ["Design compensating actions before production.", "Do not use sagas for simple single-service transactions."],
+    compatiblePlatforms: ["api", "worker", "hybrid"],
+    compatibleWorkloads: ["feature-delivery", "migration", "architecture-foundation", "diagnosis"],
+    highAffinityPatterns: ["command", "observer", "mediator", "state"],
+    relatedArchitectures: ["event-driven", "microservices", "cqrs", "soa"],
+    detectionKeywords: ["saga", "distributed transaction", "compensating", "long-running transaction", "choreography", "orchestration workflow"]
+  },
+  {
+    id: "api-gateway",
+    displayName: "API Gateway",
+    category: "supporting",
+    summary: "Provides a single entry point that routes, aggregates, authenticates, and rate-limits requests to backend services.",
+    bestFor: ["Microservice edges", "Centralized cross-cutting concerns", "Client-facing API stability"],
+    useCases: ["Public API surfaces", "Multi-service routing", "Auth and rate-limit enforcement"],
+    strengths: ["Hides service topology", "Centralizes edge concerns", "Stable client contract"],
+    tradeoffs: ["Can become a bottleneck", "Gateway logic can grow unchecked"],
+    warnings: ["Keep gateway logic thin — routing and policy only.", "Avoid business rules in the gateway."],
+    compatiblePlatforms: ["api", "web", "hybrid"],
+    compatibleWorkloads: ["feature-delivery", "migration", "architecture-foundation", "diagnosis"],
+    highAffinityPatterns: ["facade", "proxy", "chain-of-responsibility", "decorator"],
+    relatedArchitectures: ["microservices", "bff", "soa", "minimal-api"],
+    detectionKeywords: ["api gateway", "api-gateway", "gateway", "edge routing", "rate limit gateway", "single entry point", "reverse proxy"]
+  },
+  {
+    id: "bff",
+    displayName: "Backend for Frontend (BFF)",
+    category: "supporting",
+    summary: "Provides a dedicated backend API tailored to a specific client channel rather than one generic API for all surfaces.",
+    bestFor: ["Multi-channel products", "Mobile vs web API shaping", "Client-specific aggregation"],
+    useCases: ["Mobile apps with tailored payloads", "Web dashboards with composite views", "IoT device APIs"],
+    strengths: ["Optimized per-channel responses", "Decouples core services from UI churn", "Clear ownership per client team"],
+    tradeoffs: ["Multiple BFFs to maintain", "Duplication risk without discipline"],
+    warnings: ["Do not put domain logic in the BFF.", "Keep BFFs as adapters, not second domain layers."],
+    compatiblePlatforms: ["web", "api", "hybrid", "desktop"],
+    compatibleWorkloads: ["feature-delivery", "architecture-foundation", "diagnosis"],
+    highAffinityPatterns: ["facade", "adapter", "proxy", "decorator"],
+    relatedArchitectures: ["api-gateway", "microservices", "minimal-api", "vertical-slice"],
+    detectionKeywords: ["bff", "backend for frontend", "mobile api", "channel-specific", "client-specific api", "frontend backend"]
+  },
+  {
+    id: "strangler-fig",
+    displayName: "Strangler Fig",
+    category: "supporting",
+    summary: "Incrementally replaces a legacy system by routing new functionality to new services while the old core is gradually retired.",
+    bestFor: ["Legacy modernization", "Phased migration", "Risk-reduced rewrites"],
+    useCases: ["Monolith-to-microservices migration", "Cloud lift-and-shift transitions", "Replacing vendor systems"],
+    strengths: ["Avoids big-bang rewrites", "Continuous delivery during migration", "Reversible routing decisions"],
+    tradeoffs: ["Temporary dual-system complexity", "Routing and data sync overhead during transition"],
+    warnings: ["Set exit criteria for the legacy core.", "Do not let strangler routes become permanent accidental architecture."],
+    compatiblePlatforms: ["web", "api", "hybrid", "worker"],
+    compatibleWorkloads: ["migration", "repo-recovery", "diagnosis", "architecture-foundation"],
+    highAffinityPatterns: ["adapter", "facade", "proxy", "strategy"],
+    relatedArchitectures: ["monolithic", "microservices", "modular-monolith", "anti-corruption-layer", "api-gateway"],
+    detectionKeywords: ["strangler", "strangler fig", "strangler-fig", "incremental migration", "legacy replacement", "phased modernization", "migrate legacy"]
   }
 ];
 
@@ -633,7 +793,7 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
     warnings: ["Watch for anaemic service layers and DTO tunneling."],
     compatiblePlatforms: ["web", "api", "desktop", "hybrid"],
     compatibleWorkloads: ["architecture-foundation", "migration", "diagnosis"],
-    architectureIds: ["layered", "repository-pattern"],
+    architectureIds: ["layered", "repository-pattern", "unit-of-work"],
     patternIds: ["factory-method", "facade", "proxy", "iterator"],
     composedOf: [
       { kind: "architecture", id: "layered", label: "Layered", rationale: "Provides the structural backbone." },
@@ -642,6 +802,12 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
         id: "repository-pattern",
         label: "Repository Pattern",
         rationale: "Keeps data access behind service-facing contracts."
+      },
+      {
+        kind: "architecture",
+        id: "unit-of-work",
+        label: "Unit of Work",
+        rationale: "Coordinates atomic writes across aggregate changes."
       },
       { kind: "concept", label: "Domain Model", rationale: "Centers behavior in domain objects." },
       { kind: "concept", label: "Service Layer", rationale: "Coordinates use cases above persistence details." }
@@ -662,7 +828,7 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
     warnings: ["Avoid ceremonial interfaces where the boundary is not real."],
     compatiblePlatforms: ["web", "api", "desktop", "library", "hybrid"],
     compatibleWorkloads: ["architecture-foundation", "migration", "repo-recovery", "diagnosis"],
-    architectureIds: ["clean-architecture", "screaming-architecture"],
+    architectureIds: ["clean-architecture", "screaming-architecture", "onion-architecture"],
     patternIds: ["factory-method", "adapter", "facade", "strategy", "chain-of-responsibility"],
     composedOf: [
       {
@@ -725,7 +891,7 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
     warnings: ["Avoid it for simple CRUD with limited business language."],
     compatiblePlatforms: ["api", "web", "hybrid", "library"],
     compatibleWorkloads: ["architecture-foundation", "migration", "diagnosis"],
-    architectureIds: ["domain-driven-design", "hexagonal", "event-sourcing"],
+    architectureIds: ["domain-driven-design", "hexagonal", "event-sourcing", "anti-corruption-layer", "unit-of-work"],
     patternIds: ["factory-method", "observer", "command", "visitor", "interpreter"],
     composedOf: [
       {
@@ -764,7 +930,7 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
     warnings: ["Do not adopt messaging-first architecture without strong observability and retry discipline."],
     compatiblePlatforms: ["api", "worker", "hybrid"],
     compatibleWorkloads: ["architecture-foundation", "migration", "diagnosis"],
-    architectureIds: ["event-driven", "cqrs", "microservices"],
+    architectureIds: ["event-driven", "cqrs", "microservices", "saga"],
     patternIds: ["observer", "command", "chain-of-responsibility", "mediator", "state"],
     composedOf: [
       {
@@ -774,7 +940,7 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
         rationale: "Provides the async backbone."
       },
       { kind: "architecture", id: "cqrs", label: "CQRS", rationale: "Clarifies write intent and projection needs." },
-      { kind: "concept", label: "Saga Pattern", rationale: "Coordinates long-running multi-step workflows." },
+      { kind: "architecture", id: "saga", label: "Saga", rationale: "Coordinates long-running multi-step workflows." },
       { kind: "concept", label: "Service Bus", rationale: "Centralizes message routing contracts." }
     ],
     rationale: [
@@ -855,11 +1021,11 @@ export const remixProfileCatalog: RemixProfileCatalogEntry[] = [
     warnings: ["Do not let strangler routes become permanent accidental architecture."],
     compatiblePlatforms: ["web", "api", "worker", "hybrid"],
     compatibleWorkloads: ["migration", "repo-recovery", "diagnosis"],
-    architectureIds: ["microservices", "cqrs", "event-driven"],
+    architectureIds: ["microservices", "cqrs", "event-driven", "strangler-fig", "api-gateway"],
     patternIds: ["adapter", "facade", "proxy", "command", "chain-of-responsibility"],
     composedOf: [
-      { kind: "concept", label: "Gateway Aggregation", rationale: "Stabilizes the client-facing edge." },
-      { kind: "concept", label: "Strangler Fig", rationale: "Supports incremental legacy replacement." },
+      { kind: "architecture", id: "api-gateway", label: "API Gateway", rationale: "Stabilizes the client-facing edge." },
+      { kind: "architecture", id: "strangler-fig", label: "Strangler Fig", rationale: "Supports incremental legacy replacement." },
       { kind: "architecture", id: "cqrs", label: "CQRS", rationale: "Helps split modernization hotspots." },
       { kind: "concept", label: "Deployment Stamps", rationale: "Supports repeatable cloud scale-out." }
     ],

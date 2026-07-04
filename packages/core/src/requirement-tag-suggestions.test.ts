@@ -51,4 +51,22 @@ describe("suggestRequirementTags", () => {
     expect(suggestions.some((item) => item.tag === "repo-recovery")).toBe(true);
     expect(suggestions.some((item) => item.tag === "boundary-repair")).toBe(true);
   });
+
+  it("suggests mission tags for strangler and distributed patterns", () => {
+    const suggestions = suggestRequirementTags({
+      repoSummary: "Legacy monolith migrating to microservices with saga workflows",
+      requestedOutcome: "Migrate legacy system using strangler fig and circuit breaker resilience",
+      platformType: "api",
+      workloadType: "migration",
+      currentArchitecture: "monolithic",
+      repoHealth: "drifting",
+      likelyDiagnosisIntent: "migration"
+    });
+
+    const tags = suggestions.map((item) => item.tag);
+
+    expect(tags).toContain("legacy-strangler");
+    expect(tags).toContain("saga-workflow");
+    expect(tags).toContain("distributed-resilience");
+  });
 });

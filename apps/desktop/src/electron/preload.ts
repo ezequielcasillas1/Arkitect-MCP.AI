@@ -23,6 +23,7 @@ import type {
   TestOverrideKind,
   TestOverrideRunResult
 } from "@arkitect/contracts";
+import type { AppUpdateCheckResult, AppUpdateOpenResult } from "./app-update-types.js";
 
 interface GitHubConnectSuccess {
   ok: true;
@@ -44,7 +45,11 @@ contextBridge.exposeInMainWorld("arkitectDesktop", {
     electron: string;
     chrome: string;
     storagePath: string;
+    appVersion: string;
   }>,
+  checkForAppUpdate: () => ipcRenderer.invoke("arkitect:check-for-app-update") as Promise<AppUpdateCheckResult>,
+  openAppUpdateDownload: (url: string) =>
+    ipcRenderer.invoke("arkitect:open-app-update-download", url) as Promise<AppUpdateOpenResult>,
   selectRepoFolder: () => ipcRenderer.invoke("arkitect:select-repo-folder") as Promise<RepoInspection | null>,
   inspectRepoPath: (repoPath: string) => ipcRenderer.invoke("arkitect:inspect-repo-path", repoPath) as Promise<RepoInspection>,
   connectGitHubRoute: (input: GitHubRouteInput) =>

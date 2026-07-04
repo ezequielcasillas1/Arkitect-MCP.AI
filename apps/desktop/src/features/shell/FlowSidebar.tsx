@@ -1,4 +1,5 @@
 import type { DashboardStepId } from "@arkitect/contracts";
+import { UpdateSection } from "../app-update/UpdateSection";
 
 export interface FlowSidebarStep {
   id: DashboardStepId;
@@ -11,6 +12,7 @@ export interface FlowSidebarStep {
 interface FlowSidebarProps {
   projectLabel: string;
   storagePath?: string;
+  isElectron: boolean;
   activeStep: DashboardStepId;
   steps: FlowSidebarStep[];
   onStepSelect: (stepId: DashboardStepId) => void;
@@ -19,6 +21,7 @@ interface FlowSidebarProps {
 export function FlowSidebar({
   projectLabel,
   storagePath,
+  isElectron,
   activeStep,
   steps,
   onStepSelect
@@ -62,6 +65,8 @@ export function FlowSidebar({
           </button>
         ))}
       </nav>
+
+      <UpdateSection isElectron={isElectron} />
 
       <div className="sidebar-help panel-surface">
         <span className="metric-label">Local testing</span>

@@ -43,6 +43,16 @@ const fieldConfigs = [
       "layered",
       "event-sourcing",
       "microkernel",
+      "onion-architecture",
+      "monolithic",
+      "soa",
+      "unit-of-work",
+      "anti-corruption-layer",
+      "circuit-breaker",
+      "saga",
+      "api-gateway",
+      "bff",
+      "strangler-fig",
       "spaghetti",
       "unknown"
     ]

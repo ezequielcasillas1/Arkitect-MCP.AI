@@ -166,6 +166,60 @@ const scopeKeywordRules: Array<{
     keywords: ["logging", "caching", "auth", "middleware", "rate limit", "telemetry"],
     weight: 0.74,
     reason: "Cross-cutting concerns suggest decorator, proxy, or pipeline boundaries."
+  },
+  {
+    tag: "legacy-strangler",
+    keywords: ["strangler", "strangler fig", "legacy replacement", "phased modernization", "migrate legacy", "incremental migration"],
+    weight: 0.9,
+    reason: "Legacy modernization markers suggest strangler-fig incremental replacement."
+  },
+  {
+    tag: "distributed-resilience",
+    keywords: ["circuit breaker", "resilience", "cascading failure", "fault tolerance", "fallback", "bulkhead"],
+    weight: 0.88,
+    reason: "Resilience markers suggest circuit breaker boundaries at remote calls."
+  },
+  {
+    tag: "saga-workflow",
+    keywords: ["saga", "distributed transaction", "compensating", "long-running transaction", "choreography"],
+    weight: 0.87,
+    reason: "Distributed workflow markers suggest saga coordination across services."
+  },
+  {
+    tag: "api-composition",
+    keywords: ["api gateway", "bff", "backend for frontend", "gateway", "channel-specific", "mobile api"],
+    weight: 0.85,
+    reason: "Edge composition markers suggest API gateway or BFF boundaries."
+  },
+  {
+    tag: "domain-isolation",
+    keywords: ["anti-corruption", "anti corruption", "acl", "domain isolation", "foreign model", "legacy integration"],
+    weight: 0.86,
+    reason: "Integration isolation markers suggest anti-corruption layers at context boundaries."
+  },
+  {
+    tag: "transaction-boundary",
+    keywords: ["unit of work", "unit-of-work", "uow", "transaction boundary", "atomic write"],
+    weight: 0.84,
+    reason: "Transaction scope markers suggest unit-of-work with repository boundaries."
+  },
+  {
+    tag: "monolith-foundation",
+    keywords: ["monolith", "monolithic", "single deployable", "mvp", "simple start"],
+    weight: 0.82,
+    reason: "Single-deployable scope markers suggest monolithic or modular-monolith foundations."
+  },
+  {
+    tag: "soa-integration",
+    keywords: ["soa", "service-oriented", "enterprise service bus", "esb", "discoverable service"],
+    weight: 0.83,
+    reason: "Enterprise service integration markers suggest SOA-style contracts."
+  },
+  {
+    tag: "onion-layering",
+    keywords: ["onion architecture", "onion", "persistence ignorant", "domain model inward"],
+    weight: 0.84,
+    reason: "Onion layering markers suggest inward dependency flow with repository seams."
   }
 ];
 

@@ -1,4 +1,28 @@
 import type { ReactNode } from "react";
+import { githubBlobUrl } from "../../lib/arkitect-links";
+
+const USER_GUIDE_DIR = "docs";
+
+function resolveHref(href: string): { href: string; external: boolean } {
+  if (/^https?:\/\//.test(href)) {
+    return { href, external: true };
+  }
+
+  if (href.startsWith("#")) {
+    return { href, external: false };
+  }
+
+  const parts = USER_GUIDE_DIR.split("/");
+  for (const segment of href.split("/")) {
+    if (segment === "..") {
+      parts.pop();
+    } else if (segment !== ".") {
+      parts.push(segment);
+    }
+  }
+
+  return { href: githubBlobUrl(parts.join("/")), external: true };
+}
 
 type InlinePart =
   | { kind: "text"; value: string }
@@ -55,13 +79,13 @@ export function renderInline(text: string, keyPrefix: string): ReactNode[] {
           </code>
         );
       case "link": {
-        const isExternal = /^https?:\/\//.test(part.href);
+        const resolved = resolveHref(part.href);
         return (
           <a
             key={key}
-            href={part.href}
+            href={resolved.href}
             className="guide-link"
-            {...(isExternal ? { target: "_blank", rel: "noreferrer" } : {})}
+            {...(resolved.external ? { target: "_blank", rel: "noreferrer" } : {})}
           >
             {part.label}
           </a>

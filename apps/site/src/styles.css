@@ -505,6 +505,95 @@ a {
   margin: 0;
 }
 
+/* Release feed (download area) */
+.release-feed {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.release-feed-header {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.release-feed-icon {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.release-feed-header h3 {
+  margin: 0;
+  color: #f5f8ff;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.release-feed-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.release-feed-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.release-feed-item-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 8px;
+}
+
+.release-feed-version {
+  color: #f5f8ff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.release-feed-date {
+  color: #9aa6c2;
+  font-size: 0.84rem;
+}
+
+.release-feed-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.release-feed-badge-upcoming {
+  color: #c7d4ff;
+  background: rgba(109, 140, 255, 0.16);
+  border: 1px solid rgba(109, 140, 255, 0.28);
+}
+
+.release-feed-changes {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: #b8c6ed;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.release-feed-changes li + li {
+  margin-top: 4px;
+}
+
 /* Download tracking admin (localhost only) */
 .admin-downloads-grid {
   grid-template-columns: 1fr;

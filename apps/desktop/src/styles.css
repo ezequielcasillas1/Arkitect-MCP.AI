@@ -103,6 +103,30 @@ code {
   margin: 0;
 }
 
+.sidebar-update {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+
+.sidebar-update-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.update-status-ok {
+  color: #9fd9b5;
+}
+
+.update-status-available {
+  color: #ffd48a;
+}
+
+.update-status-error {
+  color: #ffb0b8;
+}
+
 .sidebar-path,
 .preset-path {
   display: block;

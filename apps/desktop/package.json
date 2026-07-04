@@ -15,7 +15,9 @@
     "build:deps": "pnpm --filter @arkitect/desktop^... build",
     "build:installer": "pnpm run build:deps && pnpm run build && pnpm run generate:integrity && cross-env NODE_OPTIONS=--use-system-ca electron-builder --win nsis --config electron-builder.yml",
     "typecheck": "tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.json --noEmit",
-    "lint": "eslint \"src/**/*.{ts,tsx}\""
+    "lint": "eslint \"src/**/*.{ts,tsx}\"",
+    "test": "vitest run",
+    "test:unit": "vitest run src"
   },
   "dependencies": {
     "@arkitect/ai": "workspace:*",
@@ -41,6 +43,7 @@
     "electron": "^42.4.0",
     "electron-builder": "^26.0.12",
     "vite": "^8.0.16",
+    "vitest": "^3.2.4",
     "wait-on": "^9.0.10"
   }
 }

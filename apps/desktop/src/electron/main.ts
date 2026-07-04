@@ -24,6 +24,7 @@ import { getGitHubOAuthService } from "./github-oauth-service.js";
 import { getGitHubOAuthConfigured } from "./github-oauth-config.js";
 import { applyDevToolsGuard } from "./protection/devtools-guard.js";
 import { enforceProtectionOnStartup, getProtectionConfig } from "./protection/protection-guard.js";
+import { checkForAppUpdate, getCurrentAppVersion, openAppUpdateDownload } from "./app-update-service.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
@@ -128,8 +129,11 @@ app.whenReady().then(async () => {
     platform: process.platform,
     electron: process.versions.electron,
     chrome: process.versions.chrome,
-    storagePath: getDesktopLibraryPath()
+    storagePath: getDesktopLibraryPath(),
+    appVersion: getCurrentAppVersion()
   }));
+  ipcMain.handle("arkitect:check-for-app-update", () => checkForAppUpdate());
+  ipcMain.handle("arkitect:open-app-update-download", async (_event, url: string) => openAppUpdateDownload(url));
   ipcMain.handle("arkitect:select-repo-folder", async () => {
     const properties: OpenDialogOptions["properties"] = ["openDirectory"];
     const options: OpenDialogOptions = {

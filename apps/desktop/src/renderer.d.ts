@@ -22,6 +22,7 @@ import type {
   TestOverrideKind,
   TestOverrideRunResult
 } from "@arkitect/contracts";
+import type { AppUpdateCheckResult, AppUpdateOpenResult } from "./lib/app-update-types";
 
 interface GitHubConnectSuccess {
   ok: true;
@@ -45,7 +46,10 @@ declare global {
         electron: string;
         chrome: string;
         storagePath: string;
+        appVersion: string;
       }>;
+      checkForAppUpdate: () => Promise<AppUpdateCheckResult>;
+      openAppUpdateDownload: (url: string) => Promise<AppUpdateOpenResult>;
       selectRepoFolder: () => Promise<RepoInspection | null>;
       inspectRepoPath: (repoPath: string) => Promise<RepoInspection>;
       connectGitHubRoute: (input: GitHubRouteInput) => Promise<GitHubConnectResponse>;

@@ -5,6 +5,7 @@ import {
   GITHUB_RELEASES_URL
 } from "../../lib/arkitect-links";
 import { downloadUrl, downloadUrlState, isDownloadUrlConfigured } from "../../lib/env";
+import { ReleaseFeedSection } from "../release-feed";
 import { useDownloadCounter } from "./useDownloadCounter";
 
 const MILESTONE_STEP = 100;
@@ -166,6 +167,8 @@ export function DownloadCounterSection() {
           {errorMessage}
         </p>
       ) : null}
+
+      <ReleaseFeedSection />
 
       <p className="helper-copy">
         No credit card required. One free spot per visitor. Also on{" "}

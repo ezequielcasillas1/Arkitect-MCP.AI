@@ -15,6 +15,7 @@ import type {
   TestOverrideKind,
   TestOverrideRunResult
 } from "@arkitect/contracts";
+import type { AppUpdateCheckResult, AppUpdateOpenResult } from "./app-update-types";
 import {
   createMockConnectionResult,
   createMockDiagnosisEnrichment,
@@ -33,6 +34,7 @@ export interface RuntimeShellInfo {
   electron: string;
   chrome: string;
   storagePath: string;
+  appVersion?: string;
   runtime: DesktopRuntime;
 }
 
@@ -511,6 +513,50 @@ export async function getTestOverrideCatalogViaBridge(
         ? "Test discovery requires the Electron desktop app."
         : "Desktop bridge unavailable for test discovery."
   };
+}
+
+export async function checkForAppUpdateViaBridge(): Promise<AppUpdateCheckResult> {
+  if (!window.arkitectDesktop?.checkForAppUpdate) {
+    return {
+      ok: false,
+      currentVersion: "unknown",
+      error: {
+        code: "unknown_error",
+        message: "Software updates require the Electron desktop app."
+      }
+    };
+  }
+
+  try {
+    return await window.arkitectDesktop.checkForAppUpdate();
+  } catch (error) {
+    return {
+      ok: false,
+      currentVersion: "unknown",
+      error: {
+        code: "network_error",
+        message: error instanceof Error ? error.message : "Update check failed."
+      }
+    };
+  }
+}
+
+export async function openAppUpdateDownloadViaBridge(url: string): Promise<AppUpdateOpenResult> {
+  if (!window.arkitectDesktop?.openAppUpdateDownload) {
+    return {
+      ok: false,
+      message: "Software updates require the Electron desktop app."
+    };
+  }
+
+  try {
+    return await window.arkitectDesktop.openAppUpdateDownload(url);
+  } catch (error) {
+    return {
+      ok: false,
+      message: error instanceof Error ? error.message : "Failed to open download URL."
+    };
+  }
 }
 
 export async function runTestOverrideViaBridge(

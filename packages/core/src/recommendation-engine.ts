@@ -77,7 +77,9 @@ const workloadArchitectureWeights: Record<
   "architecture-foundation": {
     "vertical-slice": 1.8,
     "modular-monolith": 1.7,
+    monolithic: 1.4,
     "clean-architecture": 1.4,
+    "onion-architecture": 1.3,
     hexagonal: 1.2,
     "screaming-architecture": 1
   },
@@ -98,6 +100,9 @@ const workloadArchitectureWeights: Record<
     "modular-monolith": 1.6,
     "clean-architecture": 1.5,
     "microservices": 1.3,
+    "strangler-fig": 1.5,
+    "anti-corruption-layer": 1.2,
+    "api-gateway": 1.1,
     "event-driven": 1.1,
     cqrs: 1,
     "screaming-architecture": 0.9
@@ -130,6 +135,7 @@ const platformArchitectureWeights: Record<
   web: {
     "vertical-slice": 1.1,
     "clean-architecture": 1,
+    bff: 1.1,
     layered: 0.9,
     "minimal-api": 0.8
   },
@@ -137,6 +143,7 @@ const platformArchitectureWeights: Record<
     "minimal-api": 1.3,
     hexagonal: 1.2,
     "clean-architecture": 1.1,
+    "api-gateway": 1.2,
     cqrs: 0.9
   },
   cli: {
@@ -153,6 +160,7 @@ const platformArchitectureWeights: Record<
     "minimal-api": 1.1,
     "event-driven": 1.1,
     hexagonal: 1,
+    "circuit-breaker": 1,
     microservices: 0.8
   },
   hybrid: {
@@ -185,14 +193,18 @@ const intentArchitectureWeights: Record<
   migration: {
     "modular-monolith": 1.4,
     "microservices": 1.2,
+    "strangler-fig": 1.5,
     "clean-architecture": 1.1,
+    "anti-corruption-layer": 1.1,
     "event-driven": 1
   },
   "architecture-upgrade": {
     "clean-architecture": 1.3,
+    "onion-architecture": 1.2,
     hexagonal: 1.2,
     "modular-monolith": 1.1,
-    "domain-driven-design": 1
+    "domain-driven-design": 1,
+    "strangler-fig": 1.1
   },
   "repo-recovery": {
     "screaming-architecture": 1.4,
@@ -247,6 +259,7 @@ const workloadPatternWeights: Record<
 const complexityArchitectureWeights: Record<ComplexityProfile, Partial<Record<ArchitectureCatalogId, number>>> = {
   minimal: {
     "minimal-api": 1.1,
+    monolithic: 1.2,
     "vertical-slice": 0.9,
     "modular-monolith": 0.7
   },
@@ -264,9 +277,12 @@ const complexityArchitectureWeights: Record<ComplexityProfile, Partial<Record<Ar
   enterprise: {
     "domain-driven-design": 1.2,
     "microservices": 1.2,
+    soa: 1.1,
     "event-driven": 1.1,
     cqrs: 1.1,
-    "event-sourcing": 1
+    "event-sourcing": 1,
+    saga: 1.1,
+    "api-gateway": 1
   }
 };
 
@@ -357,14 +373,68 @@ const requirementArchitectureSignals: Array<{
     summary: "Async and eventful workloads fit event-driven coordination patterns."
   },
   {
-    keywords: ["legacy", "migration", "strangler", "cloud"],
-    architectures: ["microservices", "cqrs", "modular-monolith"],
-    weight: 1,
-    summary: "Migration-heavy contexts favor staged modernization targets."
+    keywords: ["legacy", "migration", "strangler", "cloud", "phased modernization", "legacy replacement"],
+    architectures: ["strangler-fig", "microservices", "anti-corruption-layer", "modular-monolith"],
+    weight: 1.2,
+    summary: "Migration-heavy contexts favor staged modernization with strangler and ACL boundaries."
+  },
+  {
+    keywords: ["onion", "onion architecture", "persistence ignorant"],
+    architectures: ["onion-architecture", "clean-architecture", "repository-pattern"],
+    weight: 1.1,
+    summary: "Onion layering points toward inward dependencies and repository seams."
+  },
+  {
+    keywords: ["monolith", "monolithic", "single deployable", "mvp", "simple start"],
+    architectures: ["monolithic", "modular-monolith", "layered"],
+    weight: 1.1,
+    summary: "Single-deployable scope fits monolithic or modular-monolith foundations."
+  },
+  {
+    keywords: ["soa", "service-oriented", "enterprise service bus", "esb", "interop"],
+    architectures: ["soa", "microservices", "api-gateway"],
+    weight: 1.1,
+    summary: "Enterprise service integration aligns with SOA and gateway edges."
+  },
+  {
+    keywords: ["unit of work", "unit-of-work", "uow", "transaction boundary", "atomic write"],
+    architectures: ["unit-of-work", "repository-pattern", "onion-architecture"],
+    weight: 1.2,
+    summary: "Transaction-boundary needs point toward unit-of-work with repositories."
+  },
+  {
+    keywords: ["anti-corruption", "acl", "domain isolation", "foreign model", "legacy integration"],
+    architectures: ["anti-corruption-layer", "hexagonal", "domain-driven-design"],
+    weight: 1.3,
+    summary: "Domain isolation at integration points favors anti-corruption layers."
+  },
+  {
+    keywords: ["circuit breaker", "circuit-breaker", "resilience", "cascading failure", "fault tolerance", "fallback"],
+    architectures: ["circuit-breaker", "microservices", "soa"],
+    weight: 1.3,
+    summary: "Resilience requirements favor circuit breakers at service boundaries."
+  },
+  {
+    keywords: ["saga", "distributed transaction", "compensating", "long-running transaction", "orchestration workflow"],
+    architectures: ["saga", "event-driven", "microservices", "cqrs"],
+    weight: 1.3,
+    summary: "Distributed transactions favor saga coordination over two-phase commit."
+  },
+  {
+    keywords: ["api gateway", "api-gateway", "gateway", "edge routing", "single entry point"],
+    architectures: ["api-gateway", "microservices", "bff"],
+    weight: 1.2,
+    summary: "Edge routing and aggregation needs map to API gateway patterns."
+  },
+  {
+    keywords: ["bff", "backend for frontend", "mobile api", "channel-specific", "client-specific"],
+    architectures: ["bff", "api-gateway", "vertical-slice"],
+    weight: 1.2,
+    summary: "Channel-specific APIs benefit from dedicated BFF surfaces."
   },
   {
     keywords: ["bounded context", "aggregate", "domain"],
-    architectures: ["domain-driven-design", "hexagonal", "clean-architecture"],
+    architectures: ["domain-driven-design", "hexagonal", "clean-architecture", "anti-corruption-layer"],
     weight: 1.1,
     summary: "Rich domain language points toward DDD and boundary-focused architecture."
   },
@@ -635,7 +705,7 @@ function scoreRemixCandidates(
     );
   }
 
-  if (tagText.includes("legacy") || tagText.includes("cloud") || tagText.includes("strangler")) {
+  if (tagText.includes("legacy") || tagText.includes("cloud") || tagText.includes("strangler") || tagText.includes("migration")) {
     addScore(
       bucket,
       "microsoft-azure-blend",
@@ -643,6 +713,14 @@ function scoreRemixCandidates(
       1.8,
       "Legacy-to-cloud requirements fit the Azure Blend migration profile."
     );
+  }
+
+  if (tagText.includes("saga") || tagText.includes("distributed transaction") || tagText.includes("compensating")) {
+    addScore(bucket, "udi-dahan-messaging-mix", "requirement-signal", 1.4, "Saga workflows align with the Messaging Mix remix.");
+  }
+
+  if (tagText.includes("anti-corruption") || tagText.includes("domain isolation") || tagText.includes("acl")) {
+    addScore(bucket, "vaughn-vernon-ddd-remix", "requirement-signal", 1.2, "ACL work aligns with the DDD remix profile.");
   }
 
   if (tagText.includes("data") || tagText.includes("enterprise")) {
