@@ -1,6 +1,8 @@
 # Arkitect User Guide
 
-A detailed tutorial manual for **arkitect-mcp.com** — the marketing site, Supabase-backed community features, and the **Arkitect MCP server** that Cursor and other AI clients can call for diagnosis-first architecture guidance.
+A self-service tutorial manual for **arkitect-mcp.com** — the marketing site, optional Supabase-backed community features, and the **Arkitect MCP server** that Cursor and other AI clients call for diagnosis-first architecture guidance.
+
+**How this guide works:** Every setup step is something **you** run locally or in **your** cloud accounts (Supabase, Cloudflare, Cursor). Arkitect ships open-source code, SQL migration files, and documentation. It does **not** provision infrastructure for you, log into your dashboards, or collect your Supabase credentials on any Arkitect-operated server.
 
 ---
 
@@ -30,6 +32,12 @@ A detailed tutorial manual for **arkitect-mcp.com** — the marketing site, Supa
 
 ## What Is Arkitect?
 
+**Purpose:** Understand what Arkitect is, which parts live in this repo, and how the marketing site differs from the MCP server.
+
+**What you do:** Clone the repo, run builds locally, optionally deploy your own instance, and configure Cursor on your machine.
+
+**What Arkitect does:** Provides the product code, catalogs, diagnosis logic, and this guide — no hosted setup service or remote account linking.
+
 **Arkitect** is a diagnosis-first architecture reasoning product. It scans a repository, surfaces detected platform, workload, architecture, health, and intent signals, and recommends how to continue — without forcing rewrites when the existing structure is healthy.
 
 This repository delivers two primary surfaces:
@@ -52,54 +60,82 @@ Additional monorepo packages (`apps/desktop`, `packages/core`, `packages/contrac
 
 ## System Overview
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        arkitect-mcp.com                         │
-│  (Cloudflare Pages — static Vite/React SPA)                     │
-│                                                                 │
-│  Landing · Download Counter · Reviews · Install · Connect       │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ VITE_SUPABASE_URL / ANON_KEY
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Dedicated Supabase project (Arkitect)              │
-│  RPC: arkitect_get_download_stats, arkitect_claim_download_slot │
-│  Table: arkitect_reviews (RLS + rate-limit trigger)             │
-└─────────────────────────────────────────────────────────────────┘
+**Purpose:** Separate **MCP core** (what most users need) from **optional site slices** — and see one **reference** deployment, not the only valid setup.
 
-┌─────────────────────────────────────────────────────────────────┐
-│                     Cursor / AI MCP client                      │
-│                         .cursor/mcp.json                        │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ stdio (node packages/mcp-server/dist/stdio.js)
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                   @arkitect/mcp-server                          │
+**What you do:** Pick only the pieces you need. Many users need just the MCP server plus any MCP client. The marketing site, download counter, reviews, Cloudflare hosting, Supabase, and desktop app are optional — fork, swap, or omit them.
+
+**What Arkitect does:** Ships modular packages. The MCP core runs as a local stdio process against repos on your disk. Site features use **your** backend (or mock gateways). No required Arkitect-operated cloud.
+
+### Not one fixed stack
+
+The diagram below shows **how this repo wires the official arkitect-mcp.com example** — not the only way to use Arkitect. Hosting, persistence, MCP client, and desktop bridge are all swappable.
+
+| Layer | Required? | Reference in this repo | Common alternatives |
+|-------|-----------|------------------------|---------------------|
+| MCP diagnosis core | **Yes** (for MCP usage) | `@arkitect/mcp-server` via stdio | Same package; any MCP-capable host |
+| MCP client | **Yes** (to invoke tools) | Cursor + `.cursor/mcp.json` | Claude Desktop, Windsurf, custom MCP host |
+| Marketing site | Optional | `apps/site` (Vite/React SPA) | Omit; README only; your own site |
+| Site persistence | Optional | Supabase (anon RPCs + RLS) | Postgres, Firebase, SQLite API, localStorage mock, none |
+| Static hosting | Optional | Cloudflare Pages | Vercel, Netlify, S3, nginx, GitHub Pages, localhost |
+| Desktop bridge | Optional | `apps/desktop` on `127.0.0.1` | Skip (`ARKITECT_SKIP_DESKTOP_BRIDGE=1`) or another shell |
+
+**Mix and match:**
+
+- **MCP only** — build `packages/mcp-server`, configure your client; skip site and database entirely.
+- **Site without cloud** — run `apps/site` with no `VITE_SUPABASE_*` env; counter/reviews use mock gateways (localStorage).
+- **Your stack** — host the SPA on Vercel, store data in your Postgres, still run the same MCP server locally.
+
+```
+┌─ CORE — required for MCP ───────────────────────────────────────┐
+│  MCP client (Cursor / Claude Desktop / other)                   │
+│       │  .cursor/mcp.json or equivalent                         │
+│       │  stdio: node packages/mcp-server/dist/stdio.js          │
+│       ▼                                                         │
+│  @arkitect/mcp-server                                           │
 │  Tools: diagnose_repository, list_*_catalog, verify_codebase…   │
 │  Resources: arkitect://diagnosis/latest, arkitect://catalog/*   │
-└───────────────────────────┬─────────────────────────────────────┘
-                            │ optional HTTP bridge
-                            ▼
-┌─────────────────────────────────────────────────────────────────┐
-│              Arkitect Desktop (apps/desktop)                    │
-│  Local repo intake, wizard, MCP bridge manifest                 │
+│  Reads your repo from disk — no Arkitect cloud in the path      │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─ OPTIONAL — example site deployment (arkitect-mcp.com) ─────────┐
+│  Static SPA — Cloudflare Pages in this repo                     │
+│  Landing · Download Counter · Reviews · Install · Connect       │
+│       │  VITE_SUPABASE_* (or mock mode — no backend)            │
+│       ▼                                                         │
+│  Your Supabase project (you create & own)                       │
+│  Browser → Supabase direct (anon key); no Arkitect backend      │
+│  RPCs: download counter · Table: reviews (RLS + rate limit)     │
+│  Omit, swap DB, or reimplement each slice independently           │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─ OPTIONAL — desktop bridge ───────────────────────────────────────┐
+│  Arkitect Desktop (apps/desktop) — wizard, MCP install helper   │
+│  Loopback HTTP only (`127.0.0.1`); MCP works without it         │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Vertical slice architecture (site)
+### Vertical slice architecture (optional site)
 
-The marketing site follows **vertical slices** — each feature owns its types, data-access gateway, hooks, and UI:
+**Purpose:** How `apps/site` organizes optional features so each slice owns its gateway and can swap live Supabase vs local mock without UI changes.
+
+The marketing site follows **vertical slices** — each feature owns types, data-access gateway, hooks, and UI:
 
 | Slice | Path | Responsibility |
 |-------|------|----------------|
 | Download counter | `apps/site/src/features/download-counter/` | Capped free-spot claims, progress bar, dedup by visitor |
 | Reviews | `apps/site/src/features/reviews/` | Public submit + list, rate limiting, moderation-friendly RLS |
 
-Components never call Supabase directly. Each slice exposes a narrow `*Gateway` interface in `data-access.ts` that swaps between **live Supabase** and **in-memory/localStorage mock** based on env configuration.
+Components never call Supabase directly. Each slice exposes a narrow `*Gateway` interface in `data-access.ts` that swaps between **live Supabase** and **in-memory/localStorage mock** based on env configuration. You can drop a slice, replace its gateway, or copy the pattern for new features.
 
 ---
 
 ## Prerequisites
+
+**Purpose:** Confirm your machine and accounts are ready before cloning and building.
+
+**What you do:** Install Node.js and pnpm, clone the monorepo, and (optionally) create **your own** Supabase and Cloudflare accounts when you want live data or production hosting.
+
+**What Arkitect does:** Documents minimum versions and optional services. It does not create accounts for you or verify them remotely.
 
 | Requirement | Version / notes |
 |-------------|-----------------|
@@ -113,6 +149,14 @@ Components never call Supabase directly. Each slice exposes a narrow `*Gateway` 
 ---
 
 ## Initial Setup
+
+**Purpose:** Install dependencies and verify the monorepo builds on your machine.
+
+**What you do:** Run `pnpm install`, `pnpm build`, and `pnpm verify` from your local clone. Build the MCP server before Cursor can start it.
+
+**What Arkitect does:** Ships the workspace scripts and packages. All commands execute locally — nothing is uploaded to Arkitect servers during install or build.
+
+**Outcome:** A working local checkout with compiled MCP stdio entrypoint at `packages/mcp-server/dist/stdio.js`.
 
 From the monorepo root (example: `C:\Dev\Arkitect-mcp.com`):
 
@@ -145,6 +189,14 @@ packages/mcp-server/dist/stdio.js
 ---
 
 ## Environment Variables
+
+**Purpose:** Configure the site and MCP server with values that stay on **your** machine or **your** deployment platform.
+
+**What you do:** Copy `.env.example` to `.env.local` (git-ignored) for local dev. For production, set the same `VITE_*` vars in **your** Cloudflare Pages project settings. Set MCP env vars in **your** `.cursor/mcp.json` or shell.
+
+**What Arkitect does:** Reads env vars at build/runtime from the process environment. It never phones home with them — there is no Arkitect API that receives your Supabase URL, anon key, or repo paths.
+
+**Privacy note:** Only the Supabase **anon/publishable** key belongs in the browser bundle. Never put the service role key in `VITE_*` variables or commit secrets to git.
 
 ### Site (`apps/site`)
 
@@ -182,7 +234,23 @@ Set these in `.cursor/mcp.json` under the server's `env` block, or in your shell
 
 ## Supabase Setup
 
+**Self-service — your Supabase project, your keys, your data.** Arkitect does **not** create, access, or configure Supabase on your behalf. There is no remote provisioning, no Arkitect login to your Supabase dashboard, and no step where credentials are sent to Arkitect-operated servers. You sign up at [supabase.com](https://supabase.com), create a project under **your** organization, run the SQL migrations **yourself**, and paste the publishable URL and anon key into **your** `.env.local` or Cloudflare env. The site then talks **directly from the browser to your Supabase** — traffic does not proxy through Arkitect infrastructure.
+
+| Responsibility | You | Arkitect (this repo) |
+|----------------|-----|----------------------|
+| Create Supabase account & project | Yes | No — docs + SQL files only |
+| Apply migrations | Yes (SQL editor, CLI, or your MCP) | Ships `apps/site/supabase/migrations/*.sql` |
+| Store service role / secret keys | You only (not required for the site) | Never collected or stored |
+| Host download counter & reviews data | Your Supabase database | No backend access to your project |
+| Moderate reviews | You (Supabase dashboard, service role) | No moderation UI on Arkitect servers |
+
+**Outcome:** Live download counter and reviews on **your** database, or mock mode with zero Supabase if you skip env vars.
+
 ### Dedicated project
+
+**What you do:** Create a **dedicated** Supabase project for this site (do not reuse unrelated production databases). Apply the migration files below in **your** project.
+
+**What Arkitect does:** Provides versioned SQL you copy or run — it cannot execute DDL against your project unless **you** explicitly run it from your machine or tooling.
 
 Use a **dedicated** Supabase project for Arkitect. Do not reuse unrelated projects.
 
@@ -194,11 +262,15 @@ apps/site/supabase/migrations/
   0002_arkitect_reviews.sql
 ```
 
-Apply them via the Supabase SQL editor, Supabase CLI, or the project's Supabase MCP integration.
+Apply them via **your** Supabase SQL editor, **your** Supabase CLI, or **your own** Supabase MCP tooling in Cursor — always under **your** credentials. Arkitect does not run migrations against your project remotely.
 
 See `apps/site/supabase/README.md` for verification notes and reset commands.
 
 ### Getting keys
+
+**What you do:** In **your** Supabase dashboard → **Project Settings → API**, copy the Project URL and **anon public** key into `apps/site/.env.local` (local) or Cloudflare Pages env (production).
+
+**What Arkitect does:** Embeds those values at build time into the static SPA. They are publishable by design (RLS + RPCs enforce access). Arkitect never receives the service role key and does not need dashboard access.
 
 1. Open your Supabase project dashboard.
 2. Go to **Project Settings → API**.
@@ -208,6 +280,10 @@ See `apps/site/supabase/README.md` for verification notes and reset commands.
 These values are publishable and safe for the browser bundle.
 
 ### Mock mode (no Supabase)
+
+**What you do:** Omit `VITE_SUPABASE_*` env vars entirely.
+
+**Outcome:** The site runs fully offline for UI work — no Supabase account, no database network calls, no credentials stored.
 
 Without env vars:
 
@@ -219,6 +295,14 @@ Ideal for UI development without a backend.
 ---
 
 ## Running the Website Locally
+
+**Purpose:** Start the Vite dev server on your machine and confirm routes load.
+
+**What you do:** Run `pnpm dev:site`, open `http://localhost:5173`, and iterate with hot reload.
+
+**What Arkitect does:** Serves the SPA from your local process. Supabase calls (if configured) go from **your browser** to **your Supabase** — not through Arkitect.
+
+**Outcome:** Working local preview of `/` and `/reviews` with mock or live data depending on env.
 
 ```powershell
 pnpm dev:site
@@ -244,6 +328,12 @@ Output: `apps/site/dist/`
 ---
 
 ## Using the Website
+
+**Purpose:** Learn what each page and section does for visitors and how features behave with mock vs live Supabase.
+
+**What you do:** Browse the site as an end user would — claim a download spot, submit reviews, copy MCP install steps.
+
+**What Arkitect does:** Renders the UI and (when configured) calls your Supabase RPCs from the browser. Visitor IDs live in **your** browser localStorage; claims and reviews live in **your** Supabase tables when live mode is on.
 
 ### Navigation
 
@@ -274,6 +364,8 @@ Scroll order on `/`:
 
 ### Download counter
 
+**Purpose:** Anonymous free-spot claims (cap 1,000) — persisted in **your** Supabase when configured, or localStorage in mock mode.
+
 **Location:** Landing page, `#download-counter-heading`
 
 **What it does:**
@@ -292,6 +384,8 @@ Scroll order on `/`:
 - Dedup is enforced server-side; repeat claims return `already_claimed: true` without double-counting.
 
 ### Reviews page
+
+**Purpose:** Public review submit and community list — stored in **your** Supabase with RLS and rate limits when live; localStorage when mock.
 
 **Location:** `/reviews`
 
@@ -312,6 +406,8 @@ Scroll order on `/`:
 
 ### Install section
 
+**Purpose:** On-page copy-paste steps to build the MCP server and add Cursor config — all actions run on **your** machine.
+
 **Location:** Landing page, `#install-heading`
 
 Four steps:
@@ -327,6 +423,8 @@ The section includes a ready-to-copy **Cursor MCP config** block (see [Configuri
 
 ### Connect section
 
+**Purpose:** Community support links (Reddit, X) — optional feedback channels, not a support portal that accesses your Supabase or repo.
+
 **Location:** Bottom of Home and Reviews pages.
 
 Links to Reddit (`u/Ok-Address3409`) and X (`@casiezeq`) for bugs, feature requests, and feedback.
@@ -334,6 +432,14 @@ Links to Reddit (`u/Ok-Address3409`) and X (`@casiezeq`) for bugs, feature reque
 ---
 
 ## Deploying to Cloudflare Pages
+
+**Purpose:** Publish the static site to **your** Cloudflare account with SPA routing and optional Supabase env vars.
+
+**What you do:** Create a Cloudflare Pages project linked to **your** git repo or upload build artifacts, set build commands and `VITE_SUPABASE_*` in **your** dashboard, and attach **your** custom domain.
+
+**What Arkitect does:** Provides `wrangler.jsonc`, `_redirects`, and build scripts. It does not host the site for you or store your Cloudflare or Supabase credentials.
+
+**Outcome:** Public URL serving the same SPA you tested locally, talking to the Supabase project **you** configured in Cloudflare env.
 
 The site is a static Vite SPA prepared for Cloudflare Pages.
 
@@ -373,6 +479,14 @@ Custom domain DNS attachment must be done in your Cloudflare dashboard — it is
 
 ## MCP Server Overview
 
+**Purpose:** Understand the local MCP server that Cursor spawns — tools, resources, and optional desktop bridge.
+
+**What you do:** Build and run `packages/mcp-server/dist/stdio.js` on your machine via Cursor's MCP config.
+
+**What Arkitect does:** Exposes diagnosis and catalog tools over stdio. The process reads **your** repo from disk paths **you** provide. No repo contents or paths are sent to Arkitect cloud services (there is no such backend for MCP).
+
+**Outcome:** Cursor agents can call Arkitect tools against workspaces on your machine.
+
 **Package:** `@arkitect/mcp-server`  
 **Binary:** `arkitect-mcp` → `dist/stdio.js`  
 **Transport:** Stdio via `@modelcontextprotocol/sdk`  
@@ -390,6 +504,14 @@ On startup, it optionally registers with the **Arkitect Desktop bridge** if the 
 ---
 
 ## Configuring the MCP Server in Cursor
+
+**Purpose:** Wire Cursor to start the Arkitect MCP server locally so agents can use its tools.
+
+**What you do:** Build the server, add `.cursor/mcp.json` in **your** project (or user-level MCP settings), set `ARKITECT_DEFAULT_REPO_PATH` to **your** repo, and restart MCP in Cursor.
+
+**What Arkitect does:** Documents the JSON config shape. Cursor launches `node packages/mcp-server/dist/stdio.js` as a **local child process** — config stays on your machine.
+
+**Outcome:** `arkitect-mcp` appears enabled in Cursor Settings → MCP with tools available in chat.
 
 ### Step 1 — Build the server
 
@@ -438,6 +560,12 @@ The Arkitect Desktop app (`apps/desktop`) can write `.cursor/mcp.json` and open 
 
 ## MCP Tools Reference
 
+**Purpose:** Quick reference for every MCP tool — inputs, behavior, and example prompts.
+
+**What you do:** Invoke tools from Cursor chat or agent sessions against repo paths on your machine.
+
+**What Arkitect does:** Runs tool handlers inside the local stdio process. Analysis reads local files; `verify_codebase` runs **your** `pnpm` scripts in **your** repo — output stays in Cursor, not sent to Arkitect servers.
+
 | Tool | Input | Purpose |
 |------|-------|---------|
 | `diagnose_repository` | `repoPath`, `repoName`, `repoSummary`, `requestedOutcome`, `catalogPreferences` | Analyze intake signals, apply policy, return MCP-friendly diagnosis payload |
@@ -481,6 +609,12 @@ Optional arguments:
 
 ## MCP Resources Reference
 
+**Purpose:** Read-only JSON catalogs and policy payloads agents can fetch without calling a tool.
+
+**What you do:** Ask Cursor to read a resource URI, or pick resources from the MCP resource list.
+
+**What Arkitect does:** Serves static catalog JSON from the local MCP process. No network fetch to Arkitect-operated APIs.
+
 Resources are read-only JSON payloads addressable by URI:
 
 | URI | Content |
@@ -496,6 +630,14 @@ In Cursor, resources appear under the MCP server's resource list. Agents can rea
 ---
 
 ## Desktop Bridge Integration
+
+**Purpose:** Optional localhost HTTP registration when Arkitect Desktop is running alongside the MCP server.
+
+**What you do:** Start Arkitect Desktop locally, or set `ARKITECT_SKIP_DESKTOP_BRIDGE=1` to disable bridge attempts.
+
+**What Arkitect does:** MCP server POSTs tool metadata to `127.0.0.1` only — a local loopback bridge written by the desktop app. Nothing leaves your machine unless you configure otherwise.
+
+**Outcome:** Desktop UI can reflect live MCP tool availability; MCP still works standalone if desktop is off.
 
 When **Arkitect Desktop** is running, the MCP stdio server attempts to register with a local HTTP bridge:
 
@@ -519,7 +661,15 @@ To disable bridge registration:
 
 ## Desktop App (Optional)
 
-The desktop shell (`apps/desktop`) provides a guided wizard: repo intake → profile → policy → AI/MCP → review → results.
+**Purpose:** Guided wizard for repo intake, diagnosis, and one-click MCP install — entirely local.
+
+**What you do:** Run `pnpm dev:desktop` or the packaged installer, point at a local folder, walk through steps, optionally let desktop write `.cursor/mcp.json`.
+
+**What Arkitect does:** Provides the Electron shell and shared catalog contracts. Repo files stay on disk; no upload to Arkitect cloud.
+
+**Outcome:** Visual diagnosis flow parallel to MCP, with optional Cursor deeplink install.
+
+The desktop shell (`apps/desktop`) provides a guided wizard:
 
 ```powershell
 pnpm dev:desktop
@@ -538,6 +688,12 @@ See root `README.md` → **Desktop local testing** for the full flow.
 ---
 
 ## Database Schema Overview
+
+**Purpose:** Reference for the SQL objects **you** deploy to **your** Supabase project when enabling live counter and reviews.
+
+**What you do:** Apply migrations, inspect tables in **your** Supabase Table Editor, moderate reviews with service role access in **your** dashboard.
+
+**What Arkitect does:** Defines RLS-safe RPCs and table shapes in migration files. Does not host or query your database except when **your** browser client calls Supabase directly.
 
 ### Download counter (`0001_arkitect_download_counter.sql`)
 
@@ -594,6 +750,12 @@ update public.arkitect_download_counter set claimed_count = 0 where id = 1;
 
 ## Step-by-Step Tutorials
 
+**Purpose:** End-to-end walkthroughs with time estimates — from zero to mock site, live Supabase, MCP diagnosis, deploy, and verify.
+
+**What you do:** Follow each tutorial sequentially on your machine. Every step uses **your** tools, accounts, and env files.
+
+**What Arkitect does:** Documents expected results so you can confirm success locally.
+
 ### Tutorial A — Local site with mock data (5 minutes)
 
 1. `pnpm install && pnpm dev:site`
@@ -607,6 +769,8 @@ No Supabase required.
 ---
 
 ### Tutorial B — Connect live Supabase (15 minutes)
+
+**You own every step:** create **your** Supabase project, run migrations **yourself**, paste keys into **your** `.env.local` — Arkitect is not in the loop.
 
 1. Create or open the dedicated Arkitect Supabase project.
 2. Apply migrations from `apps/site/supabase/migrations/`.
@@ -650,6 +814,12 @@ The tool executes `pnpm lint`, `build`, `typecheck`, and `test` (or subsets) fro
 ---
 
 ## Troubleshooting
+
+**Purpose:** Diagnose common self-service setup issues — env vars, migrations, MCP paths, and SPA routing.
+
+**What you do:** Check **your** `.env.local`, Supabase dashboard, Cursor MCP logs, and Cloudflare settings.
+
+**What Arkitect does:** Documents known failure modes from local-only architecture (no remote support dashboard that sees your config).
 
 ### Site shows mock counter (~137) instead of live count
 
@@ -741,12 +911,18 @@ The tool executes `pnpm lint`, `build`, `typecheck`, and `test` (or subsets) fro
 
 ## Known Limitations & Manual Steps
 
+**Purpose:** Items Arkitect cannot automate — you must complete these in **your** accounts and on **your** machine.
+
+**What you do:** Own Supabase project creation, migration apply, env configuration, domain DNS, MCP rebuilds after code changes.
+
+**What Arkitect does:** Ships SQL files, examples, and docs only — no managed hosting or credential collection service.
+
 These require your action outside the repo:
 
 | Item | Status |
 |------|--------|
-| **Supabase keys** | You must create `.env.local` and Cloudflare env vars |
-| **Migrations** | Apply SQL files to your dedicated Supabase project |
+| **Supabase keys & project** | **You** create the project, apply migrations, and set `.env.local` / Cloudflare env — Arkitect never receives credentials |
+| **Migrations** | **You** run SQL files against **your** dedicated Supabase project |
 | **Custom domain** | Attach `arkitect-mcp.com` in Cloudflare dashboard |
 | **MCP rebuild after code changes** | Rebuild + restart Cursor MCP manually |
 | **Repo analyzer** | Still mock — `diagnose_repository` uses simulated detections unless `ARKITECT_ANALYZER=real` when real mode is wired |
@@ -756,6 +932,8 @@ These require your action outside the repo:
 ---
 
 ## Related Documentation
+
+**Purpose:** Pointers to deeper repo docs — README, site deploy notes, and Supabase migration verification.
 
 | Document | Purpose |
 |----------|---------|

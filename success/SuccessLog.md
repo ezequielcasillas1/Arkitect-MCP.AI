@@ -13,3 +13,9 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Commit:** cad337a
 **Files:** apps/site/src/pages/InstructionsPage.tsx, apps/site/src/features/instructions/*, apps/site/wrangler.jsonc, apps/site/public/_redirects, apps/site/README.md
 **Result:** Instructions markdown page fix verified; Cloudflare Pages Git auto-deploy wired; user confirmed SUCCESS; repo already committed and pushed (origin/master up to date).
+
+### 2026-07-03 - Instructions self-service + flexible stack overview
+**Status:** SUCCESS
+**Commit:** PLACEHOLDER
+**Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx, implementations.md, success/SuccessLog.md
+**Result:** USER_GUIDE and Instructions hero reframed as self-service; System Overview documents swappable reference stack; pushed to origin/master.

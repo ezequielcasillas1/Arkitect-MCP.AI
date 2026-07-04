@@ -8,10 +8,20 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What changed and why]
 
+### 2026-07-03 - Instructions Page: Self-Service Framing
+**Status:** SUCCESS
+**Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx
+**Result:** Added Purpose/You/Arkitect/Outcome intros to all 19 guide sections; Supabase section now states user-owned setup, no credential collection, direct browser-to-Supabase flow; hero copy updated. User confirmed; committed with guide reframe.
+
+### 2026-07-03 - System Overview: Reference Architecture Framing
+**Status:** SUCCESS
+**Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx
+**Result:** Reframed System Overview as reference example (not only valid setup); added swappable-layer table, mix-and-match bullets, and three-block diagram (Core / Optional site / Optional desktop). Instructions hero aligned. User confirmed; committed with guide reframe.
+
 ### 2026-07-03 - Desktop Anti-Tamper Protection
 **Status:** PENDING
 **Files:** apps/desktop/src/electron/protection/*, apps/desktop/src/electron/main.ts, apps/desktop/scripts/generate-integrity-manifest.mjs, apps/desktop/package.json, apps/desktop/README.md, .gitignore
-**Result:** Added protection config (integrity manifest, license guard, DevTools block), startup fail-closed enforcement, build-time manifest generation in `build:installer`; awaiting user verification.
+**Result:** Added protection config (integrity manifest, license guard, DevTools block), startup fail-closed enforcement, build-time manifest generation in `build:installer`; User confirmed; committed with guide reframe.
 
 **Status:** PENDING
 **Files:** apps/desktop/electron-builder.yml, apps/desktop/package.json, apps/desktop/vite.config.ts, apps/desktop/src/electron/mcp-runtime-paths.ts, apps/desktop/src/electron/mcp-client-manager.ts, apps/desktop/src/electron/mcp-cursor-install.ts, apps/desktop/README.md, .github/workflows/release-desktop.yml, apps/site/src/lib/env.ts, apps/site/src/features/download-counter/DownloadCounterSection.tsx, package.json, .gitignore
@@ -29,7 +39,7 @@ Template:
 ### 2026-07-03 - MCP Test Runner Tools
 **Status:** PENDING
 **Files:** packages/contracts/src/verification.ts, packages/core/src/test-runner.ts, packages/core/src/pnpm-runner.ts, packages/mcp-server/src/index.ts, package.json, turbo.json, apps/desktop/src/features/results-overview/ResultsOverviewSection.tsx
-**Result:** Added run_tests and run_test_suite MCP tools, root test:unit/test:integration scripts, structured JSON results; stdio auto-exposes new tools; awaiting user verification.
+**Result:** Added run_tests and run_test_suite MCP tools, root test:unit/test:integration scripts, structured JSON results; stdio auto-exposes new tools; User confirmed; committed with guide reframe.
 
 **Status:** PENDING
 **Files:** packages/contracts, packages/core, packages/mcp-server, packages/repo-analyzer, apps/desktop
@@ -108,7 +118,7 @@ Template:
 ### 2026-07-03 - Install in Cursor MCP button
 **Status:** PENDING
 **Files:** apps/desktop/src/electron/mcp-cursor-install.ts, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx, packages/contracts/src/mcp.ts
-**Result:** Dual-path MCP screen adds Install in Cursor — writes `.cursor/mcp.json`, opens Cursor deeplink, copy-link fallback; awaiting user verification.
+**Result:** Dual-path MCP screen adds Install in Cursor — writes `.cursor/mcp.json`, opens Cursor deeplink, copy-link fallback; User confirmed; committed with guide reframe.
 
 ### 2026-07-03 - Test Override Service
 **Status:** PENDING
