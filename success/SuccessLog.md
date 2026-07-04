@@ -16,6 +16,6 @@ Reserved for confirmed successful work after explicit user confirmation.
 
 ### 2026-07-03 - Instructions self-service + flexible stack overview
 **Status:** SUCCESS
-**Commit:** PLACEHOLDER
+**Commit:** 5e9140a
 **Files:** docs/USER_GUIDE.md, apps/site/src/pages/InstructionsPage.tsx, implementations.md, success/SuccessLog.md
 **Result:** USER_GUIDE and Instructions hero reframed as self-service; System Overview documents swappable reference stack; pushed to origin/master.
