@@ -9,12 +9,21 @@
   box-sizing: border-box;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  overflow-x: hidden;
   background:
     radial-gradient(circle at top, rgba(109, 140, 255, 0.22), transparent 32%),
     linear-gradient(180deg, #090b10 0%, #0f1320 100%);
+}
+
+body.nav-menu-open {
+  overflow: hidden;
 }
 
 a {
@@ -50,6 +59,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 14px 20px;
   border-radius: 16px;
   background: rgba(17, 21, 33, 0.72);
@@ -58,6 +68,31 @@ a {
   position: sticky;
   top: 16px;
   z-index: 20;
+}
+
+.nav-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border-radius: 12px;
+  border: 1px solid rgba(109, 140, 255, 0.28);
+  background: rgba(109, 140, 255, 0.1);
+  color: #dce7ff;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.nav-toggle:hover {
+  background: rgba(109, 140, 255, 0.18);
+  border-color: rgba(109, 140, 255, 0.42);
+}
+
+.site-nav-panel {
+  display: contents;
 }
 
 .brand-link {
@@ -171,6 +206,20 @@ a {
 .panel h1,
 .panel h2 {
   margin: 0 0 14px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.hero h1 {
+  font-size: clamp(1.65rem, 4.5vw, 2.35rem);
+}
+
+.panel h1 {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.panel h2 {
+  font-size: clamp(1.25rem, 3.2vw, 1.65rem);
 }
 
 .hero-actions {
@@ -387,7 +436,8 @@ a {
 
 .counter-stats-row {
   display: flex;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 12px 24px;
   margin-bottom: 16px;
   color: #b8c6ed;
 }
@@ -409,6 +459,12 @@ a {
 .counter-claim-success-text {
   color: #dce7ff;
   margin: 0;
+}
+
+/* Forms */
+.form-stack {
+  display: grid;
+  gap: 16px;
 }
 
 /* Reviews slice */
@@ -444,7 +500,8 @@ a {
 
 .review-rating-options {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .review-rating-option {
@@ -490,6 +547,8 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 6px;
   color: #ffd479;
 }
@@ -1007,18 +1066,172 @@ a {
     height: 240px;
   }
 
-  .site-nav {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-    position: static;
-  }
-
   .instructions-layout {
     grid-template-columns: 1fr;
   }
 
   .guide-toc {
     position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .site-shell {
+    padding: 16px 16px 40px;
+    gap: 20px;
+  }
+
+  .site-nav {
+    top: 12px;
+    padding: 12px 14px;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  .site-nav-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(17, 21, 33, 0.96);
+    border: 1px solid rgba(38, 48, 69, 0.95);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  }
+
+  .site-nav-panel-open {
+    display: block;
+  }
+
+  .site-nav {
+    position: sticky;
+    flex-wrap: wrap;
+  }
+
+  .brand-link {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .site-nav-links {
+    flex-direction: column;
+    width: 100%;
+    gap: 4px;
+  }
+
+  .nav-link {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+
+  .hero,
+  .panel,
+  .reveal-section.panel {
+    padding: 20px 18px;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions .primary-button,
+  .hero-actions .secondary-button,
+  .hero-actions .ghost-button {
+    width: 100%;
+  }
+
+  .instructions-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .instructions-actions .primary-button,
+  .instructions-actions .secondary-button,
+  .instructions-actions .ghost-button {
+    width: 100%;
+  }
+
+  .counter-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .review-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .guide-content .guide-h1 {
+    font-size: 1.45rem;
+  }
+
+  .guide-content .guide-h2 {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-shell {
+    padding: 12px 12px 32px;
+    gap: 16px;
+  }
+
+  .site-nav {
+    top: 8px;
+    border-radius: 14px;
+  }
+
+  .hero,
+  .panel,
+  .reveal-section.panel {
+    padding: 16px 14px;
+    border-radius: 14px;
+  }
+
+  .hero-logo-canvas,
+  .hero-logo-placeholder {
+    height: 200px;
+  }
+
+  .pill {
+    font-size: 0.84rem;
+    padding: 8px 12px;
+  }
+
+  .review-rating-option {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+  }
+
+  .connect-link-card {
+    padding: 14px;
+  }
+
+  .install-step {
+    padding: 14px;
+  }
+
+  .install-config-code {
+    font-size: 0.78rem;
+    padding: 12px;
+  }
+
+  .guide-code-block code {
+    font-size: 0.8rem;
+  }
+
+  .guide-table {
+    font-size: 0.84rem;
+  }
+
+  .guide-table th,
+  .guide-table td {
+    padding: 8px 10px;
   }
 }

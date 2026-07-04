@@ -8,7 +8,15 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What changed and why]
 
-### 2026-07-04 - MCP structuredContent Fix
+### 2026-07-03 - Desktop Anti-Tamper Protection
+**Status:** PENDING
+**Files:** apps/desktop/src/electron/protection/*, apps/desktop/src/electron/main.ts, apps/desktop/scripts/generate-integrity-manifest.mjs, apps/desktop/package.json, apps/desktop/README.md, .gitignore
+**Result:** Added protection config (integrity manifest, license guard, DevTools block), startup fail-closed enforcement, build-time manifest generation in `build:installer`; awaiting user verification.
+
+**Status:** PENDING
+**Files:** apps/desktop/electron-builder.yml, apps/desktop/package.json, apps/desktop/vite.config.ts, apps/desktop/src/electron/mcp-runtime-paths.ts, apps/desktop/src/electron/mcp-client-manager.ts, apps/desktop/src/electron/mcp-cursor-install.ts, apps/desktop/README.md, .github/workflows/release-desktop.yml, apps/site/src/lib/env.ts, apps/site/src/features/download-counter/DownloadCounterSection.tsx, package.json, .gitignore
+**Result:** Added electron-builder NSIS pipeline (`Arkitect-Setup.exe`), packaged MCP stdio path resolution, root `build:desktop:installer` script, optional tag-triggered GH workflow, and stricter `VITE_DOWNLOAD_URL` validation on the marketing site.
+
 **Status:** PENDING
 **Files:** packages/mcp-server/src/mcp-result-mapper.ts, packages/mcp-server/src/stdio.ts, packages/mcp-server/src/mcp-server.test.ts, packages/mcp-server/src/mcp-result-mapper.test.ts
 **Result:** `toMcpToolResult` now lifts each tool's `{type:"json"}` content into a spec-compliant `structuredContent` object; verified against all 10 tools' outputSchema in tests. Typecheck/lint/build/tests pass; live MCP server still needs a Cursor restart to load the rebuilt dist before it's confirmed end-to-end.

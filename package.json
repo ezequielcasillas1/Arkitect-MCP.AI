@@ -10,6 +10,7 @@
     "typecheck": "turbo run typecheck",
     "dev:desktop": "pnpm --filter @arkitect/desktop dev",
     "start:desktop": "pnpm --filter @arkitect/desktop start",
+    "build:desktop:installer": "pnpm --filter @arkitect/desktop build:installer",
     "dev:site": "pnpm --filter @arkitect/site dev",
     "deploy:site": "pnpm --filter @arkitect/site deploy:production",
     "dev:worker": "pnpm --filter @arkitect/licensing-worker dev",

@@ -1,6 +1,8 @@
 node_modules
 dist
 dist-electron
+apps/desktop/release
+apps/desktop/dist-electron/integrity-manifest.json
 .vite
 .wrangler
 .turbo

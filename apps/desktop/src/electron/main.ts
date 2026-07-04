@@ -22,6 +22,8 @@ import { installMcpInCursor } from "./mcp-cursor-install.js";
 import { installElectronNetFetch } from "./electron-fetch.js";
 import { getGitHubOAuthService } from "./github-oauth-service.js";
 import { getGitHubOAuthConfigured } from "./github-oauth-config.js";
+import { applyDevToolsGuard } from "./protection/devtools-guard.js";
+import { enforceProtectionOnStartup, getProtectionConfig } from "./protection/protection-guard.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 let mainWindow: BrowserWindow | null = null;
@@ -82,6 +84,8 @@ function createWindow() {
   });
   mainWindow = window;
 
+  applyDevToolsGuard(window, getProtectionConfig());
+
   getMcpConnectionService().attachWindow(window);
 
   const githubOAuthService = getGitHubOAuthService();
@@ -110,6 +114,11 @@ function createWindow() {
 
 app.whenReady().then(async () => {
   installElectronNetFetch();
+
+  const protection = await enforceProtectionOnStartup();
+  if (!protection.ok) {
+    return;
+  }
 
   const mcpService = getMcpConnectionService();
   await mcpService.start();

@@ -27,7 +27,12 @@ Object.assign(arkitectAliases, {
 });
 
 export default defineConfig({
+  base: "./",
   plugins: [react()],
+  build: {
+    outDir: "dist",
+    emptyOutDir: true
+  },
   resolve: {
     alias: arkitectAliases
   },

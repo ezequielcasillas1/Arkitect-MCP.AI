@@ -1,11 +1,11 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 import type { McpConnectionRuntimeConfig, McpConnectionState, McpServerLaunchConfig, McpSurfaceSummary } from "@arkitect/contracts";
 import { createDefaultMcpConnectionState } from "@arkitect/contracts";
+import { resolveDevRepoRoot, resolveMcpNodeCommand, resolveMcpStdioPath, withMcpNodeSpawnEnv } from "./mcp-runtime-paths.js";
 
 interface CursorMcpJson {
   mcpServers?: Record<
@@ -19,25 +19,8 @@ interface CursorMcpJson {
   >;
 }
 
-const electronDir = dirname(fileURLToPath(import.meta.url));
-
-function resolveDefaultStdioPath() {
-  const candidates = [
-    join(electronDir, "../../../packages/mcp-server/dist/stdio.js"),
-    join(process.cwd(), "packages/mcp-server/dist/stdio.js")
-  ];
-
-  return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];
-}
-
-function resolveRepoRoot() {
-  const candidates = [process.cwd(), join(electronDir, "../../.."), join(electronDir, "../../../..")];
-
-  return candidates.find((candidate) => existsSync(join(candidate, "packages/mcp-server"))) ?? process.cwd();
-}
-
 async function readProjectMcpLaunch(repoPath?: string): Promise<McpServerLaunchConfig | null> {
-  const roots = [repoPath, process.cwd(), resolveRepoRoot()].filter(Boolean) as string[];
+  const roots = [repoPath, process.cwd(), resolveDevRepoRoot()].filter(Boolean) as string[];
 
   for (const root of roots) {
     const configPath = join(root, ".cursor", "mcp.json");
@@ -84,7 +67,7 @@ export async function resolveManualLaunchConfig(
     }
   }
 
-  const stdioPath = resolveDefaultStdioPath();
+  const stdioPath = resolveMcpStdioPath();
   const args =
     config.args.length > 0 && config.args.some((arg) => arg.includes("stdio"))
       ? config.args
@@ -92,9 +75,9 @@ export async function resolveManualLaunchConfig(
 
   return {
     ...config,
-    command: config.command || "node",
+    command: config.command || resolveMcpNodeCommand(),
     args,
-    cwd: config.cwd || resolveRepoRoot(),
+    cwd: config.cwd || resolveDevRepoRoot(),
     env: {
       ...config.env,
       ARKITECT_ANALYZER: config.env.ARKITECT_ANALYZER ?? "mock"
@@ -154,11 +137,11 @@ export class McpClientManager {
     const transport = new StdioClientTransport({
       command: launchConfig.command,
       args: launchConfig.args,
-      env: {
+      env: withMcpNodeSpawnEnv({
         ...launchConfig.env,
         ARKITECT_SKIP_DESKTOP_BRIDGE: "1",
         ARKITECT_DESKTOP_BRIDGE_PORT: bridgePort ? String(bridgePort) : launchConfig.env.ARKITECT_DESKTOP_BRIDGE_PORT
-      },
+      }),
       cwd: launchConfig.cwd,
       stderr: "pipe"
     });

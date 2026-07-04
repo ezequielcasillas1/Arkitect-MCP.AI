@@ -1,12 +1,11 @@
 import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { shell } from "electron";
 import type { McpCursorInstallResult } from "@arkitect/contracts";
+import { resolveDevRepoRoot, resolveMcpNodeCommand, resolveMcpStdioPath } from "./mcp-runtime-paths.js";
 
 const serverName = "arkitect-mcp";
-const electronDir = dirname(fileURLToPath(import.meta.url));
 
 interface CursorMcpJson {
   mcpServers?: Record<
@@ -27,20 +26,8 @@ interface CursorInstallTransportConfig {
   env: Record<string, string>;
 }
 
-function resolveRepoRoot() {
-  const candidates = [process.cwd(), join(electronDir, "../../.."), join(electronDir, "../../../..")];
-
-  return candidates.find((candidate) => existsSync(join(candidate, "packages/mcp-server"))) ?? process.cwd();
-}
-
 function resolveStdioPath() {
-  const candidates = [
-    join(electronDir, "../../../packages/mcp-server/dist/stdio.js"),
-    join(process.cwd(), "packages/mcp-server/dist/stdio.js"),
-    join(resolveRepoRoot(), "packages/mcp-server/dist/stdio.js")
-  ];
-
-  return candidates.find((candidate) => existsSync(candidate)) ?? candidates[0];
+  return resolve(resolveMcpStdioPath());
 }
 
 function toBase64Url(value: unknown) {
@@ -57,7 +44,7 @@ function buildCursorInstallDeeplink(name: string, config: CursorInstallTransport
 
 function buildServerEntry(stdioPath: string, repoPath: string, env: Record<string, string>) {
   return {
-    command: "node",
+    command: resolveMcpNodeCommand(),
     args: [stdioPath],
     env: {
       ARKITECT_ANALYZER: env.ARKITECT_ANALYZER === "real" ? "real" : "mock",
@@ -92,7 +79,7 @@ export async function installMcpInCursor(input: {
 }): Promise<McpCursorInstallResult> {
   const stdioPath = resolve(resolveStdioPath());
   const stdioBuilt = existsSync(stdioPath);
-  const repoPath = resolve(input.repoPath?.trim() || resolveRepoRoot());
+  const repoPath = resolve(input.repoPath?.trim() || resolveDevRepoRoot());
   const env = input.env ?? {};
   const serverEntry = buildServerEntry(stdioPath, repoPath, env);
   const transportConfig: CursorInstallTransportConfig = {

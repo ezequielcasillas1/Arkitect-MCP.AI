@@ -1,5 +1,5 @@
 import { Download, Gift, Loader2, Users } from "lucide-react";
-import { downloadUrl, isDownloadUrlConfigured } from "../../lib/env";
+import { downloadUrl, downloadUrlState, isDownloadUrlConfigured } from "../../lib/env";
 import { useDownloadCounter } from "./useDownloadCounter";
 
 const MILESTONE_STEP = 100;
@@ -87,10 +87,20 @@ export function DownloadCounterSection() {
               className="primary-button action-button-wide"
               target="_blank"
               rel="noopener noreferrer"
+              download
             >
               <Download size={18} aria-hidden="true" />
               Download Arkitect
             </a>
+          ) : downloadUrlState === "invalid" ? (
+            <>
+              <p className="helper-copy" role="status">
+                Download link is misconfigured. Use the install steps below until the site env is updated.
+              </p>
+              <a href="#install-heading" className="secondary-button action-button-wide">
+                See install steps
+              </a>
+            </>
           ) : (
             <>
               <p className="helper-copy">

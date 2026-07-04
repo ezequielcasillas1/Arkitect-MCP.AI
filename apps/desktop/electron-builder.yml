@@ -1,0 +1,25 @@
+appId: com.arkitect.desktop
+productName: Arkitect
+copyright: Copyright © 2026 Arkitect
+asar: true
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist/**/*
+  - dist-electron/**/*
+  - package.json
+  - "!**/*.map"
+asarUnpack:
+  - node_modules/@arkitect/**/*
+  - node_modules/@modelcontextprotocol/**/*
+win:
+  target:
+    - nsis
+  artifactName: Arkitect-Setup.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  shortcutName: Arkitect
