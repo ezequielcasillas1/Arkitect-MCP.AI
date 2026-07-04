@@ -25,3 +25,10 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Commit:** 2a5c99d
 **Files:** apps/site/src/styles.css, implementations.md
 **Result:** Sticky "On this page" sidebar fixed via overflow-x clip, reveal transform override, and guide-toc scroll constraints; pushed to origin/master.
+
+### 2026-07-03 - Site Favicon: 3D Logo Mark
+**Status:** SUCCESS
+**Commit:** 0c3c2f8
+**Files:** apps/site/public/favicon.svg, apps/site/public/apple-touch-icon.svg, apps/site/index.html, implementations.md
+**Result:** SVG favicon and apple-touch-icon from Arkitect wireframe mark; theme-color and link tags in index.html; pushed to origin/master.
+
