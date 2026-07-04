@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-07-04 - Favicon Not Showing in Production
+**Status:** PENDING
+**Files:** apps/site/public/_redirects, apps/site/public/favicon.svg, apps/site/public/favicon.ico, apps/site/index.html, apps/site/scripts/generate-favicon.mjs
+**Result:** SPA catch-all `/* /index.html 200` in `_redirects` rewrote `/favicon.svg` and `/favicon.ico` to HTML on Cloudflare Pages. Added explicit static-asset rules before catch-all, fixed invalid control char in favicon.svg, added favicon.ico (16/32px from logo colors), and expanded index.html link tags.
+
 ### 2026-07-04 - No Download Link After Free Spot Claim
 **Status:** PENDING
 **Files:** apps/site/src/features/download-counter/DownloadCounterSection.tsx, apps/site/src/lib/env.ts, apps/site/.env.example
