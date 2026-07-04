@@ -17,13 +17,13 @@ describe("mergeDiagnosisIntake", () => {
         platformType: { hint: "web", confirmed: true }
       },
       catalogPreferences: {
-        complexityProfile: "ambitious",
+        complexityProfile: "structured",
         requirementTags: ["mcp", "desktop"]
       }
     });
 
     expect(merged.userInput.platformType.hint).toBe("web");
-    expect(merged.catalogPreferences.complexityProfile).toBe("ambitious");
+    expect(merged.catalogPreferences.complexityProfile).toBe("structured");
     expect(merged.catalogPreferences.requirementTags).toEqual(["mcp", "desktop"]);
   });
 });

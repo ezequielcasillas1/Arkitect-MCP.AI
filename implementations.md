@@ -1,3 +1,8 @@
+### 2026-07-04 - MCP Interview → Workbench Intake Sync
+**Status:** PENDING
+**Files:** packages/contracts/src/workbench-intake.ts, packages/core/src/intake-merge.ts, packages/mcp-server/src/{index,mcp-tool-definitions,desktop-bridge-client}.ts, apps/desktop/src/{App.tsx,electron/mcp-bridge-server.ts,electron/mcp-connection-service.ts,electron/main.ts,electron/preload.ts,lib/workbench-intake-bridge.ts,features/repo-connection/RepoConnectionSection.tsx}
+**Result:** Added apply_workbench_intake MCP tool, desktop bridge POST /intake, auto-apply + manual Import banner on Connect Repo. Awaiting user confirmation.
+
 ### 2026-07-04 - Refactoring Guru MCP Tool
 **Status:** PENDING
 **Files:** packages/contracts/src/refactoring-analysis.ts, packages/core/src/refactoring-{techniques-catalog,analysis}.ts, packages/mcp-server/src/{mcp-tool-definitions,index,refactoring-payload}.ts, apps/desktop/src/{App.tsx,features/results-overview/ResultsOverviewSection.tsx}, docs/USER_GUIDE.md

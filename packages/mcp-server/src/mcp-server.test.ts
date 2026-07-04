@@ -53,6 +53,7 @@ describe("createArkitectMcpServer", () => {
     expect(toolNames).toContain("run_test_suite");
     expect(toolNames).toContain("analyze_refactoring_opportunities");
     expect(toolNames).toContain("list_refactoring_techniques");
+    expect(toolNames).toContain("apply_workbench_intake");
   });
 });
 
