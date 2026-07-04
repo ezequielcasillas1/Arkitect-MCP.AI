@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CodebaseVerifyResult, DiagnosisResult, TestOverrideRunResult } from "@arkitect/contracts";
+import type { CodebaseVerifyResult, DiagnosisResult, RefactoringMcpPayload, TestOverrideRunResult } from "@arkitect/contracts";
 import { getArchitectureCatalogEntry, getDesignPatternDisplayName, getRemixProfileCatalogEntry, listDiagnosisStrategies } from "@arkitect/core";
 
 interface ResultsOverviewSectionProps {
@@ -12,10 +12,11 @@ interface ResultsOverviewSectionProps {
   lastTestOverrideAt?: string;
   mcpSummary: string;
   cursorGuidance: string[];
+  refactoringPayload?: RefactoringMcpPayload;
   toolNames: string[];
 }
 
-type ResultsTab = "overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp" | "verify" | "tests";
+type ResultsTab = "overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp" | "refactoring" | "verify" | "tests";
 
 export function ResultsOverviewSection({
   result,
@@ -27,6 +28,7 @@ export function ResultsOverviewSection({
   lastTestOverrideAt,
   mcpSummary,
   cursorGuidance,
+  refactoringPayload,
   toolNames
 }: ResultsOverviewSectionProps) {
   const [activeTab, setActiveTab] = useState<ResultsTab>("overview");
@@ -77,7 +79,7 @@ export function ResultsOverviewSection({
 
           <div className="tab-row">
             {(
-              ["overview", "architecture", "patterns", "risks", "ai", "mcp", "verify", "tests"] as ResultsTab[]
+              ["overview", "architecture", "patterns", "risks", "ai", "mcp", "refactoring", "verify", "tests"] as ResultsTab[]
             ).map((tab) => (
               <button
                 className={`tab-button ${activeTab === tab ? "tab-button-active" : ""}`}
@@ -288,8 +290,8 @@ export function ResultsOverviewSection({
                   ))}
                 </div>
                 <p className="helper-copy">
-                  Test tools: verify_codebase (lint/build/typecheck/test), run_tests (pnpm test), run_test_suite
-                  (unit | integration | all).
+                  MCP tools include analyze_refactoring_opportunities and list_refactoring_techniques for Refactoring
+                  Guru–guided agent orchestration. Test tools: verify_codebase, run_tests, run_test_suite.
                 </p>
                 <span className="metric-label">Cursor guidance</span>
                 <ul className="tight-list">
@@ -301,6 +303,55 @@ export function ResultsOverviewSection({
               <article className="panel-card">
                 <span className="metric-label">Payload preview</span>
                 <pre className="payload-preview">{payloadPreview}</pre>
+              </article>
+            </div>
+          ) : null}
+
+          {activeTab === "refactoring" && hasRun && refactoringPayload ? (
+            <div className="step-grid">
+              <article className="panel-card">
+                <span className="metric-label">Refactoring analysis</span>
+                <p>{refactoringPayload.summary}</p>
+                <ul className="tight-list">
+                  {refactoringPayload.cursorGuidance.map((guidance) => (
+                    <li key={guidance}>{guidance}</li>
+                  ))}
+                </ul>
+              </article>
+              <article className="panel-card">
+                <span className="metric-label">Detected smells</span>
+                <ul className="tight-list">
+                  {refactoringPayload.analysis.detectedSmells.map((smell) => (
+                    <li key={smell.id}>
+                      <strong>{smell.label}</strong> ({Math.round(smell.confidence * 100)}%) — {smell.rationale}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+              <article className="panel-card">
+                <span className="metric-label">Recommended techniques</span>
+                <ul className="tight-list">
+                  {refactoringPayload.analysis.recommendedTechniques.map((entry) => (
+                    <li key={entry.technique.id}>
+                      <strong>{entry.technique.name}</strong> ({entry.priority}) — {entry.rationale}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+              <article className="panel-card">
+                <span className="metric-label">Orchestration plan</span>
+                <ul className="tight-list">
+                  {refactoringPayload.analysis.orchestrationPlan.map((phase) => (
+                    <li key={phase.id}>
+                      <strong>{phase.label}</strong> — {phase.summary}
+                      <ul className="tight-list">
+                        {phase.agentActions.map((action) => (
+                          <li key={action}>{action}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
               </article>
             </div>
           ) : null}

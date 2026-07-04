@@ -227,7 +227,7 @@ Arkitect Desktop can write `.cursor/mcp.json` and open a Cursor deeplink from th
 **Purpose:** Confirm tools and resources are visible to the agent.
 
 1. **Cursor Settings → MCP** — `arkitect-mcp` shows green/enabled.
-2. In chat, ask: *"List available arkitect-mcp tools."* — expect 10 tools including `diagnose_repository`, `list_design_patterns`, `verify_codebase`.
+2. In chat, ask: *"List available arkitect-mcp tools."* — expect 12 tools including `diagnose_repository`, `analyze_refactoring_opportunities`, `verify_codebase`.
 3. Ask: *"Read resource arkitect://catalog/patterns and summarize families."* — expect JSON catalog content.
 4. First diagnosis: *"Call diagnose_repository for this workspace and summarize cursorGuidance."*
 
@@ -287,6 +287,19 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 2. `list_diagnosis_strategies` for continuation guardrails
 3. Report only; honor *"Do not auto-refactor spaghetti structure..."* from `cursorGuidance`
 
+### Pattern 4b — Refactoring Guru orchestration
+
+**You:**
+
+> Analyze refactoring opportunities for this repo. Rank Refactoring Guru techniques and follow the orchestration plan — report only unless I explicitly request structural changes.
+
+**Agent flow:**
+
+1. `analyze_refactoring_opportunities` with `repoPath` and intake context
+2. Read `orchestrationPlan` phases and `cursorGuidance`
+3. Use `list_refactoring_techniques` or `arkitect://catalog/refactoring` for technique reference URLs
+4. Apply techniques only when explicit refactor intent is confirmed; run `verify_codebase` after each batch
+
 ### Pattern 5 — Verify after implementation
 
 **You:**
@@ -328,6 +341,8 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | `verify_codebase` | Pre-merge or CI parity check | Runs `pnpm lint`, `build`, `typecheck`, `test` at repo root |
 | `run_tests` | Test-only pass | Runs `pnpm test` |
 | `run_test_suite` | Targeted suite | `suite`: `unit` \| `integration` \| `all` |
+| `list_refactoring_techniques` | Refactoring Guru catalog browse | Techniques grouped by category with reference URLs |
+| `analyze_refactoring_opportunities` | Code smell analysis before refactors | Rank techniques, orchestration plan, `cursorGuidance` — report only |
 
 **Common inputs for diagnosis tools:**
 
@@ -356,6 +371,7 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | `arkitect://catalog/architectures` | Architecture catalog JSON | Architecture comparison without tool overhead |
 | `arkitect://catalog/remixes` | Remix profile catalog | Remix selection workflows |
 | `arkitect://catalog/patterns` | Design pattern catalog | Pattern-fit discussions |
+| `arkitect://catalog/refactoring` | Refactoring Guru technique catalog | Refactoring technique browse and agent orchestration |
 
 Resources appear in Cursor under the MCP server's resource list. Prefer tools when fresh analysis or execution is required.
 
@@ -404,7 +420,7 @@ To disable bridge attempts:
 
 ## Other MCP Hosts
 
-Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern: stdio command pointing at `packages/mcp-server/dist/stdio.js`, equivalent env vars, restart the server after rebuilds. Config file location and UI differ; the Arkitect surface (10 tools, 5 resources) is identical.
+Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern: stdio command pointing at `packages/mcp-server/dist/stdio.js`, equivalent env vars, restart the server after rebuilds. Config file location and UI differ; the Arkitect surface (12 tools, 6 resources) is identical.
 
 ---
 

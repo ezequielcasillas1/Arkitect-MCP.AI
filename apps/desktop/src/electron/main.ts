@@ -267,6 +267,11 @@ app.whenReady().then(async () => {
     return mcpService.getState();
   });
   ipcMain.handle("arkitect:get-mcp-bridge-manifest", () => mcpService.getBridgeManifest());
+  ipcMain.handle("arkitect:get-pending-workbench-intake", () => mcpService.getPendingWorkbenchIntake());
+  ipcMain.handle("arkitect:clear-pending-workbench-intake", () => {
+    mcpService.clearPendingWorkbenchIntake();
+    return { ok: true };
+  });
   ipcMain.handle(
     "arkitect:install-mcp-in-cursor",
     async (_event, input: { repoPath?: string; env?: Record<string, string> }) => installMcpInCursor(input)

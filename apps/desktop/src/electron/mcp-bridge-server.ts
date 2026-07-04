@@ -6,7 +6,9 @@ import type {
   McpBridgeManifest,
   McpConnectionState,
   McpExternalHeartbeat,
-  McpExternalRegistration
+  McpExternalRegistration,
+  WorkbenchIntakeApplyRequest,
+  WorkbenchIntakeApplyResponse
 } from "@arkitect/contracts";
 import { createDefaultMcpConnectionState, DEFAULT_MCP_BRIDGE_PORT } from "@arkitect/contracts";
 import { getBridgeManifestPath } from "./mcp-bridge-path.js";
@@ -17,6 +19,7 @@ interface BridgeServerOptions {
   port?: number;
   onStateChange: (state: McpConnectionState) => void;
   getBaseState: () => McpConnectionState;
+  onIntakeReceived?: (payload: WorkbenchIntakeApplyRequest) => void;
 }
 
 function sendJson(response: ServerResponse, statusCode: number, body: unknown) {
@@ -45,12 +48,16 @@ export class McpBridgeServer {
   private externalSession: McpExternalRegistration | null = null;
   private externalLastSeen = 0;
   private staleTimer: NodeJS.Timeout | null = null;
+  private pendingIntake: WorkbenchIntakeApplyRequest | null = null;
+  private pendingIntakeReceivedAt?: string;
   private readonly onStateChange: (state: McpConnectionState) => void;
   private readonly getBaseState: () => McpConnectionState;
+  private readonly onIntakeReceived?: (payload: WorkbenchIntakeApplyRequest) => void;
 
   constructor(options: BridgeServerOptions) {
     this.onStateChange = options.onStateChange;
     this.getBaseState = options.getBaseState;
+    this.onIntakeReceived = options.onIntakeReceived;
     this.port = options.port ?? DEFAULT_MCP_BRIDGE_PORT;
   }
 
@@ -102,6 +109,18 @@ export class McpBridgeServer {
   clearExternalSession() {
     this.externalSession = null;
     this.externalLastSeen = 0;
+  }
+
+  getPendingIntake() {
+    return {
+      pending: this.pendingIntake,
+      receivedAt: this.pendingIntakeReceivedAt
+    };
+  }
+
+  clearPendingIntake() {
+    this.pendingIntake = null;
+    this.pendingIntakeReceivedAt = undefined;
   }
 
   private async persistManifest() {
@@ -196,6 +215,11 @@ export class McpBridgeServer {
       return;
     }
 
+    if (url.pathname === "/intake/pending" && this.isAuthorized(request)) {
+      sendJson(response, 200, this.getPendingIntake());
+      return;
+    }
+
     if (request.method !== "POST" || !this.isAuthorized(request)) {
       sendJson(response, request.method === "POST" ? 401 : 404, { ok: false });
       return;
@@ -223,6 +247,41 @@ export class McpBridgeServer {
 
         this.externalLastSeen = Date.now();
         this.publishExternalState(`External MCP heartbeat (${body.toolCount} tools).`);
+        sendJson(response, 200, { ok: true });
+        return;
+      }
+
+      if (url.pathname === "/intake") {
+        const body = JSON.parse(rawBody) as WorkbenchIntakeApplyRequest;
+
+        if (!body.intake || typeof body.intake !== "object") {
+          sendJson(response, 400, {
+            ok: false,
+            appliedAt: new Date().toISOString(),
+            message: "Workbench intake payload requires an intake object."
+          } satisfies WorkbenchIntakeApplyResponse);
+          return;
+        }
+
+        const payload: WorkbenchIntakeApplyRequest = {
+          ...body,
+          source: body.source ?? "cursor-interview",
+          intake: body.intake
+        };
+        this.pendingIntake = payload;
+        this.pendingIntakeReceivedAt = new Date().toISOString();
+        this.onIntakeReceived?.(payload);
+
+        sendJson(response, 200, {
+          ok: true,
+          appliedAt: this.pendingIntakeReceivedAt,
+          message: "Workbench intake queued for Arkitect Desktop."
+        } satisfies WorkbenchIntakeApplyResponse);
+        return;
+      }
+
+      if (url.pathname === "/intake/clear") {
+        this.clearPendingIntake();
         sendJson(response, 200, { ok: true });
         return;
       }

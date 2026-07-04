@@ -19,13 +19,14 @@ import type {
   TestOverrideCatalog,
   TestOverrideKind,
   TestOverrideRunResult,
-  UserSignalInputs
+  UserSignalInputs,
+  WorkbenchIntakeApplyRequest
 } from "@arkitect/contracts";
 import { buildDiagnosisFactsBundle } from "@arkitect/ai";
-import { createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult } from "@arkitect/core";
+import { buildRefactoringAnalysisResult, applyPartialIntakeToDraft, createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult } from "@arkitect/core";
 import { arkitectWindowsTheme, buildCssVariables } from "@arkitect/design-system";
 import { githubRouteToRepoInspection, validateGitHubTokenFormat } from "@arkitect/github";
-import { arkitectMcpServer, toDiagnosisMcpPayload } from "@arkitect/mcp-server";
+import { arkitectMcpServer, toDiagnosisMcpPayload, toRefactoringMcpPayload } from "@arkitect/mcp-server";
 import { createMockAutoDetections } from "@arkitect/repo-analyzer";
 import { AiSettingsSection } from "./features/ai-settings/AiSettingsSection";
 import { ArchitecturePolicySection } from "./features/architecture-policy/ArchitecturePolicySection";
@@ -57,6 +58,13 @@ import {
   type RuntimeShellInfo
 } from "./lib/desktop-bridge";
 import { createLocalId, loadAiSessionCredentials, loadBrowserLibrary, saveAiSessionCredentials, saveBrowserLibrary } from "./lib/library-persistence";
+import {
+  clearPendingWorkbenchIntake,
+  inferReviewFlagsFromIntake,
+  loadPendingWorkbenchIntake,
+  resolveWorkbenchAdvanceStep,
+  subscribeWorkbenchIntake
+} from "./lib/workbench-intake-bridge";
 
 interface FieldPatch {
   hint?: string;
@@ -273,6 +281,8 @@ export function App() {
   const [githubBranches, setGithubBranches] = useState<GitHubBranchOption[]>([]);
   const [githubBranchesBusy, setGithubBranchesBusy] = useState(false);
   const [selectedRepoFullName, setSelectedRepoFullName] = useState("");
+  const [mcpIntakeMessage, setMcpIntakeMessage] = useState("");
+  const [pendingMcpIntake, setPendingMcpIntake] = useState<WorkbenchIntakeApplyRequest | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -432,11 +442,24 @@ export function App() {
 
   const previewResult = useMemo(() => createDiagnosisResult(draft, createMockAutoDetections(draft)), [draft]);
   const resultForDisplay = lastRun ?? previewResult;
-  const mcpPayload = useMemo(() => toDiagnosisMcpPayload(resultForDisplay), [resultForDisplay]);
   const repoReady = isRepoReady(draft.routeSource, draft.repoInspection);
-  const aiConnected = aiConnection.status === "connected";
   const localRepoPath =
     draft.routeSource === "local-path" ? draft.repoPath : draft.repoInspection?.path ?? draft.repoPath;
+  const mcpPayload = useMemo(() => toDiagnosisMcpPayload(resultForDisplay), [resultForDisplay]);
+  const refactoringPayload = useMemo(
+    () =>
+      toRefactoringMcpPayload(
+        buildRefactoringAnalysisResult(resultForDisplay, {
+          repoPath: localRepoPath,
+          repoName: draft.repoName,
+          repoSummary: draft.repoSummary,
+          requestedOutcome: draft.requestedOutcome,
+          explicitRefactorIntent: draft.executionPermission === "apply-structural-changes"
+        })
+      ),
+    [resultForDisplay, localRepoPath, draft.repoName, draft.repoSummary, draft.requestedOutcome, draft.executionPermission]
+  );
+  const aiConnected = aiConnection.status === "connected";
   const canVerify = draft.routeSource === "local-path" && repoReady && Boolean(localRepoPath.trim());
   const hasResults = Boolean(lastRun) || Boolean(lastVerifyResult) || Boolean(lastTestOverrideResult);
   const highestNavigableIndex = getHighestNavigableIndex(repoReady, settingsReviewed, hasResults);
@@ -514,6 +537,92 @@ export function App() {
       status: "idle",
       message: ""
     });
+  }
+
+  async function applyMcpWorkbenchIntake(payload: WorkbenchIntakeApplyRequest) {
+    const partial = payload.intake;
+    const reviewFlags = inferReviewFlagsFromIntake(partial, payload.markStepsReviewed);
+
+    if (partial.routeSource) {
+      setRepoConnectionMode(partial.routeSource);
+    }
+
+    if (partial.repoSummary) {
+      setRepoSummaryTouched(true);
+    }
+
+    let repoReadyAfterApply = false;
+
+    if (partial.routeSource === "github-api" && partial.githubRoute) {
+      const route = partial.githubRoute;
+      const inspection = partial.repoInspection ?? githubRouteToRepoInspection(route);
+
+      setGithubOwner(route.target.owner);
+      setGithubRepo(route.target.repo);
+      setGithubBranch(route.target.branch);
+      setSelectedRepoFullName(route.target.fullName);
+      setDraft((current) => ({
+        ...applyPartialIntakeToDraft(current, partial),
+        repoInspection: inspection
+      }));
+      setGithubConnection({
+        status: "success",
+        message: `Loaded ${route.target.fullName} from MCP interview.`
+      });
+      repoReadyAfterApply = isRepoReady("github-api", inspection);
+    } else {
+      resetGitHubFeedback();
+      setDraft((current) => applyPartialIntakeToDraft(current, partial));
+
+      if (partial.repoInspection) {
+        repoReadyAfterApply = isRepoReady("local-path", partial.repoInspection);
+      } else {
+        const path = partial.repoPath?.trim() || draft.repoPath;
+
+        if (path) {
+          await inspectRepoPath(path, false, true);
+          repoReadyAfterApply = true;
+        }
+      }
+    }
+
+    if (reviewFlags.profile) {
+      setProfileReviewed(true);
+    }
+
+    if (reviewFlags.policy) {
+      setPolicyReviewed(true);
+    }
+
+    if (reviewFlags.settings) {
+      setSettingsReviewed(true);
+    }
+
+    setActiveStep(
+      resolveWorkbenchAdvanceStep({
+        advanceToStep: payload.advanceToStep,
+        repoReady: repoReadyAfterApply,
+        profileReviewed: Boolean(reviewFlags.profile),
+        policyReviewed: Boolean(reviewFlags.policy),
+        settingsReviewed: Boolean(reviewFlags.settings)
+      })
+    );
+
+    setMcpIntakeMessage(
+      payload.source === "mcp-tool"
+        ? "Workbench prefilled from MCP apply_workbench_intake."
+        : "Workbench prefilled from Cursor MCP interview."
+    );
+    setPendingMcpIntake(null);
+    await clearPendingWorkbenchIntake();
+  }
+
+  async function hydratePendingMcpIntake() {
+    const pending = await loadPendingWorkbenchIntake();
+
+    if (pending.pending) {
+      setPendingMcpIntake(pending.pending);
+    }
   }
 
   async function loadGitHubBranchesForSelection(fullName: string, preferredBranch?: string) {
@@ -1079,6 +1188,17 @@ export function App() {
     void window.arkitectDesktop?.setMcpDefaultRepoPath?.(draft.repoPath);
   }, [draft.repoPath, draft.routeSource]);
 
+  useEffect(() => {
+    void hydratePendingMcpIntake();
+
+    const unsubscribe = subscribeWorkbenchIntake((payload) => {
+      setPendingMcpIntake(payload);
+      void applyMcpWorkbenchIntake(payload);
+    });
+
+    return unsubscribe;
+  }, []);
+
   const intake = useMemo<DiagnosisIntake>(
     () => draft,
     [draft]
@@ -1297,6 +1417,17 @@ export function App() {
               onSaveProjectProfile={upsertProjectProfile}
               projectProfiles={library.projectProfiles}
               shellInfo={shellInfo}
+              mcpIntakeMessage={mcpIntakeMessage}
+              pendingMcpIntake={pendingMcpIntake}
+              onApplyPendingMcpIntake={() => {
+                if (pendingMcpIntake) {
+                  void applyMcpWorkbenchIntake(pendingMcpIntake);
+                }
+              }}
+              onDismissPendingMcpIntake={() => {
+                setPendingMcpIntake(null);
+                void clearPendingWorkbenchIntake();
+              }}
             />
           ) : null}
 
@@ -1573,6 +1704,7 @@ export function App() {
               lastTestOverrideAt={lastTestOverrideAt}
               lastTestOverrideResult={lastTestOverrideResult ?? undefined}
               mcpSummary={mcpPayload.summary}
+              refactoringPayload={refactoringPayload}
               result={resultForDisplay}
               toolNames={arkitectMcpServer.tools.map((tool) => tool.name)}
             />

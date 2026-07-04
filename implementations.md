@@ -1,4 +1,8 @@
-### 2026-07-04 - Hero Beaver Logo Above Headline
+### 2026-07-04 - Refactoring Guru MCP Tool
+**Status:** PENDING
+**Files:** packages/contracts/src/refactoring-analysis.ts, packages/core/src/refactoring-{techniques-catalog,analysis}.ts, packages/mcp-server/src/{mcp-tool-definitions,index,refactoring-payload}.ts, apps/desktop/src/{App.tsx,features/results-overview/ResultsOverviewSection.tsx}, docs/USER_GUIDE.md
+**Result:** Added list_refactoring_techniques + analyze_refactoring_opportunities MCP tools, arkitect://catalog/refactoring resource, desktop Refactoring results tab. Report-only orchestration aligned with Refactoring Guru categories. Awaiting user confirmation.
+
 **Status:** SUCCESS
 **Files:** apps/site/src/components/Logo.tsx, apps/site/src/pages/LandingPage.tsx, apps/site/src/styles.css
 **Result:** Added large transparent `arkitect-mark.png` (240px max, responsive clamp) above "Arkitect MCP" eyebrow in hero-copy; removed ArkitectLogo3D wireframe from hero-visual. Awaiting user confirmation.

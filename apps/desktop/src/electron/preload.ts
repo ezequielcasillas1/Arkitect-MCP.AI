@@ -18,6 +18,8 @@ import type {
   McpServerLaunchConfig,
   McpBridgeManifest,
   McpCursorInstallResult,
+  PendingWorkbenchIntakeState,
+  WorkbenchIntakeApplyRequest,
   CodebaseVerifyResult,
   TestOverrideCatalog,
   TestOverrideKind,
@@ -96,6 +98,10 @@ contextBridge.exposeInMainWorld("arkitectDesktop", {
   setMcpDefaultRepoPath: (repoPath?: string) =>
     ipcRenderer.invoke("arkitect:set-mcp-default-repo", repoPath) as Promise<McpConnectionState>,
   getMcpBridgeManifest: () => ipcRenderer.invoke("arkitect:get-mcp-bridge-manifest") as Promise<McpBridgeManifest>,
+  getPendingWorkbenchIntake: () =>
+    ipcRenderer.invoke("arkitect:get-pending-workbench-intake") as Promise<PendingWorkbenchIntakeState>,
+  clearPendingWorkbenchIntake: () =>
+    ipcRenderer.invoke("arkitect:clear-pending-workbench-intake") as Promise<{ ok: boolean }>,
   installMcpInCursor: (input: { repoPath?: string; env?: Record<string, string> }) =>
     ipcRenderer.invoke("arkitect:install-mcp-in-cursor", input) as Promise<McpCursorInstallResult>,
   onMcpConnectionStateChange: (handler: (state: McpConnectionState) => void) => {
@@ -103,6 +109,13 @@ contextBridge.exposeInMainWorld("arkitectDesktop", {
     ipcRenderer.on("arkitect:mcp-state-changed", listener);
     return () => {
       ipcRenderer.removeListener("arkitect:mcp-state-changed", listener);
+    };
+  },
+  onWorkbenchIntakeReceived: (handler: (payload: WorkbenchIntakeApplyRequest) => void) => {
+    const listener = (_event: IpcRendererEvent, payload: WorkbenchIntakeApplyRequest) => handler(payload);
+    ipcRenderer.on("arkitect:workbench-intake-received", listener);
+    return () => {
+      ipcRenderer.removeListener("arkitect:workbench-intake-received", listener);
     };
   },
   onGitHubOAuthStateChange: (handler: (state: GitHubOAuthFlowState) => void) => {

@@ -4,6 +4,7 @@ interface CatalogCounts {
   architectures: number;
   remixProfiles: number;
   designPatterns: number;
+  refactoringTechniques: number;
 }
 
 export interface ArkitectMcpServer {
@@ -105,6 +106,100 @@ export const testToolOutputSchema = {
   }
 };
 
+export const refactoringAnalysisInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" },
+    repoName: { type: "string" },
+    repoSummary: { type: "string" },
+    requestedOutcome: { type: "string" },
+    category: {
+      type: "string",
+      enum: [
+        "composing-methods",
+        "moving-features",
+        "organizing-data",
+        "simplifying-conditionals",
+        "simplifying-method-calls",
+        "dealing-with-generalization"
+      ]
+    },
+    explicitRefactorIntent: { type: "boolean" }
+  }
+};
+
+export const refactoringAnalysisOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    analysis: { type: "object" },
+    cursorGuidance: { type: "array", items: { type: "string" } }
+  }
+};
+
+export const workbenchIntakeInputSchema = {
+  type: "object",
+  properties: {
+    intake: diagnosisToolInputSchema,
+    repoPath: { type: "string" },
+    repoName: { type: "string" },
+    repoSummary: { type: "string" },
+    requestedOutcome: { type: "string" },
+    routeSource: { type: "string", enum: ["local-path", "github-api"] },
+    executionMode: {
+      type: "string",
+      enum: ["dry-run", "advisory", "guided", "approved-change", "approved-refactor"]
+    },
+    executionPermission: {
+      type: "string",
+      enum: ["read-only", "generate-plan", "propose-changes", "apply-safe-changes", "apply-structural-changes"]
+    },
+    catalogPreferences: diagnosisToolInputSchema.properties.catalogPreferences,
+    userInput: { type: "object" },
+    markStepsReviewed: {
+      type: "object",
+      properties: {
+        profile: { type: "boolean" },
+        policy: { type: "boolean" },
+        settings: { type: "boolean" }
+      }
+    },
+    advanceToStep: {
+      type: "string",
+      enum: [
+        "repo-connection",
+        "project-profile",
+        "architecture-policy",
+        "ai-settings",
+        "mcp-connection",
+        "review-and-run",
+        "results-overview"
+      ]
+    }
+  }
+};
+
+export const workbenchIntakeOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    desktopApplied: { type: "boolean" },
+    appliedAt: { type: "string" },
+    intake: { type: "object" },
+    cursorGuidance: { type: "array", items: { type: "string" } }
+  }
+};
+
+export const refactoringCatalogOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    total: { type: "number" },
+    categories: { type: "array", items: { type: "object" } },
+    items: { type: "array", items: { type: "object" } }
+  }
+};
+
 export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[] {
   return [
     {
@@ -131,6 +226,11 @@ export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[]
       uri: "arkitect://catalog/patterns",
       name: "Design Pattern Catalog",
       description: `The ${counts.designPatterns}-entry Arkitect design pattern library.`
+    },
+    {
+      uri: "arkitect://catalog/refactoring",
+      name: "Refactoring Technique Catalog",
+      description: `The ${counts.refactoringTechniques}-entry Refactoring Guru technique library for agent-orchestrated analysis.`
     }
   ];
 }
@@ -213,6 +313,32 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
         "Run a specific test suite from a repo root: unit (test:unit), integration (test:integration), or all (test). Returns structured JSON with steps and output tails.",
       inputSchema: testSuiteToolInputSchema,
       outputSchema: testToolOutputSchema
+    },
+    {
+      name: "list_refactoring_techniques",
+      description:
+        "Return the Refactoring Guru technique catalog grouped by category with reference URLs for agent-orchestrated code analysis.",
+      inputSchema: {
+        type: "object",
+        properties: {
+          category: refactoringAnalysisInputSchema.properties.category
+        }
+      },
+      outputSchema: refactoringCatalogOutputSchema
+    },
+    {
+      name: "analyze_refactoring_opportunities",
+      description:
+        "Analyze structural smells, rank Refactoring Guru techniques, and return an orchestration plan for Cursor agents. Reports only — does not auto-refactor.",
+      inputSchema: refactoringAnalysisInputSchema,
+      outputSchema: refactoringAnalysisOutputSchema
+    },
+    {
+      name: "apply_workbench_intake",
+      description:
+        "Push interview-gathered diagnosis intake into the Arkitect Desktop workbench. Requires Arkitect Desktop running with the local bridge active.",
+      inputSchema: workbenchIntakeInputSchema,
+      outputSchema: workbenchIntakeOutputSchema
     }
   ];
 }

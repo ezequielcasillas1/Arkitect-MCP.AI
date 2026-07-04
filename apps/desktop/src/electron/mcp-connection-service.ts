@@ -1,5 +1,5 @@
 import type { BrowserWindow } from "electron";
-import type { McpConnectionState, McpServerLaunchConfig } from "@arkitect/contracts";
+import type { McpConnectionState, McpServerLaunchConfig, WorkbenchIntakeApplyRequest } from "@arkitect/contracts";
 import { createDefaultMcpConnectionState } from "@arkitect/contracts";
 import { McpBridgeServer } from "./mcp-bridge-server.js";
 import { McpClientManager } from "./mcp-client-manager.js";
@@ -8,7 +8,8 @@ import { loadMcpLaunchConfig, saveMcpLaunchConfig } from "./mcp-config-store.js"
 export class McpConnectionService {
   private bridge = new McpBridgeServer({
     onStateChange: (state) => this.handleBridgeExternalState(state),
-    getBaseState: () => this.getState()
+    getBaseState: () => this.getState(),
+    onIntakeReceived: (payload) => this.handleIntakeReceived(payload)
   });
   private manualClient = new McpClientManager();
   private state = createDefaultMcpConnectionState();
@@ -123,6 +124,18 @@ export class McpConnectionService {
 
   getBridgeManifest() {
     return this.bridge.manifest;
+  }
+
+  getPendingWorkbenchIntake() {
+    return this.bridge.getPendingIntake();
+  }
+
+  clearPendingWorkbenchIntake() {
+    this.bridge.clearPendingIntake();
+  }
+
+  private handleIntakeReceived(payload: WorkbenchIntakeApplyRequest) {
+    this.mainWindow?.webContents.send("arkitect:workbench-intake-received", payload);
   }
 
   private handleManualState(state: McpConnectionState) {

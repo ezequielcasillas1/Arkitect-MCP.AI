@@ -196,6 +196,9 @@ importers:
         specifier: workspace:*
         version: link:../contracts
     devDependencies:
+      '@arkitect/repo-analyzer':
+        specifier: workspace:*
+        version: link:../repo-analyzer
       '@types/node':
         specifier: ^25.9.3
         version: 25.9.3

@@ -1,7 +1,13 @@
 import { mkdir, readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
-import type { McpBridgeManifest, McpConnectionRuntimeConfig, McpExternalRegistration } from "@arkitect/contracts";
+import type {
+  McpBridgeManifest,
+  McpConnectionRuntimeConfig,
+  McpExternalRegistration,
+  WorkbenchIntakeApplyRequest,
+  WorkbenchIntakeApplyResponse
+} from "@arkitect/contracts";
 import { DEFAULT_MCP_BRIDGE_PORT } from "@arkitect/contracts";
 
 const heartbeatIntervalMs = 15_000;
@@ -182,6 +188,36 @@ export async function registerWithDesktopBridge(input: {
   process.on("exit", stop);
 
   return { sessionId, stop };
+}
+
+export async function postWorkbenchIntake(
+  payload: WorkbenchIntakeApplyRequest
+): Promise<WorkbenchIntakeApplyResponse> {
+  const appliedAt = new Date().toISOString();
+  const manifest = await readBridgeManifest();
+
+  if (!manifest) {
+    return {
+      ok: false,
+      appliedAt,
+      message: "Desktop bridge unavailable. Start Arkitect Desktop first, then retry apply_workbench_intake."
+    };
+  }
+
+  const port = manifest.port || DEFAULT_MCP_BRIDGE_PORT;
+  const baseUrl = process.env.ARKITECT_DESKTOP_BRIDGE_URL?.trim() || `http://127.0.0.1:${port}`;
+  const result = await postJson<WorkbenchIntakeApplyResponse>(`${baseUrl}/intake`, manifest.token, {
+    ...payload,
+    source: payload.source ?? "mcp-tool"
+  });
+
+  return (
+    result ?? {
+      ok: false,
+      appliedAt,
+      message: "Desktop bridge rejected workbench intake."
+    }
+  );
 }
 
 export async function writeBridgeManifestForTests(manifest: McpBridgeManifest) {

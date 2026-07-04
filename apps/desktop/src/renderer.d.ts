@@ -17,6 +17,8 @@ import type {
   McpServerLaunchConfig,
   McpBridgeManifest,
   McpCursorInstallResult,
+  PendingWorkbenchIntakeState,
+  WorkbenchIntakeApplyRequest,
   CodebaseVerifyResult,
   TestOverrideCatalog,
   TestOverrideKind,
@@ -82,8 +84,11 @@ declare global {
       pingMcpConnection: () => Promise<McpConnectionState>;
       setMcpDefaultRepoPath: (repoPath?: string) => Promise<McpConnectionState>;
       getMcpBridgeManifest: () => Promise<McpBridgeManifest>;
+      getPendingWorkbenchIntake: () => Promise<PendingWorkbenchIntakeState>;
+      clearPendingWorkbenchIntake: () => Promise<{ ok: boolean }>;
       installMcpInCursor: (input: { repoPath?: string; env?: Record<string, string> }) => Promise<McpCursorInstallResult>;
       onMcpConnectionStateChange: (handler: (state: McpConnectionState) => void) => () => void;
+      onWorkbenchIntakeReceived: (handler: (payload: WorkbenchIntakeApplyRequest) => void) => () => void;
       onGitHubOAuthStateChange: (handler: (state: GitHubOAuthFlowState) => void) => () => void;
     };
   }

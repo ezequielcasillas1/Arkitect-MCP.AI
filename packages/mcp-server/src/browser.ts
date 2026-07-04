@@ -1,4 +1,4 @@
-import { getCatalogCounts } from "@arkitect/core";
+import { getCatalogCounts, createRefactoringCatalogPayload } from "@arkitect/core";
 import {
   assembleMcpServer,
   createMcpResources,
@@ -13,7 +13,10 @@ const stubExecute = async () => ({
 export type { ArkitectMcpServer };
 
 export function createArkitectMcpServer(): ArkitectMcpServer {
-  const counts = getCatalogCounts();
+  const counts = {
+    ...getCatalogCounts(),
+    refactoringTechniques: createRefactoringCatalogPayload().total
+  };
   const tools = createMcpToolTemplates().map((template) => ({
     ...template,
     execute: stubExecute
@@ -25,3 +28,4 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
 export const arkitectMcpServer = createArkitectMcpServer();
 
 export { toDiagnosisMcpPayload } from "./diagnosis-payload.js";
+export { toRefactoringMcpPayload } from "./refactoring-payload.js";

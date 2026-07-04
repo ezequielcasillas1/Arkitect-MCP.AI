@@ -7,7 +7,8 @@ import type {
   GitHubOAuthSession,
   GitHubRepositoryOption,
   RepoInspection,
-  SavedProjectProfile
+  SavedProjectProfile,
+  WorkbenchIntakeApplyRequest
 } from "@arkitect/contracts";
 import { suggestProjectProfileNames } from "@arkitect/core";
 import { formatShellLabel, type RuntimeShellInfo } from "../../lib/desktop-bridge";
@@ -56,6 +57,10 @@ interface RepoConnectionSectionProps {
   onLoadProjectProfile: (id: string) => void;
   onDuplicateProjectProfile: (id: string) => void;
   onDeleteProjectProfile: (id: string) => void;
+  mcpIntakeMessage?: string;
+  pendingMcpIntake?: WorkbenchIntakeApplyRequest | null;
+  onApplyPendingMcpIntake?: () => void;
+  onDismissPendingMcpIntake?: () => void;
 }
 
 function getConnectionStatus(
@@ -163,7 +168,11 @@ export function RepoConnectionSection({
   onSaveProjectProfile,
   onLoadProjectProfile,
   onDuplicateProjectProfile,
-  onDeleteProjectProfile
+  onDeleteProjectProfile,
+  mcpIntakeMessage,
+  pendingMcpIntake,
+  onApplyPendingMcpIntake,
+  onDismissPendingMcpIntake
 }: RepoConnectionSectionProps) {
   const [profileName, setProfileName] = useState("");
   const [editingId, setEditingId] = useState<string | undefined>(undefined);
@@ -246,6 +255,31 @@ export function RepoConnectionSection({
       <p className="summary-copy">
         Use a local filesystem path or sign in with GitHub to browse and select a repository.
       </p>
+
+      {mcpIntakeMessage ? (
+        <div className="insight-item">
+          <strong>MCP interview applied</strong>
+          <p>{mcpIntakeMessage}</p>
+        </div>
+      ) : null}
+
+      {pendingMcpIntake ? (
+        <div className="warning-box">
+          <strong>Cursor MCP interview ready</strong>
+          <p>
+            Intake for {pendingMcpIntake.intake.repoName ?? "your project"} is waiting. Apply it to prefill the
+            workbench steps gathered in chat.
+          </p>
+          <div className="step-actions">
+            <button className="primary-button" onClick={onApplyPendingMcpIntake} type="button">
+              Apply MCP interview
+            </button>
+            <button className="ghost-button" onClick={onDismissPendingMcpIntake} type="button">
+              Dismiss
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       <div className="step-grid">
         <article className="panel-card">

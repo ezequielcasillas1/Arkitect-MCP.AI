@@ -28,6 +28,7 @@
     "test:integration": "vitest run tests --passWithNoTests"
   },
   "devDependencies": {
+    "@arkitect/repo-analyzer": "workspace:*",
     "@types/node": "^25.9.3",
     "vitest": "^3.2.4"
   }

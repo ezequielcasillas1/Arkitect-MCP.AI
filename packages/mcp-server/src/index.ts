@@ -5,11 +5,14 @@ import type {
   DiagnosisIntake,
   DiagnosisResult,
   LibraryMcpPayload,
+  RefactoringAnalysisInput,
   RemixProfileCatalogEntry
 } from "@arkitect/contracts";
+import type { WorkbenchIntakeApplyRequest } from "@arkitect/contracts";
 import {
-  createDefaultIntake,
+  buildRefactoringAnalysisResult,
   createDiagnosisResult,
+  createRefactoringCatalogPayload,
   defaultArchitecturePolicy,
   getCatalogCounts,
   listArchitectureCatalog,
@@ -19,11 +22,14 @@ import {
   buildRequirementTagSuggestionInput,
   suggestRequirementTags,
   createDiagnosisSignals,
+  mergeDiagnosisIntake,
   runCodebaseVerification,
   runRepoTests
 } from "@arkitect/core";
+import { postWorkbenchIntake } from "./desktop-bridge-client.js";
 import { MockRepositoryAnalyzer } from "@arkitect/repo-analyzer";
 import { toDiagnosisMcpPayload } from "./diagnosis-payload.js";
+import { toRefactoringMcpPayload } from "./refactoring-payload.js";
 import {
   assembleMcpServer,
   createMcpResources,
@@ -32,26 +38,35 @@ import {
 } from "./mcp-tool-definitions.js";
 
 export type { ArkitectMcpServer };
-export { toDiagnosisMcpPayload };
+export { toDiagnosisMcpPayload, toRefactoringMcpPayload };
 
 const analyzer = new MockRepositoryAnalyzer();
 let lastDiagnosis: DiagnosisResult | null = null;
+let lastRefactoringAnalysis: ReturnType<typeof toRefactoringMcpPayload> | null = null;
 
 function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake {
-  const defaults = createDefaultIntake(partial.repoPath);
+  return mergeDiagnosisIntake(partial);
+}
+
+function normalizeWorkbenchIntakeRequest(input: Record<string, unknown>): WorkbenchIntakeApplyRequest {
+  if (input.intake && typeof input.intake === "object") {
+    return input as WorkbenchIntakeApplyRequest;
+  }
+
+  const {
+    markStepsReviewed,
+    advanceToStep,
+    source,
+    sessionId,
+    ...intakeFields
+  } = input;
 
   return {
-    ...defaults,
-    ...partial,
-    ai: partial.ai ?? defaults.ai,
-    userInput: partial.userInput ? { ...defaults.userInput, ...partial.userInput } : defaults.userInput,
-    catalogPreferences: partial.catalogPreferences
-      ? {
-          ...defaults.catalogPreferences,
-          ...partial.catalogPreferences,
-          requirementTags: partial.catalogPreferences.requirementTags ?? defaults.catalogPreferences.requirementTags
-        }
-      : defaults.catalogPreferences
+    source: source as WorkbenchIntakeApplyRequest["source"],
+    sessionId: typeof sessionId === "string" ? sessionId : undefined,
+    advanceToStep: advanceToStep as WorkbenchIntakeApplyRequest["advanceToStep"],
+    markStepsReviewed: markStepsReviewed as WorkbenchIntakeApplyRequest["markStepsReviewed"],
+    intake: intakeFields as Partial<DiagnosisIntake>
   };
 }
 
@@ -142,8 +157,25 @@ export async function runTestSuite(input: { repoPath?: string; suite?: "unit" | 
   return runRepoTests({ repoPath, suite: input.suite ?? "all" });
 }
 
+export async function analyzeRefactoring(input: RefactoringAnalysisInput = {}) {
+  const intake = mergeIntake(input as Partial<DiagnosisIntake>);
+  const mergedInput = {
+    ...input,
+    repoPath: input.repoPath?.trim() || process.env.ARKITECT_DEFAULT_REPO_PATH?.trim() || process.cwd()
+  };
+  const autoDetections = await analyzer.analyze(intake);
+  const diagnosis = createDiagnosisResult(intake, autoDetections);
+  const result = buildRefactoringAnalysisResult(diagnosis, mergedInput, mergedInput.repoPath);
+  const payload = toRefactoringMcpPayload(result);
+  lastRefactoringAnalysis = payload;
+  return payload;
+}
+
 export function createArkitectMcpServer(): ArkitectMcpServer {
-  const counts = getCatalogCounts();
+  const counts = {
+    ...getCatalogCounts(),
+    refactoringTechniques: createRefactoringCatalogPayload().total
+  };
   const resources = createMcpResources(counts);
   const executeByName: Record<string, (input: unknown) => Promise<ReturnType<typeof createJsonToolResult>>> = {
     diagnose_repository: async (input) => {
@@ -176,6 +208,60 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
     run_test_suite: async (input) => {
       const result = await runTestSuite(input as { repoPath?: string; suite?: "unit" | "integration" | "all" });
       return createJsonToolResult(result);
+    },
+    list_refactoring_techniques: async (input) => {
+      const category = (input as { category?: RefactoringAnalysisInput["category"] }).category;
+      const payload = createRefactoringCatalogPayload();
+      if (category) {
+        return createJsonToolResult({
+          ...payload,
+          items: payload.items.filter((entry) => entry.category === category),
+          total: payload.items.filter((entry) => entry.category === category).length
+        });
+      }
+      return createJsonToolResult(payload);
+    },
+    analyze_refactoring_opportunities: async (input) => {
+      const result = await analyzeRefactoring(input as RefactoringAnalysisInput);
+      return createJsonToolResult(result);
+    },
+    apply_workbench_intake: async (input) => {
+      const request = normalizeWorkbenchIntakeRequest(input as Record<string, unknown>);
+      const merged = mergeIntake(request.intake);
+      const bridgeResponse = await postWorkbenchIntake({
+        ...request,
+        source: request.source ?? "mcp-tool",
+        intake: merged
+      });
+
+      return createJsonToolResult({
+        summary: bridgeResponse.message,
+        desktopApplied: bridgeResponse.ok,
+        appliedAt: bridgeResponse.appliedAt,
+        intake: {
+          routeSource: merged.routeSource,
+          repoPath: merged.repoPath,
+          repoName: merged.repoName,
+          repoSummary: merged.repoSummary,
+          requestedOutcome: merged.requestedOutcome,
+          executionMode: merged.executionMode,
+          executionPermission: merged.executionPermission,
+          catalogPreferences: merged.catalogPreferences,
+          userInput: merged.userInput
+        },
+        markStepsReviewed: request.markStepsReviewed,
+        advanceToStep: request.advanceToStep,
+        cursorGuidance: bridgeResponse.ok
+          ? [
+              "Desktop workbench intake applied. Review prefilled steps in Arkitect Desktop.",
+              "Confirm repo inspection on Connect Repo before running diagnosis.",
+              "API keys on AI / Execution still require manual entry unless already saved."
+            ]
+          : [
+              "Start Arkitect Desktop and keep the MCP bridge listening, then retry apply_workbench_intake.",
+              "Alternatively paste the intake JSON into the desktop Import from MCP panel."
+            ]
+      });
     }
   };
   const tools = createMcpToolTemplates().map((template) => ({
@@ -202,6 +288,8 @@ export async function readArkitectMcpResource(uri: string): Promise<unknown> {
       return toRemixCatalogPayload();
     case "arkitect://catalog/patterns":
       return toPatternCatalogPayload();
+    case "arkitect://catalog/refactoring":
+      return createRefactoringCatalogPayload();
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }
