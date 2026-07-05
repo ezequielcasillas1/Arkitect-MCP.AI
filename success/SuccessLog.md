@@ -77,6 +77,7 @@ Reserved for confirmed successful work after explicit user confirmation.
 
 ### Jul 4, 2026 - v2.1.0 production ship
 **Status:** SUCCESS
+**Commit:** 9f56f5a
 **Files:** apps/desktop/electron-builder.yml, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/LandingPage.tsx, bugfixes.md, implementations.md
 **Result:** Packaged MCP stdio ajv/zod fix shipped; site version history and download CTAs synced to v2.1.0; GitHub Release v2.1.0 published with Arkitect-Setup.exe; master pushed for Cloudflare deploy.
 
