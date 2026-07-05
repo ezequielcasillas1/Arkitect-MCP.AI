@@ -208,13 +208,13 @@ export const mcpVersionHistory: McpVersionEntry[] = [
     version: "2.1.0",
     releaseDate: "2026-07-04",
     status: "released",
-    title: "Installer MCP packaging fix — zod resolution for Cursor stdio",
+    title: "Installer MCP packaging fix — zod + ajv resolution for Cursor stdio",
     summary:
-      "Patch release fixing packaged desktop MCP stdio when Cursor mcp.json points at Arkitect-Setup.exe bundled stdio.js.",
+      "Patch release fixing packaged desktop MCP stdio when Cursor mcp.json points at Arkitect-Setup.exe bundled stdio.js — SDK validation deps now resolve under app.asar.unpacked.",
     highlights: [
-      "Fixed ERR_MODULE_NOT_FOUND for zod when Cursor mcp.json launches packaged MCP stdio from Arkitect-Setup.exe (v2.1.0).",
-      "Bundled zod and zod-to-json-schema as direct @arkitect/mcp-server deps; electron-builder asarUnpack for node_modules resolution.",
-      "NODE_PATH in mcp-runtime-paths.ts so the Windows installer layout resolves SDK peer deps for Cursor stdio spawns."
+      "Fixed ERR_MODULE_NOT_FOUND for zod, ajv, and ajv-formats when Cursor mcp.json launches packaged MCP stdio from Arkitect-Setup.exe.",
+      "Expanded electron-builder asarUnpack so @modelcontextprotocol/sdk and its full transitive runtime graph physically exist under app.asar.unpacked/node_modules.",
+      "Packaged MCP stdio smoke-tested: initialize + tools/list return all 16 tools without Connection closed (-32000)."
     ]
   },
   {

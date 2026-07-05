@@ -261,3 +261,8 @@ Template:
 **Status:** SUCCESS
 **Files:** package.json (monorepo), apps/site/src/lib/arkitect-links.ts, apps/site/.env.production, release-feed/mcp-page/seo/landing, MCP tool version constants
 **Result:** Renumbered monorepo 0.2.1 → 2.1.0; fixed GITHUB_PUBLISHED_INSTALLER_VERSION (was stuck at 0.2.0 causing "Download Arkitect v0.2.0"); synced download URLs, version history, and package versions to 2.1.0. GitHub Release v2.1.0 + Cloudflare deploy still manual.
+
+### 2026-07-04 - v2.1.0 production ship (packaging fix + site + GitHub release)
+**Status:** SUCCESS
+**Files:** apps/desktop/electron-builder.yml, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/LandingPage.tsx, instructions/refresh.md, bugfixes.md
+**Result:** Expanded asarUnpack for full MCP SDK runtime deps; updated release feed, /mcp version history, SEO, and hero pill; published GitHub Release v2.1.0 with Arkitect-Setup.exe; pushed master for Cloudflare Pages.

@@ -75,3 +75,8 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Files:** apps/site/src/pages/McpPage.tsx, apps/site/src/features/mcp-page/*, App.tsx, NavBar.tsx, Footer.tsx, seo/{types,data}.ts, sitemap.xml, styles.css, implementations.md
 **Result:** New /mcp page documents 16 MCP tools grouped by domain, auto-fill via Cursor agent chat callout, and full version history. Wired into SPA router, nav, footer, SEO, sitemap. Typecheck passed.
 
+### Jul 4, 2026 - v2.1.0 production ship
+**Status:** SUCCESS
+**Files:** apps/desktop/electron-builder.yml, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/LandingPage.tsx, bugfixes.md, implementations.md
+**Result:** Packaged MCP stdio ajv/zod fix shipped; site version history and download CTAs synced to v2.1.0; GitHub Release v2.1.0 published with Arkitect-Setup.exe; master pushed for Cloudflare deploy.
+

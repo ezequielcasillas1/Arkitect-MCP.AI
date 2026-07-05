@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-07-04 - Packaged MCP stdio ERR_MODULE_NOT_FOUND (zod/ajv)
+**Status:** SUCCESS
+**Files:** apps/desktop/electron-builder.yml
+**Result:** Cursor spawn of packaged stdio failed on zod then ajv because SDK lived in app.asar.unpacked but transitive deps stayed in app.asar. Expanded asarUnpack for SDK runtime graph; smoke-tested initialize + tools/list on fresh build.
+
 ### 2026-07-04 - Favicon Not Showing in Production
 **Status:** PENDING
 **Files:** apps/site/public/_redirects, apps/site/public/favicon.svg, apps/site/public/favicon.ico, apps/site/index.html, apps/site/scripts/generate-favicon.mjs

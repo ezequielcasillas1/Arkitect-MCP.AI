@@ -7,9 +7,9 @@ export const releaseFeed: ReleaseEntry[] = [
     releaseDate: "2026-07-04",
     status: "released",
     changes: [
-      "Fixed ERR_MODULE_NOT_FOUND for zod when Cursor mcp.json launches packaged MCP stdio from Arkitect-Setup.exe (v2.1.0).",
-      "Bundled zod and zod-to-json-schema as direct @arkitect/mcp-server deps; electron-builder asarUnpack for node_modules resolution.",
-      "NODE_PATH in mcp-runtime-paths.ts so the Windows installer layout resolves SDK peer deps for Cursor stdio spawns."
+      "Fixed ERR_MODULE_NOT_FOUND for zod, ajv, and ajv-formats when Cursor mcp.json launches packaged MCP stdio from Arkitect-Setup.exe.",
+      "Expanded electron-builder asarUnpack so @modelcontextprotocol/sdk and its full transitive runtime graph physically exist under app.asar.unpacked/node_modules.",
+      "Packaged MCP stdio smoke-tested: initialize + tools/list return all 16 tools without Connection closed (-32000)."
     ]
   },
   {

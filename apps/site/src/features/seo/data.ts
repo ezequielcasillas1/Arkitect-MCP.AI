@@ -8,7 +8,7 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/": {
     title: "Arkitect MCP — Architecture-first AI for Cursor & desktop repos",
     description:
-      "Arkitect MCP v2.1.0 — packaged installer MCP fix (zod stdio resolution) plus pattern intelligence, diagnosis, and refactor guidance for Cursor. Free for the first 1,000 users.",
+      "Arkitect MCP v2.1.0 — packaged installer MCP fix (zod + ajv stdio resolution) plus pattern intelligence, diagnosis, and refactor guidance for Cursor. Free for the first 1,000 users.",
     canonicalPath: "/",
     ogImage: defaultOgImage,
     keywords:
