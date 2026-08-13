@@ -2,6 +2,11 @@
 
 Reserved for confirmed successful work after explicit user confirmation.
 
+### 2026-08-13 - Architecture pretty-path HTML
+**Status:** SUCCESS
+**Commit:** pending
+**Files:** apps/site/public/architecture/index.html, apps/site/public/_redirects, apps/site/public/index.html, apps/site/vite.config.ts, apps/site/src/components/NavBar.tsx, apps/site/src/components/Footer.tsx
+**Result:** User confirmed SUCCESS. `/architecture` served from architecture/index.html so Cloudflare Pretty URLs no longer 308-loop architecture.html.
 
 ### Jul 4, 2026 - BYOK messaging fix
 **Status:** SUCCESS
@@ -79,5 +84,5 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Status:** SUCCESS
 **Commit:** 9f56f5a
 **Files:** apps/desktop/electron-builder.yml, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/LandingPage.tsx, bugfixes.md, implementations.md
-**Result:** Packaged MCP stdio ajv/zod fix shipped; site version history and download CTAs synced to v2.1.0; GitHub Release v2.1.0 published with Arkitect-Setup.exe; master pushed for Cloudflare deploy.
+**Result:** Packaged MCP stdio ajv/zod fix shipped; site version history and download CTAs synced to v2.1.0; GitHub Release v2.1.0 published with Arkitect-Setup.exe; master pushed for Cloudflare deploy. User confirmed SUCCESS.
 

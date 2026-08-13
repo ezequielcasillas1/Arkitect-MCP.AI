@@ -1,3 +1,8 @@
+### 2026-08-13 - Architecture pretty-path HTML
+**Status:** SUCCESS
+**Files:** apps/site/public/architecture/index.html, apps/site/public/_redirects, apps/site/public/index.html, apps/site/vite.config.ts, apps/site/src/components/NavBar.tsx, apps/site/src/components/Footer.tsx
+**Result:** Architecture guide sits at architecture/index.html so Cloudflare Pretty URLs can serve /architecture. Old architecture.html 301s. SPA Architecture is a full-page link, not a React client route.
+
 ### 2026-08-13 - SPA Pretty URL placement
 **Status:** PENDING
 **Files:** apps/site/spa/index.html, apps/site/vite.config.ts, apps/site/public/_redirects

@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-08-13 - /architecture Pretty URL 308 loop
+**Status:** SUCCESS
+**Files:** apps/site/public/architecture/index.html, apps/site/public/_redirects, apps/site/public/index.html, apps/site/vite.config.ts
+**Result:** Live `/architecture` and `/architecture.html` 308 to `/architecture` with empty body. Moved page to architecture/index.html; 301 leftover .html; homepage/SPA links go to /architecture.
+
 ### 2026-08-13 - Pretty URLs 308 SPA routes to /app
 **Status:** PENDING
 **Files:** apps/site/vite.config.ts, apps/site/public/_redirects, apps/site/spa/index.html

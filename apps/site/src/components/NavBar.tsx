@@ -46,8 +46,8 @@ export function NavBar() {
         <ul className="site-nav-links">
           {links.map((link) => (
             <li key={link.to}>
-              {link.to === "/" ? (
-                <a href="/" className="nav-link" onClick={() => setMenuOpen(false)}>
+              {link.to === "/" || link.to === "/architecture" ? (
+                <a href={link.to} className="nav-link" onClick={() => setMenuOpen(false)}>
                   {link.label}
                 </a>
               ) : (
