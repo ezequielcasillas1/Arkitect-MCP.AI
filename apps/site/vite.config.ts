@@ -25,6 +25,9 @@ function serveStaticHome(): Plugin {
         if (pathName === "/") {
           req.url = "/index.html";
         }
+        if (pathName === "/architecture" || pathName === "/architecture/") {
+          req.url = "/architecture/index.html";
+        }
         next();
       });
     }
@@ -50,6 +53,10 @@ function copySpaRouteIndexes(): Plugin {
       const leftoverApp = path.join(distDir, "app.html");
       if (fs.existsSync(leftoverApp)) {
         fs.unlinkSync(leftoverApp);
+      }
+      const leftoverArchitectureHtml = path.join(distDir, "architecture.html");
+      if (fs.existsSync(leftoverArchitectureHtml)) {
+        fs.unlinkSync(leftoverArchitectureHtml);
       }
     }
   };

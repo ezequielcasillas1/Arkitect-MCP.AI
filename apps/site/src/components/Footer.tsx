@@ -17,9 +17,9 @@ export function Footer() {
           MCP tools
         </NavLink>
         {" · "}
-        <NavLink to="/architecture" className="footer-link">
+        <a href="/architecture" className="footer-link">
           Architecture guide
-        </NavLink>
+        </a>
         {" · "}
         <NavLink to="/terms" className="footer-link">
           Terms

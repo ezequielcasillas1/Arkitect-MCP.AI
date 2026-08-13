@@ -6,8 +6,7 @@
 /arkitect-mark-nav.png /arkitect-mark-nav.png 200
 /beaver-dither-data.js /beaver-dither-data.js 200
 /beaver-dither-data.json /beaver-dither-data.json 200
-/architecture.html     /architecture.html     200
-/architecture          /architecture.html     200
+/architecture.html     /architecture          301
 /assets/*              /assets/:splat         200
 /sitemap.xml           /sitemap.xml           200
 /robots.txt            /robots.txt            200
