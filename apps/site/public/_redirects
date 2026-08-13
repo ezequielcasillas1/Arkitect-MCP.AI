@@ -4,7 +4,14 @@
 /apple-touch-icon.png  /apple-touch-icon.png  200
 /arkitect-mark.png     /arkitect-mark.png     200
 /arkitect-mark-nav.png /arkitect-mark-nav.png 200
+/beaver-dither-data.js /beaver-dither-data.js 200
+/beaver-dither-data.json /beaver-dither-data.json 200
+/architecture.html     /architecture.html     200
+/architecture          /architecture.html     200
 /assets/*              /assets/:splat         200
 /sitemap.xml           /sitemap.xml           200
 /robots.txt            /robots.txt            200
-/*                     /index.html            200
+/                      /index.html            200
+/index-v2              /                      301
+/index-v2.html         /                      301
+/*                     /app.html              200

@@ -1,3 +1,8 @@
+### 2026-08-13 - v2 design is the live homepage
+**Status:** PENDING
+**Files:** apps/site/public/index.html, apps/site/app.html, apps/site/vite.config.ts, apps/site/public/_redirects, apps/site/public/architecture.html
+**Result:** `/` serves the v2 static homepage. React SPA moved to `app.html` with `/* /app.html 200`. `/architecture` stays static. `/index-v2` 301s to `/`.
+
 ### 2026-08-13 - MCP tool cards unlock grid
 **Status:** PENDING
 **Files:** apps/site/public/index-v2.html
