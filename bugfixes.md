@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-08-13 - /app leftover blank React shell
+**Status:** PENDING
+**Files:** apps/site/public/_redirects, apps/site/src/components/NavBar.tsx
+**Result:** After the loop, /app served React with no route (header/footer, empty main). 301 /app → /. Home/logo are full-page links to the v2 homepage.
+
 ### 2026-08-13 - Homepage redirect loop (Can't connect / -310)
 **Status:** PENDING
 **Files:** apps/site/public/_redirects

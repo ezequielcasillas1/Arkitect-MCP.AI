@@ -27,9 +27,9 @@ export function NavBar() {
 
   return (
     <header className="site-nav nav-entrance">
-      <NavLink to="/" className="brand-link" aria-label="Arkitect home">
+      <a href="/" className="brand-link" aria-label="Arkitect home">
         <Logo />
-      </NavLink>
+      </a>
 
       <button
         type="button"
@@ -46,13 +46,19 @@ export function NavBar() {
         <ul className="site-nav-links">
           {links.map((link) => (
             <li key={link.to}>
-              <NavLink
-                to={link.to}
-                className={({ isActive }) => (isActive ? "nav-link nav-link-active" : "nav-link")}
-                onClick={() => setMenuOpen(false)}
-              >
-                {link.label}
-              </NavLink>
+              {link.to === "/" ? (
+                <a href="/" className="nav-link" onClick={() => setMenuOpen(false)}>
+                  {link.label}
+                </a>
+              ) : (
+                <NavLink
+                  to={link.to}
+                  className={({ isActive }) => (isActive ? "nav-link nav-link-active" : "nav-link")}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {link.label}
+                </NavLink>
+              )}
             </li>
           ))}
         </ul>
