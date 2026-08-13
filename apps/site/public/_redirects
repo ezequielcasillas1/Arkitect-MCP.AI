@@ -13,6 +13,7 @@
 /robots.txt            /robots.txt            200
 /index-v2              /                      301
 /index-v2.html         /                      301
+/app                   /                      301
 /reviews               /app.html              200
 /instructions          /app.html              200
 /mcp                   /app.html              200
