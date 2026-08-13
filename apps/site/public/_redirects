@@ -11,7 +11,12 @@
 /assets/*              /assets/:splat         200
 /sitemap.xml           /sitemap.xml           200
 /robots.txt            /robots.txt            200
-/                      /index.html            200
 /index-v2              /                      301
 /index-v2.html         /                      301
-/*                     /app.html              200
+/reviews               /app.html              200
+/instructions          /app.html              200
+/mcp                   /app.html              200
+/about                 /app.html              200
+/terms                 /app.html              200
+/privacy               /app.html              200
+/admin/downloads       /app.html              200

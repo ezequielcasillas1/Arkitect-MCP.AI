@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-08-13 - Homepage redirect loop (Can't connect / -310)
+**Status:** PENDING
+**Files:** apps/site/public/_redirects
+**Result:** `/* /app.html 200` plus Pretty URLs 308 `/app.html` → `/app` looped. `/` never served v2. Removed catch-all; explicit SPA rewrites only.
+
 ### 2026-07-04 - Packaged MCP stdio ERR_MODULE_NOT_FOUND (zod/ajv)
 **Status:** SUCCESS
 **Files:** apps/desktop/electron-builder.yml
