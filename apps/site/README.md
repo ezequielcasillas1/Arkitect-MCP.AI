@@ -15,7 +15,7 @@ pnpm dev:site
 
 - Static Vite build output: `apps/site/dist` (`pnpm --filter @arkitect/site build`).
 - Homepage is static `public/index.html` (v2 design). React SPA entry is `app.html`.
-- SPA client-side routing fallback: `public/_redirects` (`/* /app.html 200`). `/` rewrites to `/index.html`.
+- SPA routes in `public/_redirects` rewrite to `/app.html`. Do not use `/* /app.html 200` — Cloudflare Pretty URLs 308 `/app.html` → `/app` and loop.
 - `wrangler.jsonc` sets `pages_build_output_dir` for `wrangler pages deploy`.
 - Cloudflare Pages dashboard project settings (if using Git integration instead of the CLI):
   root directory `apps/site`, build command `pnpm install --frozen-lockfile && pnpm --filter @arkitect/site build`

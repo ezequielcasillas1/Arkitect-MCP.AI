@@ -1,3 +1,8 @@
+### 2026-08-13 - Fix homepage redirect loop
+**Status:** PENDING
+**Files:** apps/site/public/_redirects
+**Result:** Removed `/* /app.html 200`. `/` serves static index.html. SPA only on explicit routes. Stops Cloudflare Pretty URL loop to `/app`.
+
 ### 2026-08-13 - v2 design is the live homepage
 **Status:** PENDING
 **Files:** apps/site/public/index.html, apps/site/app.html, apps/site/vite.config.ts, apps/site/public/_redirects, apps/site/public/architecture.html
