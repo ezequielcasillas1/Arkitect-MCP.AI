@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>What's behind the algorithm — Arkitect MCP architecture &amp; design patterns</title>
+  <meta name="description" content="The patterns and architecture styles behind Arkitect MCP: diagnosis-first reasoning, GoF patterns, SOLID, hexagonal and vertical-slice architecture." />
+  <meta name="keywords" content="software architecture, design patterns, SOLID, hexagonal architecture, vertical slice, Arkitect MCP, behind the algorithm" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://arkitect-mcp.com/architecture.html" />
+  <meta name="theme-color" content="#050a1c" />
+  <meta property="og:title" content="What's behind the algorithm — Arkitect MCP" />
+  <meta property="og:description" content="Design patterns and architecture styles that power Arkitect's diagnosis-first reasoning." />
+  <meta property="og:url" content="https://arkitect-mcp.com/architecture.html" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="https://arkitect-mcp.com/arkitect-mark.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .serif { font-family: 'Playfair Display', serif; }
+  </style>
+</head>
+<body class="bg-[#050a1c] text-slate-200 antialiased overflow-x-hidden selection:bg-cyan-400/30">
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute top-[5%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-700/20 blur-[120px]"></div>
+    <div class="absolute bottom-[10%] right-[10%] w-[30rem] h-[30rem] rounded-full bg-cyan-600/15 blur-[100px]"></div>
+  </div>
+
+  <header class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-[#050a1c]/40 border-b border-white/5">
+    <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
+        <a href="index-v2.html#features" class="hover:text-white transition-colors duration-300">FEATURES</a>
+        <a href="index-v2.html#mcp-tools" class="hover:text-white transition-colors duration-300">MCP TOOLS</a>
+      </div>
+      <a href="index-v2.html" class="flex items-center justify-center w-10 h-10 rounded-full border border-white/10 hover:border-cyan-400/60 overflow-hidden">
+        <img src="arkitect-mark-nav.png" alt="Arkitect" class="w-6 h-6 object-contain" />
+      </a>
+      <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
+        <a href="architecture.html" class="text-white">ARCHITECTURE</a>
+        <a href="index-v2.html#connect" class="hover:text-white transition-colors duration-300">CONNECT</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="relative z-10 pt-24">
+    <section class="px-6 py-20">
+      <div class="max-w-3xl mx-auto text-center">
+        <p class="text-xs tracking-[0.4em] text-cyan-300 mb-6">BEHIND THE ALGORITHM</p>
+        <h1 class="serif text-4xl md:text-6xl text-white font-medium tracking-tight">What's behind Arkitect's reasoning.</h1>
+        <p class="mt-6 text-slate-400 leading-relaxed">
+          Arkitect does not guess at architecture. It diagnoses your repo first, then maps what it finds onto a catalog of design patterns, architecture styles, and SOLID principles. This page is that catalog — the same vocabulary the MCP tools use when they recommend, report, or refuse a refactor.
+        </p>
+        <a href="index-v2.html#download-counter" class="inline-flex items-center gap-3 mt-10 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200">
+          GET THE FREE DOWNLOAD
+        </a>
+      </div>
+    </section>
+
+    <section class="px-6 pb-28">
+      <div class="max-w-6xl mx-auto grid lg:grid-cols-[240px_1fr] gap-12 items-start">
+        <aside class="lg:sticky lg:top-24 rounded-xl border border-white/10 bg-white/[0.03] p-6">
+          <p class="text-xs tracking-[0.3em] text-slate-500 mb-4">ON THIS PAGE</p>
+          <nav>
+            <ol class="space-y-3 text-sm">
+              
+              <li>
+                <a href="#overview" class="text-slate-300 hover:text-cyan-300 transition-colors">Patterns and architecture</a>
+                
+              </li>
+
+              <li>
+                <a href="#creational" class="text-slate-300 hover:text-cyan-300 transition-colors">Creational patterns</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#factory" class="text-slate-500 hover:text-cyan-200 text-xs">Factory Method</a></li>
+                    <li><a href="#singleton" class="text-slate-500 hover:text-cyan-200 text-xs">Singleton</a></li>
+                    <li><a href="#builder" class="text-slate-500 hover:text-cyan-200 text-xs">Builder</a></li>
+                    <li><a href="#abstract-factory" class="text-slate-500 hover:text-cyan-200 text-xs">Abstract Factory</a></li>
+                    <li><a href="#prototype" class="text-slate-500 hover:text-cyan-200 text-xs">Prototype</a></li>
+                  </ul>
+              </li>
+
+              <li>
+                <a href="#structural" class="text-slate-300 hover:text-cyan-300 transition-colors">Structural patterns</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#adapter" class="text-slate-500 hover:text-cyan-200 text-xs">Adapter</a></li>
+                    <li><a href="#decorator" class="text-slate-500 hover:text-cyan-200 text-xs">Decorator</a></li>
+                    <li><a href="#facade" class="text-slate-500 hover:text-cyan-200 text-xs">Facade</a></li>
+                    <li><a href="#bridge" class="text-slate-500 hover:text-cyan-200 text-xs">Bridge</a></li>
+                    <li><a href="#composite" class="text-slate-500 hover:text-cyan-200 text-xs">Composite</a></li>
+                    <li><a href="#flyweight" class="text-slate-500 hover:text-cyan-200 text-xs">Flyweight</a></li>
+                    <li><a href="#proxy" class="text-slate-500 hover:text-cyan-200 text-xs">Proxy</a></li>
+                  </ul>
+              </li>
+
+              <li>
+                <a href="#behavioral" class="text-slate-300 hover:text-cyan-300 transition-colors">Behavioral patterns</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#observer" class="text-slate-500 hover:text-cyan-200 text-xs">Observer</a></li>
+                    <li><a href="#strategy" class="text-slate-500 hover:text-cyan-200 text-xs">Strategy</a></li>
+                    <li><a href="#command" class="text-slate-500 hover:text-cyan-200 text-xs">Command</a></li>
+                    <li><a href="#chain-of-responsibility" class="text-slate-500 hover:text-cyan-200 text-xs">Chain of Responsibility</a></li>
+                    <li><a href="#iterator" class="text-slate-500 hover:text-cyan-200 text-xs">Iterator</a></li>
+                    <li><a href="#mediator" class="text-slate-500 hover:text-cyan-200 text-xs">Mediator</a></li>
+                    <li><a href="#memento" class="text-slate-500 hover:text-cyan-200 text-xs">Memento</a></li>
+                    <li><a href="#state" class="text-slate-500 hover:text-cyan-200 text-xs">State</a></li>
+                    <li><a href="#template-method" class="text-slate-500 hover:text-cyan-200 text-xs">Template Method</a></li>
+                    <li><a href="#visitor" class="text-slate-500 hover:text-cyan-200 text-xs">Visitor</a></li>
+                    <li><a href="#interpreter" class="text-slate-500 hover:text-cyan-200 text-xs">Interpreter</a></li>
+                  </ul>
+              </li>
+
+              <li>
+                <a href="#architecture-styles" class="text-slate-300 hover:text-cyan-300 transition-colors">Architecture styles</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#layered" class="text-slate-500 hover:text-cyan-200 text-xs">Layered (n-tier)</a></li>
+                    <li><a href="#hexagonal" class="text-slate-500 hover:text-cyan-200 text-xs">Hexagonal (ports &amp; adapters)</a></li>
+                    <li><a href="#mvc-mvvm" class="text-slate-500 hover:text-cyan-200 text-xs">MVC / MVVM</a></li>
+                    <li><a href="#microservices" class="text-slate-500 hover:text-cyan-200 text-xs">Microservices (overview)</a></li>
+                    <li><a href="#event-driven" class="text-slate-500 hover:text-cyan-200 text-xs">Event-Driven</a></li>
+                    <li><a href="#clean-architecture" class="text-slate-500 hover:text-cyan-200 text-xs">Clean Architecture</a></li>
+                    <li><a href="#onion-architecture" class="text-slate-500 hover:text-cyan-200 text-xs">Onion Architecture</a></li>
+                    <li><a href="#monolithic" class="text-slate-500 hover:text-cyan-200 text-xs">Monolithic</a></li>
+                    <li><a href="#soa" class="text-slate-500 hover:text-cyan-200 text-xs">SOA (Service-Oriented Architecture)</a></li>
+                  </ul>
+              </li>
+
+              <li>
+                <a href="#domain-driven-design" class="text-slate-300 hover:text-cyan-300 transition-colors">Domain-driven design</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#ddd" class="text-slate-500 hover:text-cyan-200 text-xs">Domain-Driven Design</a></li>
+                    <li><a href="#repository" class="text-slate-500 hover:text-cyan-200 text-xs">Repository</a></li>
+                    <li><a href="#unit-of-work" class="text-slate-500 hover:text-cyan-200 text-xs">Unit of Work</a></li>
+                    <li><a href="#anti-corruption-layer" class="text-slate-500 hover:text-cyan-200 text-xs">Anti-Corruption Layer</a></li>
+                  </ul>
+              </li>
+
+              <li>
+                <a href="#distributed-patterns" class="text-slate-300 hover:text-cyan-300 transition-colors">Distributed &amp; cloud patterns</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#cqrs" class="text-slate-500 hover:text-cyan-200 text-xs">CQRS</a></li>
+                    <li><a href="#event-sourcing" class="text-slate-500 hover:text-cyan-200 text-xs">Event Sourcing</a></li>
+                    <li><a href="#circuit-breaker" class="text-slate-500 hover:text-cyan-200 text-xs">Circuit Breaker</a></li>
+                    <li><a href="#saga" class="text-slate-500 hover:text-cyan-200 text-xs">Saga</a></li>
+                    <li><a href="#api-gateway" class="text-slate-500 hover:text-cyan-200 text-xs">API Gateway</a></li>
+                    <li><a href="#bff" class="text-slate-500 hover:text-cyan-200 text-xs">BFF (Backend for Frontend)</a></li>
+                    <li><a href="#strangler-fig" class="text-slate-500 hover:text-cyan-200 text-xs">Strangler Fig</a></li>
+                  </ul>
+              </li>
+
+              <li>
+                <a href="#solid" class="text-slate-300 hover:text-cyan-300 transition-colors">SOLID and patterns</a>
+                <ul class="mt-2 ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <li><a href="#solid-patterns" class="text-slate-500 hover:text-cyan-200 text-xs">How SOLID connects to patterns</a></li>
+                  </ul>
+              </li>
+            </ol>
+          </nav>
+        </aside>
+        <div class="space-y-20">
+          
+        <section id="overview" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">PATTERNS AND ARCHITECTURE</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Patterns and architecture</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">Design patterns are reusable solutions to recurring design problems inside a codebase. Software architecture is the higher-level structure — layers, boundaries, deployment, and data flow — that patterns help you express cleanly. Patterns do not replace architecture; they make each layer easier to change, test, and reason about.</p>
+          </div>
+          
+          
+          <div class="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.04] p-6">
+            <p class="text-xs tracking-[0.3em] text-cyan-200 mb-3">FURTHER READING</p>
+            <ul class="space-y-2">
+              <li><a href="https://refactoring.guru/design-patterns" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-300 hover:text-cyan-200">Refactoring Guru — Design Patterns</a></li>
+              <li><a href="https://martinfowler.com/architecture/" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-300 hover:text-cyan-200">Martin Fowler — Architecture</a></li>
+              <li><a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-300 hover:text-cyan-200">Microsoft Learn — Architecture styles</a></li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="creational" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">CREATIONAL PATTERNS</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Creational patterns</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">Creational patterns control how objects are created so construction logic stays in one place instead of scattered across callers.</p>
+          </div>
+          
+          <article id="factory" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Factory Method</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Define an interface for creating objects, but let subclasses or providers decide which concrete type to instantiate.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Keeps domain code depending on abstractions, not concrete classes — essential in layered and hexagonal architectures where infrastructure swaps implementations behind ports.</p>
+            <a href="https://refactoring.guru/design-patterns/factory-method" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Factory Method
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="singleton" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Singleton</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Ensure a class has only one instance and provide a global access point to it.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Use sparingly for true shared resources (config, connection pools). Overuse creates hidden global state that fights testability and modular boundaries.</p>
+            <a href="https://sourcemaking.com/design_patterns/singleton" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — SourceMaking — Singleton
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="builder" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Builder</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Separate the construction of a complex object from its representation so the same process can build different variants.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Pairs well with immutable domain models and API DTO assembly — configuration and object graphs stay readable as systems grow.</p>
+            <a href="https://refactoring.guru/design-patterns/builder" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Builder
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="abstract-factory" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Abstract Factory</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Provide an interface for creating families of related objects without specifying their concrete classes.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Useful when swapping entire platform stacks (UI themes, cloud providers, persistence backends) behind one factory contract at infrastructure boundaries.</p>
+            <a href="https://refactoring.guru/design-patterns/abstract-factory" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Abstract Factory
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="prototype" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Prototype</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Create new objects by copying an existing instance (prototype) instead of constructing from scratch.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Supports cloning complex domain graphs and configuration templates — common when duplicating aggregates or seeding test fixtures without tight coupling to constructors.</p>
+            <a href="https://refactoring.guru/design-patterns/prototype" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Prototype
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+        </section>
+
+        <section id="structural" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">STRUCTURAL PATTERNS</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Structural patterns</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">Structural patterns compose classes and objects into larger structures while keeping interfaces stable.</p>
+          </div>
+          
+          <article id="adapter" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Adapter</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Convert the interface of a class into another interface clients expect — wrap a legacy or third-party API behind your domain contract.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Core to hexagonal (ports &amp; adapters) architecture: adapters sit at the boundary so the core never imports vendor SDKs directly.</p>
+            <a href="https://refactoring.guru/design-patterns/adapter" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Adapter
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="decorator" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Decorator</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Attach additional responsibilities to an object dynamically without altering its class.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Supports cross-cutting concerns (logging, caching, auth) in a composable way instead of deep inheritance trees — common in middleware pipelines.</p>
+            <a href="https://sourcemaking.com/design_patterns/decorator" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — SourceMaking — Decorator
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="facade" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Facade</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Provide a simplified interface to a complex subsystem of classes, modules, or services.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Defines module or service boundaries: callers see one entry point while internal complexity stays encapsulated — a building block of modular monoliths and microservice APIs.</p>
+            <a href="https://refactoring.guru/design-patterns/facade" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Facade
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="bridge" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Bridge</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Decouple an abstraction from its implementation so the two can vary independently.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Keeps domain abstractions stable while swapping infrastructure implementations — a natural fit for hexagonal ports where the core never references concrete drivers.</p>
+            <a href="https://refactoring.guru/design-patterns/bridge" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Bridge
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="composite" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Composite</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Compose objects into tree structures to represent part-whole hierarchies; treat individual objects and compositions uniformly.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Models nested domain structures (menus, org charts, file systems) and recursive operations without special-casing leaves vs. containers.</p>
+            <a href="https://refactoring.guru/design-patterns/composite" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Composite
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="flyweight" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Flyweight</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Share intrinsic state among many fine-grained objects to reduce memory use when thousands of similar instances exist.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Optimizes read-heavy caches and rendering pipelines — intrinsic data lives in a shared pool while extrinsic context stays per-use.</p>
+            <a href="https://refactoring.guru/design-patterns/flyweight" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Flyweight
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="proxy" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Proxy</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Provide a surrogate or placeholder that controls access to another object — lazy loading, caching, or access control.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Common at hexagonal boundaries for remote services, permission checks, and deferred initialization without leaking infrastructure into domain code.</p>
+            <a href="https://refactoring.guru/design-patterns/proxy" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Proxy
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+        </section>
+
+        <section id="behavioral" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">BEHAVIORAL PATTERNS</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Behavioral patterns</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">Behavioral patterns govern communication and responsibility assignment between objects.</p>
+          </div>
+          
+          <article id="observer" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Observer</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Define a one-to-many dependency so when one object changes state, all dependents are notified and updated automatically.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Underpins event-driven and reactive architectures — domain events, pub/sub buses, and UI binding (e.g. MVVM) all use this idea.</p>
+            <a href="https://refactoring.guru/design-patterns/observer" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Observer
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="strategy" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Strategy</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Define a family of algorithms, encapsulate each one, and make them interchangeable at runtime.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Enables policy and plugin slots in clean architecture — swap sorting, pricing, or AI providers without rewriting callers.</p>
+            <a href="https://refactoring.guru/design-patterns/strategy" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Strategy
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="command" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Command</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Encapsulate a request as an object, letting you parameterize clients, queue operations, and support undo.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Maps directly to CQRS and job queues: each command is a discrete unit of work crossing application boundaries with clear audit trails.</p>
+            <a href="https://sourcemaking.com/design_patterns/command" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — SourceMaking — Command
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="chain-of-responsibility" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Chain of Responsibility</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Pass a request along a chain of handlers; each handler decides whether to process it or forward it to the next.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Models middleware pipelines, validation chains, and authorization filters — core to HTTP middleware and clean-architecture request pipelines.</p>
+            <a href="https://refactoring.guru/design-patterns/chain-of-responsibility" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Chain of Responsibility
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="iterator" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Iterator</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Provide a way to traverse elements of a collection without exposing its internal representation.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Standardizes pagination, streaming, and lazy enumeration across repositories and APIs — callers iterate without knowing storage details.</p>
+            <a href="https://refactoring.guru/design-patterns/iterator" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Iterator
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="mediator" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Mediator</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Define an object that encapsulates how a set of objects interact, promoting loose coupling by avoiding direct references.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Reduces tangled cross-module calls — chat rooms, event buses, and orchestrators often act as mediators between bounded contexts.</p>
+            <a href="https://refactoring.guru/design-patterns/mediator" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Mediator
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="memento" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Memento</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Capture and externalize an object's internal state so it can be restored later without violating encapsulation.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Supports undo/redo, snapshots, and audit trails in workflow engines — state is stored separately from the object that produced it.</p>
+            <a href="https://refactoring.guru/design-patterns/memento" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Memento
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="state" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">State</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Allow an object to alter its behavior when its internal state changes, as if the object changed its class.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Models order lifecycles, connection states, and workflow transitions cleanly — each state encapsulates its own rules instead of giant switch statements.</p>
+            <a href="https://refactoring.guru/design-patterns/state" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — State
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="template-method" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Template Method</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Define the skeleton of an algorithm in a base class, letting subclasses override specific steps without changing the overall structure.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Useful in framework hooks and pipeline bases — the invariant flow stays in one place while extension points live in subclasses or strategies.</p>
+            <a href="https://refactoring.guru/design-patterns/template-method" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Template Method
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="visitor" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Visitor</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Represent an operation to perform on elements of an object structure; lets you add new operations without changing element classes.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Powers AST walkers, report generators, and cross-cutting traversals over stable domain trees — common in compilers and DDD aggregate visitors.</p>
+            <a href="https://refactoring.guru/design-patterns/visitor" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Visitor
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="interpreter" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Interpreter</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Define a representation for a language grammar and an interpreter that evaluates sentences in that language.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Used for rules engines, query DSLs, and policy expressions — keeps domain-specific logic declarative instead of buried in imperative code.</p>
+            <a href="https://refactoring.guru/design-patterns/interpreter" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — Interpreter
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+        </section>
+
+        <section id="architecture-styles" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">ARCHITECTURE STYLES</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Architecture styles</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">An architecture style organizes the system into major parts and defines how they interact. Patterns often appear inside each part.</p>
+          </div>
+          
+          <article id="layered" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Layered (n-tier)</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Organize code into horizontal layers — presentation, application, domain, infrastructure — with dependencies pointing inward.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Factory, Repository, and Facade patterns typically live at layer boundaries to keep domain rules isolated from frameworks.</p>
+            <a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/layered-architecture" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Microsoft Learn — Layered architecture
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="hexagonal" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Hexagonal (ports &amp; adapters)</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Place the domain at the center; all I/O (UI, DB, messaging) connects through ports implemented by adapters.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Adapter and Strategy are first-class citizens here — they are how you plug in databases, HTTP, and third-party services without polluting core logic.</p>
+            <a href="https://alistair.cockburn.us/hexagonal-architecture/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Alistair Cockburn — Hexagonal architecture
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="mvc-mvvm" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">MVC / MVVM</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Separate user interface, application logic, and data: MVC splits Model–View–Controller; MVVM adds data binding between View and ViewModel.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Observer and Command patterns support reactive UIs and user actions; keeps presentation replaceable (web, desktop, mobile) over shared domain code.</p>
+            <a href="https://martinfowler.com/eaaDev/uiArchs.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — GUI architectures
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="microservices" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Microservices (overview)</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Decompose a system into independently deployable services, each owning a bounded context and communicating over the network.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Facade defines service APIs; Adapter integrates legacy systems; Saga/Command patterns coordinate distributed workflows — with trade-offs in consistency and ops complexity.</p>
+            <a href="https://martinfowler.com/articles/microservices.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Microservices
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="event-driven" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Event-Driven</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Components communicate by producing and consuming events asynchronously rather than calling each other directly.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Observer and Mediator underpin pub/sub buses and domain events — enables loose coupling, eventual consistency, and reactive scaling across services.</p>
+            <a href="https://martinfowler.com/articles/201701-event-driven.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Event-Driven Architecture
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="clean-architecture" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Clean Architecture</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Organize code in concentric rings with dependencies pointing inward — entities and use cases at the center, frameworks and UI at the edge.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Formalizes ports-and-adapters thinking: Factory, Strategy, and Repository patterns live at ring boundaries to keep business rules framework-agnostic.</p>
+            <a href="https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Robert C. Martin — Clean Architecture
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="onion-architecture" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Onion Architecture</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Layer the application around the domain model with dependencies flowing inward; infrastructure implements interfaces defined by inner layers.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Repository and Unit of Work sit at the domain–infrastructure seam; Adapter wraps external systems so the core stays persistence-ignorant.</p>
+            <a href="https://jeffreypalermo.com/2008/07/the-onion-architecture-part-1/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Jeffrey Palermo — Onion Architecture
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="monolithic" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Monolithic</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Build the entire application as a single deployable unit with shared memory, process, and codebase.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Simplest starting point — Facade and layered boundaries still matter so the monolith can be modularized or strangler-migrated later without a rewrite.</p>
+            <a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/monolithic" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Microsoft Learn — Monolithic architecture
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="soa" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">SOA (Service-Oriented Architecture)</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Organize capabilities as loosely coupled, discoverable services with standardized contracts, often orchestrated via an enterprise service bus.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Precursor to microservices — Adapter and Facade define service contracts; emphasizes interoperability and shared governance over independent deployment.</p>
+            <a href="https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/service-oriented-architecture" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Microsoft Learn — SOA
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+        </section>
+
+        <section id="domain-driven-design" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">DOMAIN-DRIVEN DESIGN</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Domain-driven design</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">Domain-driven design (DDD) aligns software structure with business domains — bounded contexts, ubiquitous language, and strategic patterns keep complex systems understandable.</p>
+          </div>
+          
+          <article id="ddd" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Domain-Driven Design</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Model software around the business domain using a shared language, bounded contexts, and rich domain models instead of anemic data layers.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Guides how you slice microservices and modular monoliths — each bounded context owns its aggregates, events, and anti-corruption layers at integration points.</p>
+            <a href="https://martinfowler.com/bliki/DomainDrivenDesign.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Domain-Driven Design
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="repository" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Repository</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Mediate between the domain and data mapping layers using a collection-like interface for accessing aggregates.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Hides persistence details behind a domain-facing port — core to hexagonal, onion, and clean architectures where infrastructure implements the repository contract.</p>
+            <a href="https://martinfowler.com/eaaCatalog/repository.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Repository
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="unit-of-work" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Unit of Work</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Track changes to objects during a business transaction and coordinate writing them out as a single atomic operation.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Pairs with Repository in application services — ensures aggregate consistency and transaction boundaries without leaking ORM session details into the domain.</p>
+            <a href="https://martinfowler.com/eaaCatalog/unitOfWork.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Unit of Work
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="anti-corruption-layer" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Anti-Corruption Layer</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Translate between your domain model and an external system's model so foreign concepts do not leak into your bounded context.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Adapter at the strategic level — sits between bounded contexts or legacy integrations, preserving ubiquitous language inside your core.</p>
+            <a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/anti-corruption-layer" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Microsoft Learn — Anti-corruption layer
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+          <div class="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.04] p-6">
+            <p class="text-xs tracking-[0.3em] text-cyan-200 mb-3">FURTHER READING</p>
+            <ul class="space-y-2">
+              <li><a href="https://www.domainlanguage.com/ddd/" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-300 hover:text-cyan-200">Eric Evans — Domain-Driven Design (book overview)</a></li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="distributed-patterns" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">DISTRIBUTED &AMP; CLOUD PATTERNS</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">Distributed &amp; cloud patterns</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">These patterns address reliability, consistency, and integration challenges that arise when systems span processes, networks, and teams.</p>
+          </div>
+          
+          <article id="cqrs" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">CQRS</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Separate read models from write models so commands and queries can be optimized, scaled, and evolved independently.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Extends the Command pattern across service boundaries — write side emits events or updates projections consumed by specialized read stores.</p>
+            <a href="https://martinfowler.com/bliki/CQRS.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — CQRS
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="event-sourcing" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Event Sourcing</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Persist state as an append-only sequence of domain events rather than overwriting current state in place.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Complements event-driven and CQRS architectures — Observer notifies projections; Memento-like replay reconstructs any point-in-time snapshot.</p>
+            <a href="https://martinfowler.com/eaaDev/EventSourcing.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Event Sourcing
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="circuit-breaker" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Circuit Breaker</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Wrap remote calls with a breaker that opens after repeated failures, preventing cascading outages and allowing downstream recovery.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Essential resilience pattern in microservices and SOA — Proxy-like wrapper around external calls with fallback and health-aware routing.</p>
+            <a href="https://martinfowler.com/bliki/CircuitBreaker.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Circuit Breaker
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="saga" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Saga</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Coordinate a long-running distributed transaction as a sequence of local transactions, each with a compensating action on failure.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Replaces two-phase commit in microservices — Command and Observer patterns choreograph or orchestrate steps across bounded contexts.</p>
+            <a href="https://learn.microsoft.com/en-us/azure/architecture/reference-architectures/saga/saga" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Microsoft Learn — Saga
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="api-gateway" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">API Gateway</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Provide a single entry point that routes, aggregates, authenticates, and rate-limits requests to backend services.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Facade at the network edge — hides service topology from clients and centralizes cross-cutting concerns before traffic reaches individual services.</p>
+            <a href="https://learn.microsoft.com/en-us/azure/architecture/microservices/design/gateway" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Microsoft Learn — API Gateway
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="bff" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">BFF (Backend for Frontend)</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Create a dedicated backend API tailored to the needs of a specific client (web, mobile, IoT) rather than one generic API for all.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Sits behind or alongside the API Gateway — Adapter and Facade combine to shape responses per channel without bloating core domain services.</p>
+            <a href="https://samnewman.io/patterns/architectural/bff/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Sam Newman — Backends for Frontends
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+
+          <article id="strangler-fig" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">Strangler Fig</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Incrementally replace a legacy system by routing new functionality to new services while the old system is gradually retired.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Migration strategy for monolith-to-microservices — Adapter and Facade route traffic until the legacy core is fully displaced without a big-bang rewrite.</p>
+            <a href="https://martinfowler.com/bliki/StranglerFigApplication.html" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Martin Fowler — Strangler Fig
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+          <div class="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.04] p-6">
+            <p class="text-xs tracking-[0.3em] text-cyan-200 mb-3">FURTHER READING</p>
+            <ul class="space-y-2">
+              <li><a href="https://learn.microsoft.com/en-us/azure/architecture/patterns/" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-300 hover:text-cyan-200">Microsoft Azure — Cloud design patterns</a></li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="solid" class="space-y-6">
+          <div>
+            <p class="text-xs tracking-[0.4em] text-cyan-300 mb-3">SOLID AND PATTERNS</p>
+            <h2 class="serif text-3xl md:text-4xl text-white font-medium">SOLID and patterns</h2>
+            <p class="mt-4 text-slate-400 leading-relaxed">SOLID principles guide class and module design; patterns are concrete ways to uphold them at scale.</p>
+          </div>
+          
+          <article id="solid-patterns" class="rounded-xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <h3 class="text-lg text-white font-medium">How SOLID connects to patterns</h3>
+            <p class="mt-3 text-sm text-slate-400 leading-relaxed">Single Responsibility: one reason to change per module. Open/Closed: extend via Strategy/Decorator instead of editing core code. Liskov: substitutable implementations behind Factory/Strategy. Interface Segregation: small ports in hexagonal layouts. Dependency Inversion: depend on abstractions — Factory, Adapter, and DI containers wire concrete types at the edge.</p>
+            <p class="mt-4 text-sm text-slate-300 leading-relaxed"><span class="text-cyan-300 tracking-[0.2em] text-xs uppercase">Architecture connection</span><br/>Healthy architecture scores how well boundaries respect SOLID; patterns are the vocabulary Arkitect and similar tools use when suggesting refactors and slice boundaries.</p>
+            <a href="https://refactoring.guru/design-principles/solid-principles" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 mt-5 text-xs tracking-[0.2em] text-cyan-200 hover:text-white">
+              LEARN MORE — Refactoring Guru — SOLID
+              <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </article>
+          
+          <div class="rounded-xl border border-cyan-300/20 bg-cyan-300/[0.04] p-6">
+            <p class="text-xs tracking-[0.3em] text-cyan-200 mb-3">FURTHER READING</p>
+            <ul class="space-y-2">
+              <li><a href="https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures" target="_blank" rel="noopener noreferrer" class="text-sm text-slate-300 hover:text-cyan-200">Microsoft Learn — SOLID principles</a></li>
+            </ul>
+          </div>
+        </section>
+        </div>
+      </div>
+    </section>
+
+    <footer class="relative border-t border-white/5 py-16 px-6">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+        <a href="index-v2.html" class="flex items-center gap-3">
+          <img src="arkitect-mark-nav.png" alt="Arkitect" class="w-8 h-8 object-contain" />
+          <span class="serif text-2xl font-semibold text-white">Arkitect<span class="text-cyan-300">.</span></span>
+        </a>
+        <nav class="serif flex items-center gap-8 text-lg text-slate-200">
+          <a href="index-v2.html" class="hover:text-cyan-300">Home</a>
+          <a href="architecture.html" class="text-cyan-300">Architecture</a>
+          <a href="index-v2.html#connect" class="hover:text-cyan-300">Connect</a>
+        </nav>
+      </div>
+    </footer>
+  </main>
+  <script>lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });</script>
+</body>
+</html>
