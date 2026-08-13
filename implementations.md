@@ -1,3 +1,8 @@
+### 2026-08-13 - SPA Pretty URL placement
+**Status:** PENDING
+**Files:** apps/site/spa/index.html, apps/site/vite.config.ts, apps/site/public/_redirects
+**Result:** SPA moved off app.html; closeBundle copies spa/index.html to mcp/reviews/etc. Stops Cloudflare 308 to /app. Dithered homepage stays dist/index.html.
+
 ### 2026-08-13 - Fix homepage redirect loop
 **Status:** PENDING
 **Files:** apps/site/public/_redirects

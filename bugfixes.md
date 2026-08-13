@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-08-13 - Pretty URLs 308 SPA routes to /app
+**Status:** PENDING
+**Files:** apps/site/vite.config.ts, apps/site/public/_redirects, apps/site/spa/index.html
+**Result:** `/mcp` rewrite to app.html 308d to /app; cached 308 sent `/` to blank React. Per-route index.html copies; /app and /app.html 301 to /.
+
 ### 2026-08-13 - /app leftover blank React shell
 **Status:** PENDING
 **Files:** apps/site/public/_redirects, apps/site/src/components/NavBar.tsx

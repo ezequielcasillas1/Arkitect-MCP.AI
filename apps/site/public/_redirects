@@ -14,10 +14,4 @@
 /index-v2              /                      301
 /index-v2.html         /                      301
 /app                   /                      301
-/reviews               /app.html              200
-/instructions          /app.html              200
-/mcp                   /app.html              200
-/about                 /app.html              200
-/terms                 /app.html              200
-/privacy               /app.html              200
-/admin/downloads       /app.html              200
+/app.html              /                      301
