@@ -1,3 +1,13 @@
+### 2026-08-13 - MCP tool cards unlock grid
+**Status:** PENDING
+**Files:** apps/site/public/index-v2.html
+**Result:** Diagnose / Patterns / Verify / Refactor cards toggle an exclusive info grid. Click unlocks that card's tools; click again locks. Only one panel visible.
+
+### 2026-08-13 - New site: live counter + architecture page
+**Status:** PENDING
+**Files:** apps/site/public/index-v2.html, apps/site/public/architecture.html
+**Result:** Live 1,000-spot download counter wired into the new homepage. Architecture/education catalog moved to architecture.html and linked from nav.
+
 ### 2026-07-04 - Marketing site /mcp page
 **Status:** PENDING
 **Files:** apps/site/src/pages/McpPage.tsx, apps/site/src/features/mcp-page/{types.ts,data.ts,AutoFillCallout.tsx,McpToolsSection.tsx,McpVersionHistorySection.tsx,index.ts}, apps/site/src/App.tsx, apps/site/src/components/{NavBar.tsx,Footer.tsx}, apps/site/src/features/seo/{types.ts,data.ts}, apps/site/public/sitemap.xml, apps/site/src/styles.css

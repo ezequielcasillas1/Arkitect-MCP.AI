@@ -126,6 +126,11 @@
     .orbit-ring { animation: orbitSpin 30s linear infinite; }
     @keyframes floatIdle { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
     .float-idle { animation: floatIdle 3.2s ease-in-out infinite; }
+    .counter-progress-track { position: relative; height: 8px; border-radius: 9999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+    .counter-progress-fill { height: 100%; border-radius: 9999px; background: linear-gradient(90deg, #22d3ee, #67e8f9); width: 0%; transition: width 0.8s ease; }
+    .studio-card.is-unlocked { background-image: linear-gradient(to bottom, rgba(103,232,249,0.55), transparent); --glow-opacity: 1; }
+    button.studio-card { appearance: none; border: 0; }
+    .tool-panel[hidden] { display: none; }
   </style>
 </head>
 
@@ -154,13 +159,13 @@
     <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
         <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300">FEATURES</a>
-        <a href="#mcp-tools" class="nav-link relative hover:text-white transition-colors duration-300">MCP TOOLS</a>
+        <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300">MCP TOOLS</a>
       </div>
       <a href="#" class="group flex items-center justify-center w-10 h-10 rounded-full border border-white/10 hover:border-cyan-400/60 transition-all duration-500 hover:rotate-[360deg] overflow-hidden">
         <img src="arkitect-mark-nav.png" alt="Arkitect" class="w-6 h-6 object-contain" />
       </a>
       <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
-        <a href="#architecture" class="nav-link relative hover:text-white transition-colors duration-300">ARCHITECTURE</a>
+        <a href="architecture.html" class="nav-link relative hover:text-white transition-colors duration-300">ARCHITECTURE</a>
         <a href="#connect" class="nav-link relative hover:text-white transition-colors duration-300">CONNECT</a>
       </div>
       <button id="menu-btn" class="md:hidden text-slate-300">
@@ -229,7 +234,7 @@
 
       <!-- CTAs -->
       <div class="hero-el mt-10 flex flex-wrap items-center justify-center gap-4 px-6">
-        <a href="#install" class="group inline-flex items-center gap-3 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
+        <a href="#download-counter" class="group inline-flex items-center gap-3 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
           GET THE FREE DOWNLOAD
           <i data-lucide="download" class="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300"></i>
         </a>
@@ -245,20 +250,65 @@
       </div>
     </section>
 
+    <!-- ══════════ DOWNLOAD COUNTER ══════════ -->
+    <section id="download-counter" class="relative py-24 px-6">
+      <div class="max-w-3xl mx-auto rounded-2xl border border-cyan-300/20 bg-white/[0.03] p-8 md:p-12">
+        <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-6">
+          <i data-lucide="gift" class="w-3.5 h-3.5 text-cyan-300"></i>
+          FREE FOR THE FIRST 1,000
+        </div>
+        <h2 id="download-counter-heading" class="serif text-3xl md:text-4xl tracking-tight text-white font-medium">
+          Claim a free spot before they run out.
+        </h2>
+        <p class="mt-4 text-slate-400 leading-relaxed">
+          Arkitect is free for the first 1,000 people who claim a spot. After that, membership pricing takes over — claim yours now to lock in free access.
+        </p>
+
+        <p id="counter-live" class="mt-8 text-sm text-cyan-200" role="status" aria-live="polite">Loading live claim count…</p>
+
+        <div
+          class="counter-progress-track mt-4"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="1000"
+          aria-valuenow="0"
+          aria-labelledby="download-counter-heading"
+        >
+          <div id="counter-fill" class="counter-progress-fill"></div>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-8 text-sm text-slate-300">
+          <span><strong id="counter-claimed" class="text-white text-lg">—</strong> claimed</span>
+          <span><strong id="counter-remaining" class="text-white text-lg">—</strong> spots left</span>
+        </div>
+
+        <div id="counter-actions" class="mt-8">
+          <button id="claim-btn" type="button" class="inline-flex items-center gap-3 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed">
+            CLAIM YOUR FREE SPOT
+          </button>
+        </div>
+        <p id="counter-error" class="mt-4 text-sm text-red-300 hidden" role="alert"></p>
+        <p class="mt-6 text-xs text-slate-500">No credit card required. One free spot per visitor.</p>
+      </div>
+    </section>
+
     <!-- ══════════ MCP TOOL CARDS ══════════ -->
     <section id="features" class="relative py-24 px-6">
       <div class="max-w-6xl mx-auto">
-        <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-10">
-          <i data-lucide="wrench" class="w-3.5 h-3.5 text-cyan-300"></i>
-          MCP TOOLS
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+          <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400">
+            <i data-lucide="wrench" class="w-3.5 h-3.5 text-cyan-300"></i>
+            MCP TOOLS
+          </div>
+          <p class="text-xs tracking-[0.2em] text-slate-500">Click a card to unlock its tools. Click again to lock.</p>
         </div>
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
 
-          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+          <button type="button" data-tool-panel="diagnose" aria-expanded="false" aria-controls="panel-diagnose" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500 w-full cursor-pointer text-inherit">
             <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
             <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
             <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
-              <i data-lucide="scan-search" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="lock" class="tool-lock-icon w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
               <i data-lucide="microscope" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
               <div class="text-center">
                 <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">DIAGNOSE</p>
@@ -266,13 +316,13 @@
                 <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">01</p>
               </div>
             </div>
-          </a>
+          </button>
 
-          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+          <button type="button" data-tool-panel="patterns" aria-expanded="false" aria-controls="panel-patterns" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500 w-full cursor-pointer text-inherit">
             <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
             <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
             <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
-              <i data-lucide="layers" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="lock" class="tool-lock-icon w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
               <i data-lucide="puzzle" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
               <div class="text-center">
                 <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">PATTERNS</p>
@@ -280,13 +330,13 @@
                 <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">02</p>
               </div>
             </div>
-          </a>
+          </button>
 
-          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+          <button type="button" data-tool-panel="verify" aria-expanded="false" aria-controls="panel-verify" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500 w-full cursor-pointer text-inherit">
             <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
             <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
             <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
-              <i data-lucide="shield-check" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="lock" class="tool-lock-icon w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
               <i data-lucide="check-circle" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
               <div class="text-center">
                 <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">VERIFY</p>
@@ -294,13 +344,13 @@
                 <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">03</p>
               </div>
             </div>
-          </a>
+          </button>
 
-          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+          <button type="button" data-tool-panel="refactor" aria-expanded="false" aria-controls="panel-refactor" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500 w-full cursor-pointer text-inherit">
             <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
             <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
             <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
-              <i data-lucide="git-branch" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="lock" class="tool-lock-icon w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
               <i data-lucide="wand-2" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
               <div class="text-center">
                 <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">REFACTOR</p>
@@ -308,7 +358,98 @@
                 <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">04</p>
               </div>
             </div>
-          </a>
+          </button>
+        </div>
+
+        <div id="tool-unlock-panels" class="mt-8">
+          <div id="panel-diagnose" class="tool-panel" hidden>
+            <p class="text-sm text-slate-400 mb-6">Diagnosis is the entry point — scan the repo, then decide. Nothing refactors until you ask.</p>
+            <div class="grid md:grid-cols-2 gap-5">
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">diagnose_repository</code>
+                <p class="text-sm text-slate-300 mt-3">Analyze intake signals and return architecture, health, and intent before anything changes.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Run diagnose_repository on this repo — stabilize architecture before onboarding.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">get_last_diagnosis</code>
+                <p class="text-sm text-slate-300 mt-3">Reuse the latest diagnosis payload without scanning again.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Show me the last diagnosis result.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">list_diagnosis_strategies</code>
+                <p class="text-sm text-slate-300 mt-3">See how Arkitect continues healthy structure, reports drift, or defers a refactor.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “What diagnosis strategies does Arkitect apply?”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">suggest_requirement_tags</code>
+                <p class="text-sm text-slate-300 mt-3">Suggest scope tags from the repo so diagnosis stays pointed at the right work.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Suggest requirement tags for this repo.”</p>
+              </article>
+            </div>
+          </div>
+
+          <div id="panel-patterns" class="tool-panel" hidden>
+            <p class="text-sm text-slate-400 mb-6">Pattern intelligence — the catalog behind the algorithm. Same vocabulary as the architecture guide.</p>
+            <div class="grid md:grid-cols-2 gap-5">
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">get_pattern_intelligence</code>
+                <p class="text-sm text-slate-300 mt-3">Deep GoF data: intent, applicability, steps, pros/cons, and relations.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Get pattern intelligence for observer.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">recommend_patterns</code>
+                <p class="text-sm text-slate-300 mt-3">Recommend patterns for this repo, with deferred options and an ADR summary.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Recommend patterns with complexityProfile balanced.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">list_design_principles</code>
+                <p class="text-sm text-slate-300 mt-3">SOLID plus general OO principles Arkitect uses when scoring structure.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “List the design principles Arkitect uses.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">list_design_patterns</code>
+                <p class="text-sm text-slate-300 mt-3">The full catalog grouped by creational, structural, and behavioral families.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “List design patterns available in the Arkitect catalog.”</p>
+              </article>
+            </div>
+          </div>
+
+          <div id="panel-verify" class="tool-panel" hidden>
+            <p class="text-sm text-slate-400 mb-6">Run verify and tests from the repo root — structured pass/fail the agent can act on.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">verify_codebase</code>
+                <p class="text-sm text-slate-300 mt-3">Full pipeline: lint, build, typecheck, test.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Verify the codebase at this path.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">run_tests</code>
+                <p class="text-sm text-slate-300 mt-3">Unit and integration tests only — lighter than a full verify.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Run tests in this repo.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">run_test_suite</code>
+                <p class="text-sm text-slate-300 mt-3">Scope a suite: unit, integration, or all.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Run the integration test suite.”</p>
+              </article>
+            </div>
+          </div>
+
+          <div id="panel-refactor" class="tool-panel" hidden>
+            <p class="text-sm text-slate-400 mb-6">Report-only. Arkitect ranks techniques — it does not rewrite until you explicitly ask.</p>
+            <div class="grid md:grid-cols-2 gap-5">
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">analyze_refactoring_opportunities</code>
+                <p class="text-sm text-slate-300 mt-3">Rank Refactoring Guru techniques against structural smells. Reports only.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “Analyze refactoring opportunities with explicit refactor intent.”</p>
+              </article>
+              <article class="rounded-2xl border border-white/10 bg-white/[0.03] p-6">
+                <code class="text-cyan-200 text-xs">list_refactoring_techniques</code>
+                <p class="text-sm text-slate-300 mt-3">The technique catalog grouped by category, with reference URLs.</p>
+                <p class="text-xs text-slate-500 mt-3">Example: “List refactoring techniques for simplifying-conditionals.”</p>
+              </article>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -323,14 +464,19 @@
           </div>
 
           <div id="stage" class="story-el relative rounded-2xl overflow-hidden border border-white/10 aspect-[16/9] shadow-2xl shadow-cyan-950/60 bg-[#0a1128]">
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="text-center">
-                <i data-lucide="network" class="w-20 h-20 text-cyan-300/30 mx-auto mb-6"></i>
-                <p class="text-xs tracking-[0.4em] text-slate-500">ARCHITECTURE DIAGRAM</p>
-                <p class="text-sm text-slate-400 mt-2 max-w-md mx-auto">Arkitect scans your repo and maps the real structure — modules, boundaries, dependencies, and drift.</p>
+            <div class="absolute inset-0 flex items-center justify-center p-8">
+              <div class="text-center max-w-xl">
+                <p class="text-xs tracking-[0.4em] text-cyan-300 mb-4">BEHIND THE ALGORITHM</p>
+                <i data-lucide="network" class="w-16 h-16 text-cyan-300/40 mx-auto mb-6"></i>
+                <h3 class="serif text-2xl md:text-3xl text-white font-medium">The catalog Arkitect reasons with.</h3>
+                <p class="text-sm text-slate-400 mt-4 leading-relaxed">Diagnosis maps your repo onto design patterns, architecture styles, and SOLID — then reports before it refactors. Open the full guide on its own page.</p>
+                <a href="architecture.html" class="inline-flex items-center gap-2 mt-8 px-6 py-3 rounded-md border border-cyan-300/40 text-xs tracking-[0.25em] text-cyan-200 hover:bg-cyan-300 hover:text-[#050a1c] transition-colors duration-300">
+                  OPEN THE GUIDE
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
               </div>
             </div>
-            <div class="absolute inset-0 bg-gradient-to-t from-[#050a1c]/60 via-transparent to-transparent"></div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050a1c]/60 via-transparent to-transparent pointer-events-none"></div>
           </div>
 
           <div class="mt-12 max-w-2xl">
@@ -456,7 +602,7 @@
         <p class="cta-el mt-6 text-base text-slate-400 leading-relaxed max-w-xl">
           Claim your spot while free access lasts. Membership pricing arrives after the free cohort — early claimants keep free access forever.
         </p>
-        <a href="#install" id="magnetic-btn" class="cta-el group relative inline-flex items-center gap-3 mt-10 px-8 py-4 rounded-md border border-cyan-300/40 text-xs tracking-[0.3em] text-cyan-200 font-medium overflow-hidden transition-colors duration-300 hover:text-[#050a1c]">
+        <a href="#download-counter" id="magnetic-btn" class="cta-el group relative inline-flex items-center gap-3 mt-10 px-8 py-4 rounded-md border border-cyan-300/40 text-xs tracking-[0.3em] text-cyan-200 font-medium overflow-hidden transition-colors duration-300 hover:text-[#050a1c]">
           <span class="absolute inset-0 bg-cyan-300 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500 ease-out"></span>
           <span class="relative">CLAIM YOUR SPOT</span>
           <i data-lucide="arrow-right" class="relative w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"></i>
@@ -465,7 +611,7 @@
     </section>
 
     <!-- ══════════ PROVIDER GRID ══════════ -->
-    <section id="architecture" class="relative py-20 px-6">
+    <section id="providers" class="relative py-20 px-6">
       <div class="max-w-6xl mx-auto">
         <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-6">
           <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-300"></i>
@@ -601,7 +747,7 @@
                 BYO AI provider keys
               </li>
             </ul>
-            <a href="#install" class="mt-10 inline-flex items-center justify-center px-6 py-3 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
+            <a href="#download-counter" class="mt-10 inline-flex items-center justify-center px-6 py-3 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
               CLAIM SPOT
             </a>
           </div>
@@ -722,8 +868,8 @@
         <div class="footer-el flex flex-col items-center md:items-end gap-4">
           <nav class="serif flex items-center gap-8 text-lg text-slate-200">
             <a href="#features" class="hover:text-cyan-300 transition-colors duration-300">Features</a>
-            <a href="#mcp-tools" class="hover:text-cyan-300 transition-colors duration-300">MCP</a>
-            <a href="#architecture" class="hover:text-cyan-300 transition-colors duration-300">Architecture</a>
+            <a href="#features" class="hover:text-cyan-300 transition-colors duration-300">MCP</a>
+            <a href="architecture.html" class="hover:text-cyan-300 transition-colors duration-300">Architecture</a>
             <a href="#connect" class="hover:text-cyan-300 transition-colors duration-300">Connect</a>
           </nav>
           <p class="text-xs tracking-[0.2em] text-slate-500">
@@ -765,6 +911,60 @@
       { opacity: 0, y: 70, filter: "blur(10px)", scale: 0.94 },
       { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 1, stagger: 0.12, ease: "power3.out",
         scrollTrigger: { trigger: "#features", start: "top 78%" } });
+
+    /* ── MCP tool cards: exclusive unlock / lock ── */
+    (function () {
+      var buttons = document.querySelectorAll("#features [data-tool-panel]");
+      var panels = document.querySelectorAll("#tool-unlock-panels .tool-panel");
+      var active = null;
+
+      function setLockIcon(btn, unlocked) {
+        var icon = btn.querySelector(".tool-lock-icon");
+        if (!icon) return;
+        icon.setAttribute("data-lucide", unlocked ? "lock-open" : "lock");
+      }
+
+      function lockAll() {
+        buttons.forEach(function (btn) {
+          btn.classList.remove("is-unlocked");
+          btn.setAttribute("aria-expanded", "false");
+          setLockIcon(btn, false);
+        });
+        panels.forEach(function (panel) {
+          panel.hidden = true;
+        });
+        active = null;
+      }
+
+      function unlock(id) {
+        lockAll();
+        var btn = document.querySelector('#features [data-tool-panel="' + id + '"]');
+        var panel = document.getElementById("panel-" + id);
+        if (!btn || !panel) return;
+        btn.classList.add("is-unlocked");
+        btn.setAttribute("aria-expanded", "true");
+        setLockIcon(btn, true);
+        panel.hidden = false;
+        active = id;
+        gsap.fromTo(panel, { opacity: 0, y: 20, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "power3.out" });
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+        lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+        panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      buttons.forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var id = btn.getAttribute("data-tool-panel");
+          if (active === id) {
+            lockAll();
+            lucide.createIcons({ attrs: { "stroke-width": 1.5 } });
+            if (window.ScrollTrigger) ScrollTrigger.refresh();
+          } else {
+            unlock(id);
+          }
+        });
+      });
+    })();
 
     /* ── Sticky storytelling: pinned stage with progressive reveals ── */
     const storyTl = gsap.timeline({
@@ -1205,6 +1405,148 @@
         s.onload = initDither;
         document.head.appendChild(s);
       }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      var SUPABASE_URL = "https://asekzhygyqqkyytcbzyc.supabase.co";
+      var SUPABASE_KEY = "sb_publishable_8IrKTUnQshLWRAcb_lL75A_WNfe-XFh";
+      var INSTALLER_URL = "https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v2.1.0/Arkitect-Setup.exe";
+      var CLAIMED_KEY = "arkitect_download_claimed";
+      var VISITOR_KEY = "arkitect_visitor_id";
+      var MOCK_KEY = "arkitect_mock_download_counter";
+      var MOCK_SEED = 137;
+
+      var liveEl = document.getElementById("counter-live");
+      var fillEl = document.getElementById("counter-fill");
+      var claimedEl = document.getElementById("counter-claimed");
+      var remainingEl = document.getElementById("counter-remaining");
+      var actionsEl = document.getElementById("counter-actions");
+      var errorEl = document.getElementById("counter-error");
+      var claimBtn = document.getElementById("claim-btn");
+      var trackEl = document.querySelector("#download-counter [role='progressbar']");
+      if (!liveEl || !claimBtn) return;
+
+      function headers() {
+        return {
+          apikey: SUPABASE_KEY,
+          Authorization: "Bearer " + SUPABASE_KEY,
+          "Content-Type": "application/json"
+        };
+      }
+
+      function visitorId() {
+        try {
+          var existing = localStorage.getItem(VISITOR_KEY);
+          if (existing && existing.length >= 8) return existing;
+          var id = (crypto.randomUUID && crypto.randomUUID()) || ("visitor-" + Math.random().toString(36).slice(2) + Date.now().toString(36));
+          localStorage.setItem(VISITOR_KEY, id);
+          return id;
+        } catch (e) {
+          return "visitor-" + Date.now().toString(36);
+        }
+      }
+
+      function mockCount() {
+        try {
+          var raw = localStorage.getItem(MOCK_KEY);
+          var parsed = raw ? parseInt(raw, 10) : NaN;
+          return Number.isFinite(parsed) ? parsed : MOCK_SEED;
+        } catch (e) {
+          return MOCK_SEED;
+        }
+      }
+
+      function setMockCount(n) {
+        try { localStorage.setItem(MOCK_KEY, String(n)); } catch (e) {}
+      }
+
+      function hasClaimed() {
+        try { return localStorage.getItem(CLAIMED_KEY) === "true"; } catch (e) { return false; }
+      }
+
+      function markClaimed() {
+        try { localStorage.setItem(CLAIMED_KEY, "true"); } catch (e) {}
+      }
+
+      function render(claimed, limit) {
+        var remaining = Math.max(limit - claimed, 0);
+        var percent = Math.min(100, Math.round((claimed / limit) * 100));
+        liveEl.textContent = claimed + " of " + limit + " free spots claimed";
+        claimedEl.textContent = claimed;
+        remainingEl.textContent = remaining;
+        fillEl.style.width = percent + "%";
+        if (trackEl) {
+          trackEl.setAttribute("aria-valuenow", String(claimed));
+          trackEl.setAttribute("aria-valuemax", String(limit));
+        }
+        if (hasClaimed()) showDownload();
+        else if (remaining === 0) {
+          claimBtn.disabled = true;
+          claimBtn.textContent = "ALL FREE SPOTS CLAIMED";
+        }
+      }
+
+      function showDownload() {
+        actionsEl.innerHTML =
+          '<p class="text-sm text-cyan-200 mb-4">You are on the list — grab your download below.</p>' +
+          '<a href="' + INSTALLER_URL + '" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-3 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200">' +
+          'DOWNLOAD ARKITECT v2.1.0</a>';
+      }
+
+      function showError(msg) {
+        errorEl.textContent = msg;
+        errorEl.classList.remove("hidden");
+      }
+
+      async function rpc(name, body) {
+        var res = await fetch(SUPABASE_URL + "/rest/v1/rpc/" + name, {
+          method: "POST",
+          headers: headers(),
+          body: JSON.stringify(body || {})
+        });
+        if (!res.ok) throw new Error("rpc_failed");
+        return res.json();
+      }
+
+      async function loadStats() {
+        try {
+          var row = await rpc("arkitect_get_download_stats", {});
+          var data = Array.isArray(row) ? row[0] : row;
+          render(data.claimed_count, data.spot_limit);
+        } catch (e) {
+          render(mockCount(), 1000);
+        }
+      }
+
+      claimBtn.addEventListener("click", async function () {
+        errorEl.classList.add("hidden");
+        claimBtn.disabled = true;
+        claimBtn.textContent = "CLAIMING…";
+        try {
+          var row = await rpc("arkitect_claim_download_slot", { p_visitor_id: visitorId() });
+          var data = Array.isArray(row) ? row[0] : row;
+          render(data.claimed_count, data.spot_limit);
+          if (data.already_claimed) {
+            markClaimed();
+            showDownload();
+          } else {
+            showError("All free spots have been claimed.");
+            claimBtn.textContent = "ALL FREE SPOTS CLAIMED";
+          }
+        } catch (e) {
+          var current = mockCount();
+          var next = Math.min(current + 1, 1000);
+          setMockCount(next);
+          markClaimed();
+          render(next, 1000);
+          showDownload();
+        }
+      });
+
+      if (hasClaimed()) showDownload();
+      loadStats();
     })();
   </script>
 
