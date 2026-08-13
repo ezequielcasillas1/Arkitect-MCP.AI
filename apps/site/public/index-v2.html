@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arkitect MCP — Architecture-first AI for Cursor & desktop repos</title>
+  <meta name="description" content="Arkitect MCP v2.1.0 — packaged installer MCP fix plus pattern intelligence, diagnosis, and refactor guidance for Cursor. Free for the first 1,000 users." />
+  <meta name="keywords" content="MCP server, Cursor MCP, architecture AI, repo diagnosis, code architecture tool, arkitect, vertical slice architecture, design patterns, software architecture, MCP tools, AI coding assistant" />
+  <meta name="author" content="Arkitect" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="https://arkitect-mcp.com/" />
+  <meta name="theme-color" content="#050a1c" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Arkitect MCP — Architecture-first AI for Cursor" />
+  <meta property="og:description" content="Desktop-first architecture reasoning with MCP-native tools. Diagnosis, pattern intelligence, and refactor guidance. Free for the first 1,000 users." />
+  <meta property="og:url" content="https://arkitect-mcp.com/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://arkitect-mcp.com/arkitect-mark.png" />
+  <meta property="og:site_name" content="Arkitect MCP" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Arkitect MCP — Architecture-first AI" />
+  <meta name="twitter:description" content="Diagnosis, pattern intelligence, and refactor guidance for Cursor. Free for the first 1,000 users." />
+  <meta name="twitter:image" content="https://arkitect-mcp.com/arkitect-mark.png" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png" />
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Arkitect MCP",
+        "url": "https://arkitect-mcp.com",
+        "description": "Desktop-first architecture reasoning tool with MCP server for Cursor. Diagnosis, pattern intelligence, catalog recommendations, and refactor guidance grounded in your actual repo.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Windows",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Free for the first 1,000 users"
+        },
+        "author": {
+          "@type": "Organization",
+          "name": "Arkitect",
+          "url": "https://arkitect-mcp.com"
+        }
+      },
+      {
+        "@type": "Organization",
+        "name": "Arkitect",
+        "url": "https://arkitect-mcp.com",
+        "logo": "https://arkitect-mcp.com/arkitect-mark.png"
+      },
+      {
+        "@type": "WebSite",
+        "name": "Arkitect MCP",
+        "url": "https://arkitect-mcp.com",
+        "description": "Architecture-first AI reasoning for Cursor and desktop repos"
+      }
+    ]
+  }
+  </script>
+
+  <!-- CDN Dependencies -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .serif { font-family: 'Playfair Display', serif; }
+  </style>
+
+  <!-- Flash card cursor-reactive border styles -->
+  <style>
+    .flash-card { position: relative; --cursor-angle: 0deg; --proximity: 0; }
+    .flash-card::before,
+    .flash-card::after {
+      content: "";
+      position: absolute; inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: conic-gradient(from var(--cursor-angle), rgba(103,232,249,.9), transparent 60deg, transparent 300deg, rgba(103,232,249,.9));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      opacity: var(--proximity);
+      transition: opacity .25s ease;
+      pointer-events: none;
+      z-index: 20;
+    }
+    .flash-card::after {
+      filter: blur(12px);
+      opacity: calc(var(--proximity) * 0.6);
+      z-index: 19;
+    }
+  </style>
+
+  <style>
+    .shell-card { --cursor-angle: 0deg; --glow-opacity: 0; }
+    .shell-card.flash-card::before,
+    .shell-card.flash-card::after { content: none; }
+  </style>
+
+  <!-- Beaver logo orbit/float animation styles -->
+  <style>
+    @keyframes laserPulse { 0%,100% { opacity:.5 } 50% { opacity:1 } }
+    .laser-pulse { animation: laserPulse 3s ease-in-out infinite }
+    @keyframes orbitSpin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+    .orbit-ring { animation: orbitSpin 30s linear infinite; }
+    @keyframes floatIdle { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
+    .float-idle { animation: floatIdle 3.2s ease-in-out infinite; }
+  </style>
+</head>
+
+<body class="bg-[#050a1c] text-slate-200 antialiased overflow-x-hidden selection:bg-cyan-400/30">
+
+  <!-- ══════════ FIXED BACKGROUND LAYERS (PARALLAX) ══════════ -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div id="bg-layer-1" class="absolute -inset-40 opacity-60">
+      <div class="absolute top-[5%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-700/20 blur-[120px]"></div>
+      <div class="absolute top-[40%] right-[5%] w-[30rem] h-[30rem] rounded-full bg-cyan-600/15 blur-[100px]"></div>
+      <div class="absolute bottom-[10%] left-[20%] w-[35rem] h-[35rem] rounded-full bg-teal-600/10 blur-[120px]"></div>
+    </div>
+    <div id="bg-layer-2" class="absolute -inset-20">
+      <div class="absolute top-[20%] right-[25%] w-1 h-1 rounded-full bg-white/60"></div>
+      <div class="absolute top-[35%] left-[15%] w-1 h-1 rounded-full bg-white/40"></div>
+      <div class="absolute top-[60%] right-[10%] w-1.5 h-1.5 rounded-full bg-cyan-300/50"></div>
+      <div class="absolute top-[75%] left-[30%] w-1 h-1 rounded-full bg-white/50"></div>
+      <div class="absolute top-[15%] left-[45%] w-1 h-1 rounded-full bg-teal-300/50"></div>
+      <div class="absolute top-[85%] right-[40%] w-1 h-1 rounded-full bg-white/40"></div>
+    </div>
+    <div id="bg-layer-3" class="absolute inset-0 opacity-[0.04]" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 48px 48px;"></div>
+  </div>
+
+  <!-- ══════════ NAV ══════════ -->
+  <header id="nav" class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-[#050a1c]/40 border-b border-white/5">
+    <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
+        <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300">FEATURES</a>
+        <a href="#mcp-tools" class="nav-link relative hover:text-white transition-colors duration-300">MCP TOOLS</a>
+      </div>
+      <a href="#" class="group flex items-center justify-center w-10 h-10 rounded-full border border-white/10 hover:border-cyan-400/60 transition-all duration-500 hover:rotate-[360deg] overflow-hidden">
+        <img src="arkitect-mark-nav.png" alt="Arkitect" class="w-6 h-6 object-contain" />
+      </a>
+      <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
+        <a href="#architecture" class="nav-link relative hover:text-white transition-colors duration-300">ARCHITECTURE</a>
+        <a href="#connect" class="nav-link relative hover:text-white transition-colors duration-300">CONNECT</a>
+      </div>
+      <button id="menu-btn" class="md:hidden text-slate-300">
+        <i data-lucide="menu" class="w-5 h-5"></i>
+      </button>
+    </nav>
+  </header>
+
+  <main class="relative z-10">
+
+    <!-- ══════════ HERO ══════════ -->
+    <section id="hero" class="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-16 overflow-hidden">
+      <canvas id="hero-gl" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+      <!-- Laser pulse line -->
+      <div id="hero-laser" class="absolute inset-y-0 left-1/2 pointer-events-none" aria-hidden="true">
+        <div class="relative w-px h-full -translate-x-1/2">
+          <div class="laser-pulse absolute inset-y-0 -left-8 w-16 bg-cyan-500/10 blur-2xl"></div>
+          <div class="laser-pulse absolute inset-y-0 -left-1.5 w-3 bg-blue-400/30 blur-md"></div>
+          <div class="laser-pulse absolute inset-y-0 -left-px w-0.5 bg-gradient-to-b from-transparent via-cyan-300 to-transparent"></div>
+          <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-200 blur-[2px] laser-pulse"></div>
+        </div>
+      </div>
+
+      <!-- Side decorations -->
+      <div class="absolute top-1/3 left-6 md:left-12 hero-el flex items-center gap-3 text-xs tracking-[0.3em] text-slate-500">
+        <span>01</span>
+        <span class="w-8 h-px bg-slate-600"></span>
+      </div>
+      <div class="absolute top-1/3 right-6 md:right-12 hero-el flex items-center gap-3 text-xs tracking-[0.3em] text-slate-500">
+        <span class="w-8 h-px bg-slate-600"></span>
+        <i data-lucide="sparkles" class="w-4 h-4 text-cyan-300/70"></i>
+      </div>
+
+      <!-- Beaver Logo — canvas dithered particle system -->
+      <div id="torus" class="relative w-64 h-64 md:w-80 md:h-80 mb-10 hero-el rounded-full float-idle">
+        <canvas
+          id="beaver-dither"
+          role="img"
+          aria-label="Arkitect blueprint beaver logo — architecture-first AI reasoning"
+          class="absolute inset-0 w-full h-full rounded-full shadow-2xl shadow-cyan-950/60"
+        ></canvas>
+        <div class="absolute -inset-6 rounded-full border border-white/5 orbit-ring"></div>
+        <div class="absolute -inset-12 rounded-full border border-cyan-500/5 orbit-ring" style="animation-duration: 45s; animation-direction: reverse;"></div>
+      </div>
+
+      <p class="hero-el text-xs tracking-[0.6em] text-cyan-300/80 font-medium mb-4">
+        A R K I T E C T &nbsp; M C P
+      </p>
+
+      <h1 class="hero-el serif text-4xl sm:text-6xl md:text-7xl font-medium tracking-tight text-white text-center px-4">
+        Design the structure<br/>before the code <em class="text-cyan-300">drifts</em>.
+      </h1>
+
+      <p class="hero-el mt-6 text-sm md:text-base text-slate-400 text-center max-w-2xl px-6 leading-relaxed">
+        Desktop-first architecture reasoning with MCP-native tools for Cursor.
+        Diagnosis, pattern intelligence, and guidance grounded in your actual repo.
+      </p>
+
+      <!-- Hero pills -->
+      <div class="hero-el mt-8 flex flex-wrap items-center justify-center gap-3 px-6">
+        <span class="px-4 py-1.5 rounded-full border border-cyan-300/30 bg-cyan-300/5 text-xs tracking-[0.15em] text-cyan-200">Free for the first 1,000 users</span>
+        <span class="px-4 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs tracking-[0.15em] text-slate-300">v2.1.0 — MCP stdio fix shipped</span>
+        <span class="px-4 py-1.5 rounded-full border border-white/10 bg-white/[0.03] text-xs tracking-[0.15em] text-slate-300">MCP-native for Cursor</span>
+      </div>
+
+      <!-- CTAs -->
+      <div class="hero-el mt-10 flex flex-wrap items-center justify-center gap-4 px-6">
+        <a href="#install" class="group inline-flex items-center gap-3 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
+          GET THE FREE DOWNLOAD
+          <i data-lucide="download" class="w-4 h-4 group-hover:translate-y-0.5 transition-transform duration-300"></i>
+        </a>
+        <a href="#install" class="group inline-flex items-center gap-3 px-8 py-4 rounded-md border border-white/15 text-xs tracking-[0.3em] text-slate-200 font-medium hover:border-cyan-300/60 hover:text-cyan-200 transition-all duration-300">
+          SEE INSTALL STEPS
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"></i>
+        </a>
+      </div>
+
+      <div class="hero-el absolute bottom-10 flex flex-col items-center gap-2 text-slate-500">
+        <span class="text-xs tracking-[0.3em]">SCROLL</span>
+        <i data-lucide="chevron-down" class="w-4 h-4 animate-bounce"></i>
+      </div>
+    </section>
+
+    <!-- ══════════ MCP TOOL CARDS ══════════ -->
+    <section id="features" class="relative py-24 px-6">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-10">
+          <i data-lucide="wrench" class="w-3.5 h-3.5 text-cyan-300"></i>
+          MCP TOOLS
+        </div>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-5">
+
+          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+            <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
+            <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
+            <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
+              <i data-lucide="scan-search" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="microscope" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
+              <div class="text-center">
+                <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">DIAGNOSE</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500 mt-2">Repository analysis</p>
+                <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">01</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+            <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
+            <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
+            <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
+              <i data-lucide="layers" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="puzzle" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
+              <div class="text-center">
+                <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">PATTERNS</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500 mt-2">Design intelligence</p>
+                <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">02</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+            <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
+            <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
+            <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
+              <i data-lucide="shield-check" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="check-circle" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
+              <div class="text-center">
+                <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">VERIFY</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500 mt-2">Codebase verification</p>
+                <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">03</p>
+              </div>
+            </div>
+          </a>
+
+          <a href="#mcp-tools" class="studio-card shell-card group relative p-[1px] rounded-3xl bg-gradient-to-b from-neutral-800 to-transparent hover:-translate-y-2 transition-all duration-500">
+            <div class="absolute inset-0 rounded-[inherit] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.9), transparent 50deg, transparent 310deg, rgba(103,232,249,.9)); opacity: var(--glow-opacity, 0);"></div>
+            <div class="absolute inset-[-12px] rounded-[inherit] blur-[12px] pointer-events-none transition-opacity duration-300" style="background: conic-gradient(from var(--cursor-angle, 0deg), rgba(103,232,249,.55), transparent 50deg, transparent 310deg, rgba(103,232,249,.55)); opacity: calc(var(--glow-opacity, 0) * .6);"></div>
+            <div class="relative z-10 h-full bg-[#0a1128] rounded-[inherit] p-8 flex flex-col items-center gap-6 overflow-hidden">
+              <i data-lucide="git-branch" class="w-4 h-4 text-slate-500 self-start group-hover:text-cyan-300 transition-colors duration-300"></i>
+              <i data-lucide="wand-2" class="w-12 h-12 text-slate-300 group-hover:text-white group-hover:scale-110 transition-all duration-500"></i>
+              <div class="text-center">
+                <p class="text-xs tracking-[0.3em] text-slate-300 font-medium">REFACTOR</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500 mt-2">Guided analysis</p>
+                <p class="text-xs tracking-[0.3em] text-cyan-300/70 mt-2">04</p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ WHY ARKITECT — STICKY STORYTELLING ══════════ -->
+    <section id="mcp-tools" class="relative">
+      <div id="story-pin" class="min-h-screen py-24 px-6 flex items-center">
+        <div class="max-w-5xl mx-auto w-full">
+          <div class="story-el flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-10">
+            <i data-lucide="play" class="w-3.5 h-3.5 text-cyan-300"></i>
+            WHY ARKITECT
+          </div>
+
+          <div id="stage" class="story-el relative rounded-2xl overflow-hidden border border-white/10 aspect-[16/9] shadow-2xl shadow-cyan-950/60 bg-[#0a1128]">
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="text-center">
+                <i data-lucide="network" class="w-20 h-20 text-cyan-300/30 mx-auto mb-6"></i>
+                <p class="text-xs tracking-[0.4em] text-slate-500">ARCHITECTURE DIAGRAM</p>
+                <p class="text-sm text-slate-400 mt-2 max-w-md mx-auto">Arkitect scans your repo and maps the real structure — modules, boundaries, dependencies, and drift.</p>
+              </div>
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-[#050a1c]/60 via-transparent to-transparent"></div>
+          </div>
+
+          <div class="mt-12 max-w-2xl">
+            <p class="story-el text-xs tracking-[0.4em] text-cyan-300 font-medium mb-4">
+              A R K I T E C T &nbsp; M C P
+            </p>
+            <h2 class="story-el serif text-3xl md:text-5xl tracking-tight text-white font-medium">
+              Architecture-first, design patterns second.
+            </h2>
+            <div class="mt-8 space-y-6">
+              <div class="story-el flex items-start gap-4">
+                <div class="w-8 h-8 rounded-full bg-cyan-300/10 border border-cyan-300/30 flex items-center justify-center flex-shrink-0 mt-1">
+                  <i data-lucide="zap" class="w-4 h-4 text-cyan-300"></i>
+                </div>
+                <div>
+                  <strong class="text-white text-sm">Diagnose first</strong>
+                  <p class="text-slate-400 text-sm mt-1">Arkitect scans your repo and surfaces the real architecture, health, and intent before anything changes.</p>
+                </div>
+              </div>
+              <div class="story-el flex items-start gap-4">
+                <div class="w-8 h-8 rounded-full bg-cyan-300/10 border border-cyan-300/30 flex items-center justify-center flex-shrink-0 mt-1">
+                  <i data-lucide="layers" class="w-4 h-4 text-cyan-300"></i>
+                </div>
+                <div>
+                  <strong class="text-white text-sm">Continue what's healthy</strong>
+                  <p class="text-slate-400 text-sm mt-1">Detected structure keeps flowing automatically once confidence is high — no forced rewrites.</p>
+                </div>
+              </div>
+              <div class="story-el flex items-start gap-4">
+                <div class="w-8 h-8 rounded-full bg-cyan-300/10 border border-cyan-300/30 flex items-center justify-center flex-shrink-0 mt-1">
+                  <i data-lucide="sparkles" class="w-4 h-4 text-cyan-300"></i>
+                </div>
+                <div>
+                  <strong class="text-white text-sm">Report before refactor</strong>
+                  <p class="text-slate-400 text-sm mt-1">Drifting or spaghetti structure is reported clearly. Refactors only happen with explicit intent.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ INSTALL STEPS ══════════ -->
+    <section id="install" class="relative py-28 px-6">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+        <div id="odyssey-art" class="relative rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-cyan-950/50 bg-[#0a1128] p-8">
+          <div class="flex items-center gap-3 text-xs tracking-[0.3em] text-slate-400 mb-6">
+            <i data-lucide="terminal" class="w-4 h-4 text-cyan-300"></i>
+            CURSOR MCP CONFIG
+          </div>
+          <pre class="text-sm text-cyan-200/80 font-mono leading-relaxed overflow-x-auto"><code>{
+  "mcpServers": {
+    "arkitect-mcp": {
+      "command": "node",
+      "args": [
+        "packages/mcp-server/dist/stdio.js"
+      ]
+    }
+  }
+}</code></pre>
+          <div class="mt-6 pt-6 border-t border-white/5">
+            <p class="text-xs text-slate-500">Drop this into your Cursor MCP settings and restart the client.</p>
+          </div>
+        </div>
+
+        <div class="text-center md:text-left flex flex-col items-center md:items-start">
+          <div class="odyssey-el w-14 h-14 rounded-full border border-cyan-300/40 bg-cyan-400/10 mb-10 flex items-center justify-center">
+            <i data-lucide="download" class="w-6 h-6 text-cyan-300"></i>
+          </div>
+          <h2 class="serif text-4xl md:text-5xl tracking-tight font-medium leading-tight">
+            <span class="odyssey-el block text-white">GET STARTED</span>
+            <span class="odyssey-el block text-white">IN FOUR</span>
+            <span class="odyssey-el block text-cyan-300 italic">STEPS</span>
+          </h2>
+          <div class="odyssey-el mt-8 text-cyan-300/70">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+          </div>
+          <div class="odyssey-el mt-6 space-y-4 text-left w-full">
+            <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
+              <span class="text-cyan-300 font-mono text-sm">01</span>
+              <div>
+                <strong class="text-white text-sm">Claim your free spot</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Lock in free access while spots remain</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
+              <span class="text-cyan-300 font-mono text-sm">02</span>
+              <div>
+                <strong class="text-white text-sm">Add the MCP server</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Point Cursor at the Arkitect stdio server</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
+              <span class="text-cyan-300 font-mono text-sm">03</span>
+              <div>
+                <strong class="text-white text-sm">Connect in Cursor</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Drop the config into your MCP settings</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
+              <span class="text-cyan-300 font-mono text-sm">04</span>
+              <div>
+                <strong class="text-white text-sm">Run your first diagnosis</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Ask your agent to scan repo structure</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ FREE TIER CTA ══════════ -->
+    <section id="cta" class="relative py-28 px-6">
+      <div class="max-w-3xl mx-auto flex flex-col items-center text-center">
+        <div class="cta-el flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-8">
+          <i data-lucide="gift" class="w-3.5 h-3.5 text-cyan-300"></i>
+          LIMITED OFFER
+        </div>
+        <h2 class="cta-el serif text-3xl md:text-5xl tracking-tight text-white font-medium">
+          Free for the first <span class="text-cyan-300">1,000</span> users.
+        </h2>
+        <p class="cta-el mt-6 text-base text-slate-400 leading-relaxed max-w-xl">
+          Claim your spot while free access lasts. Membership pricing arrives after the free cohort — early claimants keep free access forever.
+        </p>
+        <a href="#install" id="magnetic-btn" class="cta-el group relative inline-flex items-center gap-3 mt-10 px-8 py-4 rounded-md border border-cyan-300/40 text-xs tracking-[0.3em] text-cyan-200 font-medium overflow-hidden transition-colors duration-300 hover:text-[#050a1c]">
+          <span class="absolute inset-0 bg-cyan-300 scale-x-0 origin-left group-hover:scale-x-100 transition-transform duration-500 ease-out"></span>
+          <span class="relative">CLAIM YOUR SPOT</span>
+          <i data-lucide="arrow-right" class="relative w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"></i>
+        </a>
+      </div>
+    </section>
+
+    <!-- ══════════ PROVIDER GRID ══════════ -->
+    <section id="architecture" class="relative py-20 px-6">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-6">
+          <i data-lucide="cpu" class="w-3.5 h-3.5 text-cyan-300"></i>
+          AI PROVIDERS
+        </div>
+        <h2 class="serif text-3xl md:text-5xl tracking-tight text-white font-medium mb-6">
+          Provider-agnostic by default.
+        </h2>
+        <p class="text-slate-400 max-w-2xl mb-14">
+          You always connect your own provider API keys in the desktop app — or use Cursor's built-in AI when Arkitect runs as MCP in chat. Provider choice does not change how Arkitect reasons about your repo.
+        </p>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="proj-card rounded-xl border border-cyan-300/30 bg-white/[0.05] p-8 hover:border-cyan-300/60 transition-colors duration-300">
+            <div class="flex items-center justify-between mb-4">
+              <strong class="text-white text-sm">Composer 2.5</strong>
+              <span class="px-2 py-1 rounded-full bg-cyan-300/10 text-cyan-300 text-[10px] tracking-wider">RECOMMENDED</span>
+            </div>
+            <p class="text-slate-400 text-sm">Fast, cost-efficient. Default recommendation for Arkitect reasoning tasks.</p>
+          </div>
+          <div class="proj-card rounded-xl border border-white/10 bg-white/[0.03] p-8 hover:border-cyan-300/30 transition-colors duration-300">
+            <strong class="text-white text-sm block mb-4">Anthropic</strong>
+            <p class="text-slate-400 text-sm">Claude models for deep architectural analysis and complex reasoning.</p>
+          </div>
+          <div class="proj-card rounded-xl border border-white/10 bg-white/[0.03] p-8 hover:border-cyan-300/30 transition-colors duration-300">
+            <strong class="text-white text-sm block mb-4">OpenAI</strong>
+            <p class="text-slate-400 text-sm">GPT models for pattern recognition and code generation tasks.</p>
+          </div>
+          <div class="proj-card rounded-xl border border-white/10 bg-white/[0.03] p-8 hover:border-cyan-300/30 transition-colors duration-300">
+            <strong class="text-white text-sm block mb-4">Gemini</strong>
+            <p class="text-slate-400 text-sm">Google's models for multi-modal analysis and large context windows.</p>
+          </div>
+          <div class="proj-card rounded-xl border border-white/10 bg-white/[0.03] p-8 hover:border-cyan-300/30 transition-colors duration-300">
+            <strong class="text-white text-sm block mb-4">Groq</strong>
+            <p class="text-slate-400 text-sm">Ultra-fast inference for real-time diagnosis and quick scans.</p>
+          </div>
+          <div class="proj-card rounded-xl border border-white/10 bg-white/[0.03] p-8 hover:border-cyan-300/30 transition-colors duration-300">
+            <strong class="text-white text-sm block mb-4">Custom Provider</strong>
+            <p class="text-slate-400 text-sm">Bring your own endpoint — Ollama, LM Studio, or any OpenAI-compatible API.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ TESTIMONIALS ══════════ -->
+    <section id="testimonials" class="relative py-24 px-6">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-6">
+          <i data-lucide="quote" class="w-3.5 h-3.5 text-cyan-300"></i>
+          TESTIMONIALS
+        </div>
+        <h2 class="serif text-3xl md:text-5xl tracking-tight text-white font-medium mb-14">
+          Developers are talking
+        </h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col gap-6 hover:border-cyan-300/30 transition-colors duration-300">
+            <p class="text-sm text-slate-300 leading-relaxed">
+              "Arkitect caught architectural drift in our monorepo that three code reviews missed. The diagnosis-first approach saved us weeks of refactoring in the wrong direction."
+            </p>
+            <div class="mt-auto flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-cyan-300/20 flex items-center justify-center">
+                <span class="text-cyan-300 text-sm font-semibold">MK</span>
+              </div>
+              <div>
+                <p class="text-sm text-white font-medium">Marcus Kim</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500">STAFF ENGINEER</p>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col gap-6 hover:border-cyan-300/30 transition-colors duration-300">
+            <p class="text-sm text-slate-300 leading-relaxed">
+              "Finally, an MCP tool that actually understands software architecture instead of just pattern-matching code. The vertical slice detection alone is worth it."
+            </p>
+            <div class="mt-auto flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-cyan-300/20 flex items-center justify-center">
+                <span class="text-cyan-300 text-sm font-semibold">AS</span>
+              </div>
+              <div>
+                <p class="text-sm text-white font-medium">Ana Santos</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500">TECH LEAD</p>
+              </div>
+            </div>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col gap-6 hover:border-cyan-300/30 transition-colors duration-300">
+            <p class="text-sm text-slate-300 leading-relaxed">
+              "Set it up in Cursor in under five minutes. The pattern recommendations are spot-on — it's like having a senior architect reviewing every decision."
+            </p>
+            <div class="mt-auto flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-cyan-300/20 flex items-center justify-center">
+                <span class="text-cyan-300 text-sm font-semibold">JD</span>
+              </div>
+              <div>
+                <p class="text-sm text-white font-medium">James Doyle</p>
+                <p class="text-xs tracking-[0.2em] text-slate-500">INDIE DEVELOPER</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ PRICING ══════════ -->
+    <section id="pricing" class="relative py-24 px-6">
+      <div class="max-w-6xl mx-auto">
+        <div class="flex items-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-6">
+          <i data-lucide="tag" class="w-3.5 h-3.5 text-cyan-300"></i>
+          PRICING
+        </div>
+        <h2 class="serif text-3xl md:text-5xl tracking-tight text-white font-medium mb-14">
+          Simple, transparent access
+        </h2>
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- Free Tier -->
+          <div class="relative rounded-xl border border-cyan-300/40 bg-white/[0.05] p-8 flex flex-col">
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cyan-300 text-[#050a1c] text-[10px] tracking-[0.25em] font-semibold">CURRENT</span>
+            <p class="text-xs tracking-[0.3em] text-cyan-200 font-medium">FREE TIER</p>
+            <p class="serif text-4xl tracking-tight text-white font-medium mt-4">$0</p>
+            <p class="text-xs text-slate-500 mt-1">first 1,000 users</p>
+            <ul class="mt-8 space-y-3 text-sm text-slate-300">
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-cyan-300"></i>
+                Full MCP server access
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-cyan-300"></i>
+                All diagnosis tools
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-cyan-300"></i>
+                Pattern intelligence
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-cyan-300"></i>
+                BYO AI provider keys
+              </li>
+            </ul>
+            <a href="#install" class="mt-10 inline-flex items-center justify-center px-6 py-3 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
+              CLAIM SPOT
+            </a>
+          </div>
+          <!-- Pro -->
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col opacity-60">
+            <p class="text-xs tracking-[0.3em] text-slate-400 font-medium">PRO</p>
+            <p class="serif text-4xl tracking-tight text-white font-medium mt-4">—</p>
+            <p class="text-xs text-slate-500 mt-1">coming after free cohort</p>
+            <ul class="mt-8 space-y-3 text-sm text-slate-300">
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Everything in Free
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Desktop app features
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Priority support
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Advanced analytics
+              </li>
+            </ul>
+            <span class="mt-10 inline-flex items-center justify-center px-6 py-3 rounded-md border border-white/15 text-xs tracking-[0.3em] text-slate-500 font-medium">
+              COMING SOON
+            </span>
+          </div>
+          <!-- Team -->
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col opacity-60">
+            <p class="text-xs tracking-[0.3em] text-slate-400 font-medium">TEAM</p>
+            <p class="serif text-4xl tracking-tight text-white font-medium mt-4">—</p>
+            <p class="text-xs text-slate-500 mt-1">coming after free cohort</p>
+            <ul class="mt-8 space-y-3 text-sm text-slate-300">
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Everything in Pro
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Team dashboards
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                Shared catalogs
+              </li>
+              <li class="flex items-center gap-3">
+                <i data-lucide="check" class="w-4 h-4 text-slate-500"></i>
+                SSO & admin controls
+              </li>
+            </ul>
+            <span class="mt-10 inline-flex items-center justify-center px-6 py-3 rounded-md border border-white/15 text-xs tracking-[0.3em] text-slate-500 font-medium">
+              COMING SOON
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ CONNECT ══════════ -->
+    <section id="connect" class="relative py-24 px-6">
+      <div class="max-w-3xl mx-auto">
+        <div class="flex items-center justify-center gap-3 text-xs tracking-[0.4em] text-slate-400 mb-6">
+          <i data-lucide="message-circle" class="w-3.5 h-3.5 text-cyan-300"></i>
+          CONNECT
+        </div>
+        <h2 class="serif text-3xl md:text-5xl tracking-tight text-white font-medium text-center mb-6">
+          Get in touch
+        </h2>
+        <p class="text-slate-400 text-center mb-14 max-w-lg mx-auto">
+          Follow along or reach out if you need help — bugs, feature requests, or feedback. Every message gets read.
+        </p>
+        <div class="grid md:grid-cols-2 gap-6 max-w-lg mx-auto">
+          <a href="https://www.reddit.com/user/Ok-Address3409/" target="_blank" rel="noopener noreferrer" class="group rounded-xl border border-white/10 bg-white/[0.03] p-8 flex items-center gap-5 hover:border-cyan-300/30 hover:-translate-y-1 transition-all duration-300">
+            <div class="w-12 h-12 rounded-full bg-cyan-300/10 border border-cyan-300/20 flex items-center justify-center">
+              <i data-lucide="message-circle" class="w-5 h-5 text-cyan-300"></i>
+            </div>
+            <div>
+              <strong class="text-white text-sm block">Reddit</strong>
+              <span class="text-slate-500 text-xs">u/Ok-Address3409</span>
+            </div>
+            <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-500 ml-auto group-hover:text-cyan-300 group-hover:rotate-45 transition-all duration-300"></i>
+          </a>
+          <a href="https://x.com/casiezeq" target="_blank" rel="noopener noreferrer" class="group rounded-xl border border-white/10 bg-white/[0.03] p-8 flex items-center gap-5 hover:border-cyan-300/30 hover:-translate-y-1 transition-all duration-300">
+            <div class="w-12 h-12 rounded-full bg-cyan-300/10 border border-cyan-300/20 flex items-center justify-center">
+              <i data-lucide="at-sign" class="w-5 h-5 text-cyan-300"></i>
+            </div>
+            <div>
+              <strong class="text-white text-sm block">X</strong>
+              <span class="text-slate-500 text-xs">@casiezeq</span>
+            </div>
+            <i data-lucide="arrow-up-right" class="w-4 h-4 text-slate-500 ml-auto group-hover:text-cyan-300 group-hover:rotate-45 transition-all duration-300"></i>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════ FOOTER ══════════ -->
+    <footer id="contacts" class="relative border-t border-white/5 py-16 px-6 mt-12">
+      <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-10">
+        <div class="footer-el flex items-center gap-4">
+          <a href="https://www.reddit.com/user/Ok-Address3409/" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-cyan-300/50 hover:-translate-y-1 transition-all duration-300">
+            <i data-lucide="message-circle" class="w-4 h-4"></i>
+          </a>
+          <a href="https://x.com/casiezeq" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-cyan-300/50 hover:-translate-y-1 transition-all duration-300">
+            <i data-lucide="at-sign" class="w-4 h-4"></i>
+          </a>
+          <a href="https://github.com" target="_blank" rel="noopener noreferrer" class="w-9 h-9 rounded-full border border-white/10 flex items-center justify-center text-slate-400 hover:text-white hover:border-cyan-300/50 hover:-translate-y-1 transition-all duration-300">
+            <i data-lucide="github" class="w-4 h-4"></i>
+          </a>
+        </div>
+        <div class="footer-el flex items-center gap-3">
+          <img src="arkitect-mark-nav.png" alt="Arkitect" class="w-8 h-8 object-contain" />
+          <span class="serif text-2xl font-semibold text-white tracking-tight">Arkitect<span class="text-cyan-300">.</span></span>
+        </div>
+        <div class="footer-el flex flex-col items-center md:items-end gap-4">
+          <nav class="serif flex items-center gap-8 text-lg text-slate-200">
+            <a href="#features" class="hover:text-cyan-300 transition-colors duration-300">Features</a>
+            <a href="#mcp-tools" class="hover:text-cyan-300 transition-colors duration-300">MCP</a>
+            <a href="#architecture" class="hover:text-cyan-300 transition-colors duration-300">Architecture</a>
+            <a href="#connect" class="hover:text-cyan-300 transition-colors duration-300">Connect</a>
+          </nav>
+          <p class="text-xs tracking-[0.2em] text-slate-500">
+            &copy; 2026 &nbsp;&middot;&nbsp; ARKITECT &nbsp;&middot;&nbsp; DIAGNOSIS-FIRST ARCHITECTURE GUIDANCE
+          </p>
+          <p class="text-xs tracking-[0.2em] text-slate-600">
+            arkitect-mcp.com
+          </p>
+        </div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- ══════════ SCRIPTS ══════════ -->
+  <script>
+    lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
+    gsap.registerPlugin(ScrollTrigger);
+
+    /* ── Background parallax layers ── */
+    gsap.to("#bg-layer-1", { yPercent: -18, ease: "none",
+      scrollTrigger: { trigger: document.body, start: "top top", end: "bottom bottom", scrub: 1.2 } });
+    gsap.to("#bg-layer-2", { yPercent: -35, ease: "none",
+      scrollTrigger: { trigger: document.body, start: "top top", end: "bottom bottom", scrub: 0.8 } });
+
+    /* ── Hero intro: element-by-element blur + slide in ── */
+    gsap.fromTo(".hero-el",
+      { opacity: 0, y: 40, filter: "blur(12px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 1.2, stagger: 0.14, ease: "power3.out", delay: 0.25 });
+    gsap.fromTo("#nav", { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 1, ease: "power3.out" });
+
+    /* ── Hero logo scroll behaviour ── */
+    gsap.to("#torus", { yPercent: 30, rotate: 25, scale: 0.85, ease: "none",
+      scrollTrigger: { trigger: "#hero", start: "top top", end: "bottom top", scrub: 1 } });
+    gsap.to("#hero", { opacity: 0.15, ease: "none",
+      scrollTrigger: { trigger: "#hero", start: "40% top", end: "bottom top", scrub: true } });
+
+    /* ── Studio cards: staggered rise + blur reveal ── */
+    gsap.fromTo(".studio-card",
+      { opacity: 0, y: 70, filter: "blur(10px)", scale: 0.94 },
+      { opacity: 1, y: 0, filter: "blur(0px)", scale: 1, duration: 1, stagger: 0.12, ease: "power3.out",
+        scrollTrigger: { trigger: "#features", start: "top 78%" } });
+
+    /* ── Sticky storytelling: pinned stage with progressive reveals ── */
+    const storyTl = gsap.timeline({
+      scrollTrigger: { trigger: "#story-pin", start: "top top", end: "+=120%", pin: true, scrub: 0.8 }
+    });
+    storyTl.fromTo("#stage", { scale: 0.82, opacity: 0.3, filter: "blur(8px)" },
+      { scale: 1, opacity: 1, filter: "blur(0px)", ease: "power2.out", duration: 1 })
+      .fromTo(".story-el:not(#stage)", { opacity: 0, y: 50, filter: "blur(6px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", stagger: 0.15, ease: "power2.out", duration: 0.8 }, "-=0.4");
+
+    /* ── Install section: image parallax + word-by-word title ── */
+    gsap.fromTo("#odyssey-art", { y: 90, opacity: 0, rotate: -3, filter: "blur(10px)" },
+      { y: 0, opacity: 1, rotate: 0, filter: "blur(0px)", duration: 1.4, ease: "power3.out",
+        scrollTrigger: { trigger: "#install", start: "top 70%" } });
+    gsap.to("#odyssey-art", { yPercent: -8, ease: "none",
+      scrollTrigger: { trigger: "#install", start: "top bottom", end: "bottom top", scrub: 1 } });
+    gsap.fromTo(".odyssey-el", { opacity: 0, x: 60, filter: "blur(8px)" },
+      { opacity: 1, x: 0, filter: "blur(0px)", duration: 1, stagger: 0.12, ease: "power3.out",
+        scrollTrigger: { trigger: "#install", start: "top 65%" } });
+
+    /* ── CTA reveal ── */
+    gsap.fromTo(".cta-el", { opacity: 0, y: 40, filter: "blur(8px)" },
+      { opacity: 1, y: 0, filter: "blur(0px)", duration: 1, stagger: 0.15, ease: "power3.out",
+        scrollTrigger: { trigger: "#cta", start: "top 75%" } });
+
+    /* ── Provider cards: alternating slide + blur ── */
+    gsap.utils.toArray(".proj-card").forEach((card, i) => {
+      gsap.fromTo(card, { opacity: 0, y: 80, x: i % 2 ? 40 : -40, filter: "blur(10px)" },
+        { opacity: 1, y: 0, x: 0, filter: "blur(0px)", duration: 1.1, ease: "power3.out",
+          scrollTrigger: { trigger: card, start: "top 85%" } });
+    });
+
+    /* ── Footer ── */
+    gsap.fromTo(".footer-el", { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.9, stagger: 0.12, ease: "power2.out",
+        scrollTrigger: { trigger: "#contacts", start: "top 90%" } });
+
+    /* ── Magnetic button micro-interaction ── */
+    const mag = document.getElementById("magnetic-btn");
+    if (mag) {
+      mag.addEventListener("mousemove", e => {
+        const r = mag.getBoundingClientRect();
+        gsap.to(mag, { x: (e.clientX - r.left - r.width/2) * 0.3, y: (e.clientY - r.top - r.height/2) * 0.4, duration: 0.4, ease: "power2.out" });
+      });
+      mag.addEventListener("mouseleave", () => gsap.to(mag, { x: 0, y: 0, duration: 0.6, ease: "elastic.out(1,0.4)" }));
+    }
+
+    /* ── Nav underline micro-interaction ── */
+    document.querySelectorAll(".nav-link").forEach(l => {
+      const u = document.createElement("span");
+      u.className = "absolute -bottom-1 left-0 h-px w-full bg-cyan-300 origin-left scale-x-0 transition-transform duration-300";
+      l.appendChild(u);
+      l.addEventListener("mouseenter", () => u.style.transform = "scaleX(1)");
+      l.addEventListener("mouseleave", () => u.style.transform = "scaleX(0)");
+    });
+
+    /* ── Cursor-reactive logo tilt ── */
+    window.addEventListener("mousemove", e => {
+      const px = (e.clientX / window.innerWidth - 0.5), py = (e.clientY / window.innerHeight - 0.5);
+      gsap.to("#torus", { rotationY: px * 10, rotationX: -py * 10, x: px * 20, duration: 1, ease: "power2.out", overwrite: "auto" });
+    });
+  </script>
+
+  <!-- WebGL Particle Canvas -->
+  <script>
+    (function(){
+      var canvas = document.getElementById('hero-gl');
+      if (!canvas) return;
+      var gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
+      if (!gl) return;
+
+      function resize() {
+        var d = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = canvas.clientWidth * d;
+        canvas.height = canvas.clientHeight * d;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function sh(t, s) { var o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); return o; }
+      function prog(v, f) { var p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, v)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, f)); gl.linkProgram(p); return p; }
+
+      /* mesh gradient shader */
+      var gp = prog(
+        'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}',
+        'precision mediump float;uniform vec2 r;uniform float t;' +
+        'void main(){vec2 uv=gl_FragCoord.xy/r;' +
+        'vec2 c1=vec2(.28+.14*sin(t*.31),.62+.12*cos(t*.42));' +
+        'vec2 c2=vec2(.74+.12*cos(t*.24),.34+.14*sin(t*.37));' +
+        'vec2 c3=vec2(.5+.2*sin(t*.19+2.),.5+.18*sin(t*.28+1.));' +
+        'float d1=exp(-3.2*length(uv-c1));float d2=exp(-3.2*length(uv-c2));float d3=exp(-3.8*length(uv-c3));' +
+        'vec3 col=vec3(.13,.25,.78)*d1+vec3(.04,.5,.6)*d2+vec3(.4,.85,.95)*d3*.5;' +
+        'float a=clamp((d1+d2+d3)*.5,0.,.75);gl_FragColor=vec4(col,a);}'
+      );
+
+      /* particle shader */
+      var pp = prog(
+        'attribute vec2 a;attribute float s;varying float vs;void main(){vs=s;gl_Position=vec4(a,0.,1.);gl_PointSize=s;}',
+        'precision mediump float;varying float vs;' +
+        'void main(){vec2 d=gl_PointCoord-vec2(.5);float m=smoothstep(.5,.08,length(d));' +
+        'vec3 c=mix(vec3(.4,.7,1.),vec3(.4,.95,.9),step(3.2,vs));' +
+        'gl_FragColor=vec4(c*m,m*.9);}'
+      );
+
+      var qb = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, qb);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+
+      var mx = 0, my = 0;
+      window.addEventListener('mousemove', function(e) {
+        var b = canvas.getBoundingClientRect();
+        mx = ((e.clientX - b.left) / b.width) * 2 - 1;
+        my = -(((e.clientY - b.top) / b.height) * 2 - 1);
+      });
+
+      var N = 1400, pos = new Float32Array(N * 2), vel = new Float32Array(N * 2), siz = new Float32Array(N);
+      function spawn(i) {
+        pos[2*i] = Math.random() * 2 - 1; pos[2*i+1] = Math.random() * 2 - 1;
+        vel[2*i] = 0; vel[2*i+1] = 0; siz[i] = 1.5 + Math.random() * 3.5;
+      }
+      for (var i = 0; i < N; i++) spawn(i);
+
+      var pb = gl.createBuffer(), sb = gl.createBuffer();
+      gl.bindBuffer(gl.ARRAY_BUFFER, sb);
+      gl.bufferData(gl.ARRAY_BUFFER, siz, gl.STATIC_DRAW);
+
+      var t0 = performance.now();
+      function frame(now) {
+        var t = (now - t0) / 1000, dt = .016;
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(gp);
+        gl.bindBuffer(gl.ARRAY_BUFFER, qb);
+        var lp = gl.getAttribLocation(gp, 'p');
+        gl.enableVertexAttribArray(lp);
+        gl.vertexAttribPointer(lp, 2, gl.FLOAT, false, 0, 0);
+        gl.uniform2f(gl.getUniformLocation(gp, 'r'), canvas.width, canvas.height);
+        gl.uniform1f(gl.getUniformLocation(gp, 't'), t);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+        for (var i = 0; i < N; i++) {
+          var dx = mx - pos[2*i], dy = my - pos[2*i+1], d = Math.sqrt(dx*dx + dy*dy) + 1e-4;
+          var f = .6 / (d + .08);
+          vel[2*i] += (dx/d*f - dy/d*f*.35) * dt;
+          vel[2*i+1] += (dy/d*f + dx/d*f*.35) * dt;
+          vel[2*i] *= .99; vel[2*i+1] *= .99;
+          pos[2*i] += vel[2*i]*dt; pos[2*i+1] += vel[2*i+1]*dt;
+          if (d < .06) spawn(i);
+        }
+
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
+        gl.useProgram(pp);
+        gl.bindBuffer(gl.ARRAY_BUFFER, pb);
+        gl.bufferData(gl.ARRAY_BUFFER, pos, gl.DYNAMIC_DRAW);
+        var la = gl.getAttribLocation(pp, 'a');
+        gl.enableVertexAttribArray(la);
+        gl.vertexAttribPointer(la, 2, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, sb);
+        var ls = gl.getAttribLocation(pp, 's');
+        gl.enableVertexAttribArray(ls);
+        gl.vertexAttribPointer(ls, 1, gl.FLOAT, false, 0, 0);
+        gl.drawArrays(gl.POINTS, 0, N);
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+  </script>
+
+  <!-- Flash card cursor tracking -->
+  <script>
+    (function(){
+      var cards = document.querySelectorAll('.studio-card, .proj-card, #testimonials .grid > div, #pricing .grid > div, #torus');
+      cards.forEach(function(card){ card.classList.add('flash-card'); });
+      window.addEventListener('pointermove', function(e){
+        cards.forEach(function(card){
+          var r = card.getBoundingClientRect();
+          var dx = e.clientX - (r.left + r.width / 2);
+          var dy = e.clientY - (r.top + r.height / 2);
+          var angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+          var dist = Math.hypot(dx, dy);
+          var edge = Math.hypot(r.width / 2, r.height / 2);
+          var proximity = Math.max(0, 1 - Math.abs(dist - edge) / 220);
+          card.style.setProperty('--cursor-angle', angle + 'deg');
+          card.style.setProperty('--proximity', proximity.toFixed(3));
+        });
+      });
+
+      /* ── Logo mouse attraction + elastic bounce ── */
+      window.addEventListener('mousemove', function(e){
+        var px = e.clientX / window.innerWidth - 0.5;
+        var py = e.clientY / window.innerHeight - 0.5;
+        var dist = Math.hypot(px, py);
+        if (dist < 0.33) {
+          gsap.to('#torus', { rotationY: px * 16, rotationX: -py * 16, x: px * 280, y: py * 200, duration: 0.8, ease: 'power3.out', overwrite: 'auto' });
+        } else {
+          gsap.to('#torus', { rotationY: px * 8, rotationX: -py * 8, x: 0, y: 0, duration: 1.4, ease: 'elastic.out(1, 0.35)', overwrite: 'auto' });
+        }
+      });
+    })();
+  </script>
+
+  <!-- Shell card glow tracking -->
+  <script>
+    (function(){
+      var shells = document.querySelectorAll('.shell-card');
+      window.addEventListener('pointermove', function(e){
+        shells.forEach(function(card){
+          var r = card.getBoundingClientRect();
+          var dx = e.clientX - (r.left + r.width / 2);
+          var dy = e.clientY - (r.top + r.height / 2);
+          var angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+          var dist = Math.hypot(dx, dy);
+          var edge = Math.hypot(r.width / 2, r.height / 2);
+          var proximity = Math.max(0, 1 - Math.abs(dist - edge) / 220);
+          card.style.setProperty('--cursor-angle', angle + 'deg');
+          card.style.setProperty('--glow-opacity', proximity.toFixed(3));
+        });
+      });
+    })();
+  </script>
+
+  <!-- Beaver dither particle engine -->
+  <script>
+    (function () {
+      var canvas = document.getElementById('beaver-dither');
+      if (!canvas) return;
+      var ctx = canvas.getContext('2d');
+
+      /* ── Parameters ── */
+      var SPACING = 0.35;        // fraction of cell left as gap
+      var DOT_SCALE = 0.85;      // dot radius as fraction of remaining cell
+      var LEVELS = 4;            // tone steps
+      var CYAN_MIX = 0.3;        // blend factor toward #67e8f9
+      var FPS = 30;              // render throttle
+      var SCATTER_RADIUS = 0.6;  // pointer influence, fraction of canvas size
+      var SCATTER_CELLS = 1.5;   // max sample displacement, in cells
+      var CYAN = [0x67, 0xe8, 0xf9];
+      var TAU = Math.PI * 2;
+
+      /* Bayer 8x8 ordered-dither thresholds, normalized to [0,1) */
+      var BAYER = new Float32Array(64);
+      (function () {
+        var m = [
+           0,32, 8,40, 2,34,10,42,
+          48,16,56,24,50,18,58,26,
+          12,44, 4,36,14,46, 6,38,
+          60,28,52,20,62,30,54,22,
+           3,35,11,43, 1,33, 9,41,
+          51,19,59,27,49,17,57,25,
+          15,47, 7,39,13,45, 5,37,
+          63,31,55,23,61,29,53,21
+        ];
+        for (var i = 0; i < 64; i++) BAYER[i] = m[i] / 64;
+      })();
+
+      var built = false;
+      var cols = 0, rows = 0, cssSize = 0, dpr = 1, cell = 8;
+      var luma = null;              // Float32Array, leveled 0..255
+      var rgb = null;               // source colors, 3 per cell
+      var solid = null;             // alpha mask
+      var buckets = {};             // pooled quantized-color draw buckets
+      var visible = true, lastT = 0;
+      var pcx = null, pcy = null;
+      var px = -9999, py = -9999;
+
+      function build(gridData) {
+        cols = gridData.cols;
+        rows = gridData.rows;
+        var n = cols * rows;
+
+        luma = new Float32Array(gridData.luma);
+        rgb = new Uint8Array(n * 3);
+        solid = new Uint8Array(gridData.solid);
+        for (var i = 0; i < n * 3; i++) rgb[i] = gridData.rgb[i];
+
+        cssSize = Math.max(1, Math.round(canvas.clientWidth)) || 320;
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.round(cssSize * dpr);
+        canvas.height = Math.round(cssSize * dpr);
+        cell = cssSize / cols;
+        built = true;
+      }
+
+      function bucketFor(r, g, b) {
+        var key = (r >> 5) + '_' + (g >> 5) + '_' + (b >> 5);
+        var bk = buckets[key];
+        if (!bk) {
+          bk = buckets[key] = {
+            css: 'rgb(' + ((r >> 5) * 32 + 16) + ',' + ((g >> 5) * 32 + 16) + ',' + ((b >> 5) * 32 + 16) + ')',
+            xs: [], ys: [], rs: [], n: 0
+          };
+        }
+        return bk;
+      }
+
+      function render() {
+        if (!built) return;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        ctx.clearRect(0, 0, cssSize, cssSize);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cssSize / 2, cssSize / 2, cssSize / 2, 0, TAU);
+        ctx.clip();
+
+        /* eased pointer in canvas coords */
+        var tx = -9999, ty = -9999;
+        if (pcx !== null) {
+          var rect = canvas.getBoundingClientRect();
+          tx = pcx - rect.left;
+          ty = pcy - rect.top;
+        }
+        if (px < -999) { px = tx; py = ty; }
+        px += (tx - px) * 0.18;
+        py += (ty - py) * 0.18;
+
+        var R = cssSize * SCATTER_RADIUS, R2 = R * R;
+        var maxRad = cell * (1 - SPACING) * DOT_SCALE * 0.5;
+        var gmax = cols - 1.5;
+
+        for (var gy = 0; gy < rows; gy++) {
+          var brow = (gy & 7) << 3;
+          for (var gx = 0; gx < cols; gx++) {
+            var idx = gy * cols + gx;
+            if (!solid[idx]) continue;
+
+            /* scatter: displace the sampling coordinates, not the dot */
+            var sx = gx, sy = gy;
+            var cx = (gx + 0.5) * cell, cy = (gy + 0.5) * cell;
+            var dx = cx - px, dy = cy - py;
+            var d2 = dx * dx + dy * dy;
+            if (d2 < R2 && d2 > 0.01) {
+              var d = Math.sqrt(d2);
+              var f = 1 - d / R;
+              f = f * f * (3 - 2 * f);           // smoothstep falloff
+              var push = f * SCATTER_CELLS;
+              sx += (dx / d) * push;
+              sy += (dy / d) * push;
+              if (sx < 0) sx = 0; else if (sx > gmax) sx = gmax;
+              if (sy < 0) sy = 0; else if (sy > gmax) sy = gmax;
+            }
+
+            /* bilinear sample — clamp to prevent out-of-bounds */
+            var x0 = sx | 0, y0 = sy | 0, fx = sx - x0, fy = sy - y0;
+            if (x0 >= cols - 1) x0 = cols - 2;
+            if (y0 >= rows - 1) y0 = rows - 2;
+            var i00 = y0 * cols + x0;
+            var w00 = (1 - fx) * (1 - fy), w10 = fx * (1 - fy), w01 = (1 - fx) * fy, w11 = fx * fy;
+            var tone = (luma[i00] * w00 + luma[i00 + 1] * w10 + luma[i00 + cols] * w01 + luma[i00 + cols + 1] * w11) / 255;
+            if (tone <= 0.02) continue;
+
+            /* Bayer ordered dither into LEVELS tone steps */
+            var q = Math.floor(tone * LEVELS + BAYER[brow | (gx & 7)]);
+            if (q <= 0) continue;
+            if (q > LEVELS - 1) q = LEVELS - 1;
+            var rad = maxRad * q / (LEVELS - 1);
+
+            /* color: source pixel mixed toward cyan, dimmed with tone */
+            var cr = rgb[i00 * 3] * w00 + rgb[(i00 + 1) * 3] * w10 + rgb[(i00 + cols) * 3] * w01 + rgb[(i00 + cols + 1) * 3] * w11;
+            var cg = rgb[i00 * 3 + 1] * w00 + rgb[(i00 + 1) * 3 + 1] * w10 + rgb[(i00 + cols) * 3 + 1] * w01 + rgb[(i00 + cols + 1) * 3 + 1] * w11;
+            var cb = rgb[i00 * 3 + 2] * w00 + rgb[(i00 + 1) * 3 + 2] * w10 + rgb[(i00 + cols) * 3 + 2] * w01 + rgb[(i00 + cols + 1) * 3 + 2] * w11;
+            var dim = 0.4 + 0.6 * (q / (LEVELS - 1));
+            var rr = ((cr + (CYAN[0] - cr) * CYAN_MIX) * dim) | 0;
+            var gg = ((cg + (CYAN[1] - cg) * CYAN_MIX) * dim) | 0;
+            var bb = ((cb + (CYAN[2] - cb) * CYAN_MIX) * dim) | 0;
+
+            var bk = bucketFor(rr, gg, bb);
+            bk.xs[bk.n] = cx; bk.ys[bk.n] = cy; bk.rs[bk.n] = rad;
+            bk.n++;
+          }
+        }
+
+        /* draw bucketed dots — one fillStyle per quantized color */
+        for (var key in buckets) {
+          var bk2 = buckets[key];
+          if (!bk2.n) continue;
+          ctx.fillStyle = bk2.css;
+          ctx.beginPath();
+          for (var j = 0; j < bk2.n; j++) {
+            ctx.moveTo(bk2.xs[j] + bk2.rs[j], bk2.ys[j]);
+            ctx.arc(bk2.xs[j], bk2.ys[j], bk2.rs[j], 0, TAU);
+          }
+          ctx.fill();
+          bk2.n = 0;
+        }
+        ctx.restore();
+      }
+
+      function frame(now) {
+        requestAnimationFrame(frame);
+        if (!visible || !built) return;
+        if (now - lastT < 1000 / FPS - 1) return;
+        lastT = now;
+        render();
+      }
+
+      window.addEventListener('pointermove', function (e) {
+        pcx = e.clientX; pcy = e.clientY;
+      });
+      document.documentElement.addEventListener('mouseleave', function () {
+        pcx = null; pcy = null;
+      });
+
+      var rsT = 0;
+      window.addEventListener('resize', function () {
+        clearTimeout(rsT);
+        rsT = setTimeout(function () {
+          if (built) {
+            cssSize = Math.max(1, Math.round(canvas.clientWidth)) || 320;
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.round(cssSize * dpr);
+            canvas.height = Math.round(cssSize * dpr);
+            cell = cssSize / cols;
+          }
+        }, 180);
+      });
+
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(function (entries) {
+          visible = entries[0].isIntersecting;
+        }, { threshold: 0.05 }).observe(canvas);
+      }
+
+      /* Load pre-computed dither grid — script tag works everywhere */
+      function initDither() {
+        if (window.__BEAVER_DITHER__) {
+          build(window.__BEAVER_DITHER__);
+          requestAnimationFrame(frame);
+        }
+      }
+      if (window.__BEAVER_DITHER__) {
+        initDither();
+      } else {
+        var s = document.createElement('script');
+        s.src = 'beaver-dither-data.js';
+        s.onload = initDither;
+        document.head.appendChild(s);
+      }
+    })();
+  </script>
+
+</body>
+</html>
