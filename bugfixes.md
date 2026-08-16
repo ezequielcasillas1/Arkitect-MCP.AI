@@ -8,6 +8,11 @@ Template:
 **Files:** [file1, file2]
 **Result:** [What failed, what changed, and why]
 
+### 2026-08-16 - Serpstat 3XX / www / broken assets
+**Status:** PENDING
+**Files:** apps/site/public/sitemap.xml, apps/site/functions/_middleware.js, apps/site/public/index.html, apps/site/public/architecture/index.html
+**Result:** Sitemap and internal hrefs used no-slash paths that 308; www served duplicate 200; lucide@latest and Tailwind CDN 302; Google Fonts CSS uncompressed; icon links had no anchor text; four education URLs 404.
+
 ### 2026-08-13 - /architecture Pretty URL 308 loop
 **Status:** SUCCESS
 **Files:** apps/site/public/architecture/index.html, apps/site/public/_redirects, apps/site/public/index.html, apps/site/vite.config.ts

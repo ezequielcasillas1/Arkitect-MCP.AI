@@ -3,6 +3,10 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
+import { toCanonicalUrl } from "./src/features/seo/canonical";
+import { routeSeo } from "./src/features/seo/data";
+import { renderSitemapXml } from "./src/features/seo/sitemap";
+import type { RouteSeoKey } from "./src/features/seo/types";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,6 +19,30 @@ const spaRoutes = [
   "privacy",
   "admin/downloads"
 ] as const;
+
+function applyRouteHead(html: string, route: (typeof spaRoutes)[number]): string {
+  const pagePath = `/${route}`;
+  const canonical = toCanonicalUrl(pagePath);
+  const meta = routeSeo[pagePath as RouteSeoKey];
+  let next = html
+    .replace(/<link rel="canonical" href="[^"]*"\s*\/?>/, `<link rel="canonical" href="${canonical}" />`)
+    .replace(/<meta property="og:url" content="[^"]*"\s*\/?>/, `<meta property="og:url" content="${canonical}" />`);
+  if (meta) {
+    next = next
+      .replace(/<title>[^<]*<\/title>/, `<title>${meta.title}</title>`)
+      .replace(
+        /<meta name="description" content="[^"]*"\s*\/?>/,
+        `<meta name="description" content="${meta.description}" />`
+      );
+  }
+  if (route.startsWith("admin/")) {
+    next = next.replace(
+      /<meta name="robots" content="[^"]*"\s*\/?>/,
+      `<meta name="robots" content="noindex,nofollow" />`
+    );
+  }
+  return next;
+}
 
 function serveStaticHome(): Plugin {
   return {
@@ -48,8 +76,10 @@ function copySpaRouteIndexes(): Plugin {
       for (const route of spaRoutes) {
         const dir = path.join(distDir, route);
         fs.mkdirSync(dir, { recursive: true });
-        fs.writeFileSync(path.join(dir, "index.html"), html);
+        fs.writeFileSync(path.join(dir, "index.html"), applyRouteHead(html, route));
       }
+      fs.rmSync(path.join(distDir, "spa"), { recursive: true, force: true });
+      fs.writeFileSync(path.join(distDir, "sitemap.xml"), renderSitemapXml());
       const leftoverApp = path.join(distDir, "app.html");
       if (fs.existsSync(leftoverApp)) {
         fs.unlinkSync(leftoverApp);

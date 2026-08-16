@@ -16,20 +16,27 @@ import { AdminDownloadsPage } from "./features/download-tracking";
 const themeStyle = buildCssVariables(arkitectWindowsTheme) as CSSProperties;
 
 export function App() {
+  const slashAliasedPages = [
+    { path: "/reviews", element: <ReviewsPage /> },
+    { path: "/instructions", element: <InstructionsPage /> },
+    { path: "/mcp", element: <McpPage /> },
+    { path: "/architecture", element: <ArchitecturePage /> },
+    { path: "/about", element: <AboutPage /> },
+    { path: "/terms", element: <TermsPage /> },
+    { path: "/privacy", element: <PrivacyPage /> },
+    { path: "/admin/downloads", element: <AdminDownloadsPage /> }
+  ] as const;
+
   return (
     <div className="site-shell" style={themeStyle}>
       <NavBar />
       <main>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/reviews" element={<ReviewsPage />} />
-          <Route path="/instructions" element={<InstructionsPage />} />
-          <Route path="/mcp" element={<McpPage />} />
-          <Route path="/architecture" element={<ArchitecturePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/admin/downloads" element={<AdminDownloadsPage />} />
+          {slashAliasedPages.flatMap(({ path, element }) => [
+            <Route key={path} path={path} element={element} />,
+            <Route key={`${path}/`} path={`${path}/`} element={element} />
+          ])}
         </Routes>
       </main>
       <Footer />

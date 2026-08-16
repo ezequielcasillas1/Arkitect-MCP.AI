@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { siteOrigin } from "./data";
+import { siteOrigin, toCanonicalUrl } from "./canonical";
 import type { SeoMeta } from "./types";
 
 type Selector = { name?: string; property?: string };
@@ -30,7 +30,7 @@ function upsertCanonical(href: string): void {
 
 export function useDocumentSeo(meta: SeoMeta): void {
   useEffect(() => {
-    const canonicalUrl = `${siteOrigin}${meta.canonicalPath}`;
+    const canonicalUrl = toCanonicalUrl(meta.canonicalPath);
     const ogImage = meta.ogImage
       ? meta.ogImage.startsWith("http")
         ? meta.ogImage

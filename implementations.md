@@ -1,3 +1,8 @@
+### 2026-08-16 - Serpstat crawl SEO
+**Status:** PENDING
+**Files:** apps/site/src/features/seo/*, apps/site/public/{sitemap.xml,_redirects,_headers,index.html,architecture/index.html,fonts.css}, apps/site/functions/_middleware.js
+**Result:** Trailing-slash destinations in sitemap/links, www→apex middleware, pinned CDN JS, local fonts.css, inbound footer links, 4XX education URLs replaced.
+
 ### 2026-08-13 - Architecture pretty-path HTML
 **Status:** SUCCESS
 **Files:** apps/site/public/architecture/index.html, apps/site/public/_redirects, apps/site/public/index.html, apps/site/vite.config.ts, apps/site/src/components/NavBar.tsx, apps/site/src/components/Footer.tsx

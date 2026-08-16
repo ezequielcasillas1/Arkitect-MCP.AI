@@ -5,11 +5,11 @@ import { Logo } from "./Logo";
 
 const links = [
   { to: "/", label: "Home" },
-  { to: "/instructions", label: "Instructions" },
-  { to: "/mcp", label: "MCP" },
-  { to: "/architecture", label: "Architecture" },
-  { to: "/about", label: "About" },
-  { to: "/reviews", label: "Reviews" }
+  { to: "/instructions/", label: "Instructions" },
+  { to: "/mcp/", label: "MCP" },
+  { to: "/architecture/", label: "Architecture" },
+  { to: "/about/", label: "About" },
+  { to: "/reviews/", label: "Reviews" }
 ];
 
 export function NavBar() {
@@ -46,7 +46,7 @@ export function NavBar() {
         <ul className="site-nav-links">
           {links.map((link) => (
             <li key={link.to}>
-              {link.to === "/" || link.to === "/architecture" ? (
+              {link.to === "/" || link.to === "/architecture/" ? (
                 <a href={link.to} className="nav-link" onClick={() => setMenuOpen(false)}>
                   {link.label}
                 </a>

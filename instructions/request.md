@@ -62,3 +62,8 @@
 - Vertical slice (`features/about`); static content; match existing page layout and design-system styling.
 - Build plan mode: agent asks user about layout (page vs section), tone, and key blocks (story, team, links).
 - Content supplied by Ezequiel; connect-with-me / contact links aligned with reviews slice.
+
+16. Marketing site: Serpstat crawl fixes
+- Sitemap + internal links use trailing-slash 200 destinations (CF Pretty URL 308).
+- www → apex 301; pin CDN JS; self-host font CSS.
+- Footer inbound links; icon-link anchors; replace 4XX education URLs.

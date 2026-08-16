@@ -13,4 +13,4 @@ export function githubBlobUrl(repoPath: string): string {
 
 export const GITHUB_INSTALLER_URL = `${GITHUB_REPO_URL}/releases/download/v${GITHUB_PUBLISHED_INSTALLER_VERSION}/Arkitect-Setup.exe`;
 export const SITE_DOWNLOAD_URL = "https://arkitect-mcp.com/#download-counter-heading";
-export const SITE_INSTRUCTIONS_URL = "https://arkitect-mcp.com/instructions";
+export const SITE_INSTRUCTIONS_URL = "https://arkitect-mcp.com/instructions/";

@@ -335,8 +335,8 @@ export const educationSections: EducationSection[] = [
         architectureConnection:
           "Factory, Repository, and Facade patterns typically live at layer boundaries to keep domain rules isolated from frameworks.",
         resource: {
-          label: "Microsoft Learn — Layered architecture",
-          url: "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/layered-architecture"
+          label: "Microsoft Learn — N-tier architecture",
+          url: "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/n-tier"
         }
       },
       {
@@ -419,8 +419,8 @@ export const educationSections: EducationSection[] = [
         architectureConnection:
           "Simplest starting point — Facade and layered boundaries still matter so the monolith can be modularized or strangler-migrated later without a rewrite.",
         resource: {
-          label: "Microsoft Learn — Monolithic architecture",
-          url: "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/monolithic"
+          label: "Martin Fowler — Monolith First",
+          url: "https://martinfowler.com/bliki/MonolithFirst.html"
         }
       },
       {
@@ -431,8 +431,8 @@ export const educationSections: EducationSection[] = [
         architectureConnection:
           "Precursor to microservices — Adapter and Facade define service contracts; emphasizes interoperability and shared governance over independent deployment.",
         resource: {
-          label: "Microsoft Learn — SOA",
-          url: "https://learn.microsoft.com/en-us/azure/architecture/guide/architecture-styles/service-oriented-architecture"
+          label: "IBM — Service-oriented architecture",
+          url: "https://www.ibm.com/think/topics/soa"
         }
       }
     ]
@@ -611,8 +611,8 @@ export const educationSections: EducationSection[] = [
         architectureConnection:
           "Healthy architecture scores how well boundaries respect SOLID; patterns are the vocabulary Arkitect and similar tools use when suggesting refactors and slice boundaries.",
         resource: {
-          label: "Refactoring Guru — SOLID",
-          url: "https://refactoring.guru/design-principles/solid-principles"
+          label: "Microsoft Learn — SOLID principles",
+          url: "https://learn.microsoft.com/en-us/dotnet/architecture/modern-web-apps-azure/common-web-application-architectures"
         }
       }
     ],

@@ -5,27 +5,31 @@ export function Footer() {
     <footer className="site-footer">
       <p>&copy; {new Date().getFullYear()} Arkitect. Diagnosis-first architecture guidance.</p>
       <p className="footer-links">
-        <NavLink to="/about" className="footer-link">
+        <NavLink to="/about/" className="footer-link">
           About
         </NavLink>
         {" · "}
-        <NavLink to="/instructions" className="footer-link">
+        <NavLink to="/instructions/" className="footer-link">
           User guide
         </NavLink>
         {" · "}
-        <NavLink to="/mcp" className="footer-link">
+        <NavLink to="/mcp/" className="footer-link">
           MCP tools
         </NavLink>
         {" · "}
-        <a href="/architecture" className="footer-link">
+        <a href="/architecture/" className="footer-link">
           Architecture guide
         </a>
         {" · "}
-        <NavLink to="/terms" className="footer-link">
+        <NavLink to="/reviews/" className="footer-link">
+          Reviews
+        </NavLink>
+        {" · "}
+        <NavLink to="/terms/" className="footer-link">
           Terms
         </NavLink>
         {" · "}
-        <NavLink to="/privacy" className="footer-link">
+        <NavLink to="/privacy/" className="footer-link">
           Privacy
         </NavLink>
       </p>

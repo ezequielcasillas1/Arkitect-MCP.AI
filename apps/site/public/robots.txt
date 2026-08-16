@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /spa
+Disallow: /spa/
 
 Sitemap: https://arkitect-mcp.com/sitemap.xml

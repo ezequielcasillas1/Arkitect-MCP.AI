@@ -55,7 +55,7 @@ export function LandingPage() {
             <a href="#install-heading" className="secondary-button">
               See install steps
             </a>
-            <Link to="/reviews" className="ghost-button">
+            <Link to="/reviews/" className="ghost-button">
               See what people are saying
             </Link>
           </div>
