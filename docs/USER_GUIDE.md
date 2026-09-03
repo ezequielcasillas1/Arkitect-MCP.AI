@@ -197,6 +197,7 @@ Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP 
       "args": ["packages/mcp-server/dist/stdio.js"],
       "env": {
         "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo",
+        "ARKITECT_HOST_REPO_PATH": "C:\\Dev\\Occuring Projects\\Arkitect-mcp.com",
         "ARKITECT_ANALYZER": "mock"
       }
     }
@@ -209,6 +210,7 @@ Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP 
 - Use double backslashes or forward slashes for Windows paths in JSON.
 - `args` is relative to the folder Cursor opens. If you open a subfolder, use an absolute path to `stdio.js`.
 - Set `ARKITECT_DEFAULT_REPO_PATH` to the repo the agent should diagnose by default.
+- For a client repo, also set `ARKITECT_HOST_REPO_PATH` to the Arkitect-mcp.com root so host architecture stays write-guarded.
 
 ### Step 3 — Restart MCP
 
@@ -384,6 +386,7 @@ Set in `.cursor/mcp.json` `env` block or your shell:
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `ARKITECT_DEFAULT_REPO_PATH` | `process.cwd()` | Default repo root when tools omit `repoPath` |
+| `ARKITECT_HOST_REPO_PATH` | unset | Arkitect-mcp.com product root. Client installs set this so host architecture stays write-guarded |
 | `ARKITECT_ANALYZER` | `mock` | Set to `real` when real filesystem analysis is wired |
 | `ARKITECT_SKIP_DESKTOP_BRIDGE` | unset | Set to `1` to skip desktop bridge registration |
 | `ARKITECT_DESKTOP_BRIDGE_URL` | loopback default | Override bridge base URL |
@@ -479,6 +482,17 @@ Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern:
 1. Point `repoPath` at a real project root — not `C:\Windows\System32`.
 2. Set `ARKITECT_DEFAULT_REPO_PATH` in MCP env.
 3. Mock analyzer uses heuristics, not deep filesystem scan — supply `repoName`, `requestedOutcome`, and `repoSummary` for better intake until `ARKITECT_ANALYZER=real` is wired.
+
+### Client repo feels locked (no read/write)
+
+**Cause:** Arkitect MCP missing from that workspace, or `ARKITECT_DEFAULT_REPO_PATH` still points at Arkitect-mcp.com.
+
+**Fix:**
+
+1. From Arkitect Desktop MCP Connection, install into the **client** repo (writes `.cursor/mcp.json` and keeps other servers).
+2. Confirm env: `ARKITECT_DEFAULT_REPO_PATH` = the client repo, `ARKITECT_HOST_REPO_PATH` = Arkitect-mcp.com root.
+3. Reload MCP in Cursor. Client sessions unlock read/write on that repo; host architecture redesign stays limited to the Arkitect-mcp.com root.
+4. Restart the stdio process after changing `mcp.json`.
 
 ### Structured content / output schema errors
 

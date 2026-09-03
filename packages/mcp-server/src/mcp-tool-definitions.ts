@@ -35,6 +35,8 @@ export const diagnosisToolInputSchema = {
       type: "object",
       properties: {
         selectedRemixId: { type: "string" },
+        selectedArchitectureId: { type: "string" },
+        lockCurrentArchitecture: { type: "boolean" },
         complexityProfile: { type: "string" },
         requirementTags: { type: "array", items: { type: "string" } }
       }
@@ -47,7 +49,8 @@ export const diagnosisToolOutputSchema = {
   properties: {
     summary: { type: "string" },
     diagnosis: { type: "object" },
-    cursorGuidance: { type: "array", items: { type: "string" } }
+    cursorGuidance: { type: "array", items: { type: "string" } },
+    clientSession: { type: "object" }
   }
 };
 
@@ -162,6 +165,8 @@ export const workbenchIntakeInputSchema = {
       type: "object",
       properties: {
         selectedRemixId: { type: "string" },
+        selectedArchitectureId: { type: "string" },
+        lockCurrentArchitecture: { type: "boolean" },
         complexityProfile: { type: "string" },
         requirementTags: { type: "array", items: { type: "string" } }
       }
@@ -283,6 +288,60 @@ export const patternRecommendationOutputSchema = {
   }
 };
 
+export const architectureRecommendationInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" },
+    repoSummary: { type: "string" },
+    requestedOutcome: { type: "string" },
+    requirementTags: { type: "array", items: { type: "string" } },
+    complexityProfile: {
+      type: "string",
+      enum: ["minimal", "balanced", "structured", "enterprise"]
+    },
+    decisionLens: {
+      type: "string",
+      enum: ["software-architect", "senior-developer"]
+    },
+    platformType: { type: "string" },
+    workloadType: { type: "string" },
+    currentArchitecture: { type: "string" },
+    repoHealth: { type: "string" },
+    likelyDiagnosisIntent: { type: "string" },
+    selectedRemixId: { type: "string" },
+    selectedArchitectureId: { type: "string" },
+    lockCurrentArchitecture: { type: "boolean" }
+  }
+};
+
+export const architectureRecommendationOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    recommendedArchitectureId: { type: "string" },
+    selectedRemixId: { type: "string" },
+    architectureCandidates: { type: "array", items: { type: "object" } },
+    remixCandidates: { type: "array", items: { type: "object" } },
+    rejected: { type: "array", items: { type: "object" } },
+    guideStepsApplied: { type: "array", items: { type: "object" } },
+    decisionLens: { type: "string" },
+    adrSummary: { type: "string" },
+    cursorGuidance: { type: "array", items: { type: "string" } },
+    lockApplied: { type: "boolean" },
+    clientSession: { type: "object" }
+  }
+};
+
+export const architectureDecisionGuideOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    total: { type: "number" },
+    lenses: { type: "array", items: { type: "string" } },
+    items: { type: "array", items: { type: "object" } }
+  }
+};
+
 export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[] {
   return [
     {
@@ -319,6 +378,11 @@ export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[]
       uri: "arkitect://catalog/design-principles",
       name: "Design Principles Catalog",
       description: `The ${counts.designPrinciples}-entry design principles library (SOLID plus general OO principles) sourced from Refactoring Guru.`
+    },
+    {
+      uri: "arkitect://guide/architecture-decision",
+      name: "Architecture Decision Guide",
+      description: "Master software-architect and senior-developer decision guide used by recommend_architecture."
     }
   ];
 }
@@ -441,6 +505,20 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
         "Recommend design patterns for the given intake using requirement signals, complexity profile, and Refactoring Guru relations. Returns recommended, deferred, relation chains, anti-pattern warnings, and an ADR summary.",
       inputSchema: patternRecommendationInputSchema,
       outputSchema: patternRecommendationOutputSchema
+    },
+    {
+      name: "list_architecture_decision_guide",
+      description:
+        "Return the master architecture decision guide steps and lenses used to recommend a foundation instead of defaulting to vertical slice.",
+      inputSchema: { type: "object", properties: {} },
+      outputSchema: architectureDecisionGuideOutputSchema
+    },
+    {
+      name: "recommend_architecture",
+      description:
+        "Recommend a software architecture from the master decision guide, catalog scoring, and requirement signals. Does not lock vertical slice unless the user confirms or sets lockCurrentArchitecture.",
+      inputSchema: architectureRecommendationInputSchema,
+      outputSchema: architectureRecommendationOutputSchema
     },
     {
       name: "apply_workbench_intake",

@@ -2,22 +2,11 @@ import { existsSync } from "node:fs";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { shell } from "electron";
-import type { McpCursorInstallResult } from "@arkitect/contracts";
+import type { CursorMcpJson, McpCursorInstallResult } from "@arkitect/contracts";
+import { buildClientMcpEnv, mergeCursorMcpServers } from "@arkitect/core";
 import { resolveDevRepoRoot, resolveMcpNodeCommand, resolveMcpStdioPath, withMcpNodeSpawnEnv } from "./mcp-runtime-paths.js";
 
 const serverName = "arkitect-mcp";
-
-interface CursorMcpJson {
-  mcpServers?: Record<
-    string,
-    {
-      command?: string;
-      args?: string[];
-      env?: Record<string, string>;
-      cwd?: string;
-    }
-  >;
-}
 
 interface CursorInstallTransportConfig {
   type: "stdio";
@@ -43,13 +32,13 @@ function buildCursorInstallDeeplink(name: string, config: CursorInstallTransport
 }
 
 function buildServerEntry(stdioPath: string, repoPath: string, env: Record<string, string>) {
-  const baseEnv = {
-    ARKITECT_ANALYZER: env.ARKITECT_ANALYZER === "real" ? "real" : "mock",
-    ...(repoPath ? { ARKITECT_DEFAULT_REPO_PATH: repoPath } : {}),
-    ...Object.fromEntries(
-      Object.entries(env).filter(([key]) => key !== "ARKITECT_ANALYZER" && key !== "ARKITECT_DEFAULT_REPO_PATH")
-    )
-  };
+  const hostRepoPath = resolve(env.ARKITECT_HOST_REPO_PATH?.trim() || resolveDevRepoRoot());
+  const baseEnv = buildClientMcpEnv({
+    clientRepoPath: repoPath,
+    hostRepoPath,
+    extraEnv: env,
+    analyzer: env.ARKITECT_ANALYZER === "real" ? "real" : "mock"
+  });
 
   return {
     command: resolveMcpNodeCommand(),
@@ -68,11 +57,10 @@ async function writeProjectMcpJson(repoPath: string, serverEntry: ReturnType<typ
     existing = { mcpServers: {} };
   }
 
-  existing.mcpServers = existing.mcpServers ?? {};
-  existing.mcpServers[serverName] = serverEntry;
+  const merged = mergeCursorMcpServers(existing, serverName, serverEntry);
 
   await mkdir(dirname(configPath), { recursive: true });
-  await writeFile(configPath, `${JSON.stringify(existing, null, 2)}\n`, "utf8");
+  await writeFile(configPath, `${JSON.stringify(merged, null, 2)}\n`, "utf8");
 
   return configPath;
 }

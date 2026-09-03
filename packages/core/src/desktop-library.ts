@@ -18,7 +18,7 @@ function createStarterArchitectureProfiles(now: string): SavedArchitectureProfil
     {
       id: "starter-ai-native-desktop",
       name: "AI-Native Desktop Review",
-      preferredArchitectureId: "vertical-slice",
+      preferredArchitectureId: "modular-monolith",
       selectedRemixId: "ai-native-stack",
       complexityProfile: "balanced",
       requirementTags: ["desktop-shell", "mcp-tool-registry", "provider-switching", "local-repo-first"],

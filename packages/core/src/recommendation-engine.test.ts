@@ -14,12 +14,32 @@ const healthyVerticalSliceInput: CatalogRecommendationInput = {
 };
 
 describe("recommendCatalog", () => {
-  it("continues healthy vertical-slice repos", () => {
-    const recommendation = recommendCatalog(healthyVerticalSliceInput);
+  it("continues healthy repos only when the current architecture is locked", () => {
+    const recommendation = recommendCatalog({
+      ...healthyVerticalSliceInput,
+      lockCurrentArchitecture: true
+    });
 
     expect(recommendation.continuationAdvice.mode).toBe("continue");
     expect(recommendation.selectedArchitectureId).toBe("vertical-slice");
-    expect(recommendation.architectureCandidates[0]?.id).toBe("vertical-slice");
+    expect(recommendation.relevantStrategies).toContain("continue-healthy-architecture");
+  });
+
+  it("does not auto-continue a healthy repo without an explicit lock", () => {
+    const recommendation = recommendCatalog(healthyVerticalSliceInput);
+
+    expect(recommendation.continuationAdvice.autoContinue).toBe(false);
+    expect(recommendation.continuationAdvice.mode).toBe("guide");
+    expect(recommendation.relevantStrategies).toContain("recommend-then-confirm");
+  });
+
+  it("honors an explicit selectedArchitectureId over scoring", () => {
+    const recommendation = recommendCatalog({
+      ...healthyVerticalSliceInput,
+      selectedArchitectureId: "hexagonal"
+    });
+
+    expect(recommendation.selectedArchitectureId).toBe("hexagonal");
   });
 
   it("reports unhealthy repos without structural permission", () => {

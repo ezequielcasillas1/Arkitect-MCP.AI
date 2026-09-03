@@ -1,4 +1,8 @@
+export * from "./architecture-recommendation/index.js";
 export * from "./catalog.js";
+export { buildClientSessionGuidance } from "./client-access/guidance.js";
+export { buildClientMcpEnv } from "./client-access/mcp-env.js";
+export { mergeCursorMcpServers } from "./client-access/mcp-json-merge.js";
 export * from "./desktop-library.js";
 export * from "./diagnosis-result.js";
 export * from "./recommendation-engine.js";

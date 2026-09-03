@@ -1,6 +1,6 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createArkitectMcpServer, diagnoseRepository } from "../src/index.js";
 import { toMcpToolResult } from "../src/mcp-result-mapper.js";
 
@@ -51,7 +51,9 @@ describe("createArkitectMcpServer", () => {
     expect(toolNames).toContain("verify_codebase");
     expect(toolNames).toContain("run_tests");
     expect(toolNames).toContain("run_test_suite");
-    expect(toolNames).toContain("analyze_refactoring_opportunities");
+    expect(toolNames).toContain("recommend_patterns");
+    expect(toolNames).toContain("list_architecture_decision_guide");
+    expect(toolNames).toContain("recommend_architecture");
     expect(toolNames).toContain("list_refactoring_techniques");
     expect(toolNames).toContain("apply_workbench_intake");
   });
@@ -67,6 +69,10 @@ describe("createArkitectMcpServer", () => {
 });
 
 describe("diagnose_repository tool", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns the MCP diagnosis payload shape", async () => {
     const server = createArkitectMcpServer();
     const tool = server.tools.find((entry) => entry.name === "diagnose_repository");
@@ -88,6 +94,45 @@ describe("diagnose_repository tool", () => {
     expect(payload.summary).toContain("Test Repo");
     expect(payload.diagnosis.intake.repoName).toBe("Test Repo");
     expect(payload.cursorGuidance.length).toBeGreaterThan(0);
+    expect(payload).toHaveProperty("clientSession");
+  });
+
+  it("unlocks client read/write and blocks host architecture lock", async () => {
+    vi.stubEnv("ARKITECT_DEFAULT_REPO_PATH", "C:\\Dev\\PasteCraft");
+    vi.stubEnv("ARKITECT_HOST_REPO_PATH", "C:\\Dev\\Occuring Projects\\Arkitect-mcp.com");
+
+    const server = createArkitectMcpServer();
+    const diagnose = server.tools.find((entry) => entry.name === "diagnose_repository");
+    const recommend = server.tools.find((entry) => entry.name === "recommend_architecture");
+
+    const diagnosisResult = await diagnose!.execute({
+      repoPath: "C:\\Dev\\PasteCraft",
+      repoName: "PasteCraft"
+    });
+    const diagnosisPayload = diagnosisResult.content[0]?.json as {
+      cursorGuidance: string[];
+      clientSession: { role: string; toolsUnlocked: boolean; allowHostArchitectureRedesign: boolean };
+    };
+
+    expect(diagnosisPayload.clientSession.role).toBe("client");
+    expect(diagnosisPayload.clientSession.toolsUnlocked).toBe(true);
+    expect(diagnosisPayload.clientSession.allowHostArchitectureRedesign).toBe(false);
+    expect(diagnosisPayload.cursorGuidance.some((line) => line.includes("Read/write unlocked"))).toBe(true);
+
+    const recommendResult = await recommend!.execute({
+      repoPath: "C:\\Dev\\Occuring Projects\\Arkitect-mcp.com",
+      lockCurrentArchitecture: true,
+      selectedArchitectureId: "hexagonal"
+    });
+    const recommendPayload = recommendResult.content[0]?.json as {
+      lockApplied: boolean;
+      cursorGuidance: string[];
+      clientSession: { targetIsHost: boolean };
+    };
+
+    expect(recommendPayload.clientSession.targetIsHost).toBe(true);
+    expect(recommendPayload.lockApplied).toBe(false);
+    expect(recommendPayload.cursorGuidance.some((line) => line.includes("Arkitect-mcp.com repo root"))).toBe(true);
   });
 });
 

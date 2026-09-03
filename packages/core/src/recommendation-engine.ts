@@ -25,6 +25,7 @@ import {
   listDesignPatternCatalog,
   listRemixProfileCatalog
 } from "./catalog.js";
+import { evaluateArchitectureDecisionGuide } from "./architecture-recommendation/architecture-decision-guide.js";
 
 type ScoreBucket<TId extends string> = Map<
   TId,
@@ -67,6 +68,11 @@ export const diagnosisStrategies: Record<DiagnosisStrategyId, DiagnosisStrategy>
     id: "defer-heavy-patterns",
     label: "Defer heavy patterns",
     summary: "Suppress low-value or advanced patterns when the complexity profile does not justify them."
+  },
+  "recommend-then-confirm": {
+    id: "recommend-then-confirm",
+    label: "Recommend then confirm",
+    summary: "Rank a foundation from the master decision guide and wait for confirmation before locking continuation."
   }
 };
 
@@ -465,7 +471,7 @@ function addScore<TId extends string>(
 ) {
   const current = bucket.get(id);
 
-  if (!current || weight <= 0) {
+  if (!current || weight === 0) {
     return;
   }
 
@@ -519,22 +525,32 @@ function canApplyStructure(permission: CatalogRecommendationInput["executionPerm
   return permission === "apply-structural-changes";
 }
 
-function getMatchedSignalCount(tags: string[], keywords: string[]): number {
-  return keywords.filter((keyword) => tags.some((tag) => tag.includes(keyword))).length;
+function isCurrentArchitectureLocked(input: CatalogRecommendationInput): boolean {
+  return Boolean(input.lockCurrentArchitecture && isArchitectureCatalogId(input.currentArchitecture));
+}
+
+function recommendationSearchText(input: CatalogRecommendationInput): string {
+  return `${input.requirementTags.join(" ")} ${input.repoSummary ?? ""} ${input.requestedOutcome ?? ""}`.toLowerCase();
+}
+
+function getMatchedSignalCount(text: string, keywords: string[]): number {
+  const haystack = text.toLowerCase();
+  return keywords.filter((keyword) => haystack.includes(keyword)).length;
 }
 
 function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredRecommendation<ArchitectureCatalogId>[] {
   const bucket = createScoreBucket(listArchitectureCatalog().map((entry) => entry.id));
-  const requirementTags = input.requirementTags.map((tag) => tag.toLowerCase());
+  const searchText = recommendationSearchText(input);
 
   if (isArchitectureCatalogId(input.currentArchitecture)) {
+    const lockedHealthy = isCurrentArchitectureLocked(input) && input.repoHealth === "healthy";
     addScore(
       bucket,
       input.currentArchitecture,
-      input.repoHealth === "healthy" ? "continuation" : "repo-health",
-      input.repoHealth === "healthy" ? 2.8 : 0.9,
-      input.repoHealth === "healthy"
-        ? "Healthy detected architecture should be continued by default."
+      lockedHealthy ? "continuation" : "repo-health",
+      lockedHealthy ? 2.8 : 0.6,
+      lockedHealthy
+        ? "User-confirmed architecture should be continued."
         : "Current architecture remains relevant context for diagnosis."
     );
   }
@@ -582,7 +598,7 @@ function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredR
   }
 
   requirementArchitectureSignals.forEach((signal) => {
-    const matches = getMatchedSignalCount(requirementTags, signal.keywords);
+    const matches = getMatchedSignalCount(searchText, signal.keywords);
 
     if (matches === 0) {
       return;
@@ -616,7 +632,15 @@ function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredR
     );
   }
 
-  return normalizeRecommendations(bucket, 6);
+  const guide = evaluateArchitectureDecisionGuide(input);
+  guide.boosts.forEach((boost) => {
+    addScore(bucket, boost.architectureId, "decision-guide", boost.weight, boost.reason);
+  });
+  guide.penalties.forEach((penalty) => {
+    addScore(bucket, penalty.architectureId, "decision-guide", penalty.weight, penalty.reason);
+  });
+
+  return normalizeRecommendations(bucket, 12);
 }
 
 function scoreRemixCandidates(
@@ -760,7 +784,6 @@ function scorePatternCandidates(
     structural,
     behavioral
   };
-  const requirementTags = input.requirementTags.map((tag) => tag.toLowerCase());
   const architectureEntry = selectedArchitectureId ? getArchitectureCatalogEntry(selectedArchitectureId) : undefined;
   const remixEntry = selectedRemixId ? listRemixProfileCatalog().find((entry) => entry.id === selectedRemixId) : undefined;
 
@@ -793,7 +816,7 @@ function scorePatternCandidates(
   });
 
   requirementPatternSignals.forEach((signal) => {
-    const matches = getMatchedSignalCount(requirementTags, signal.keywords);
+    const matches = getMatchedSignalCount(recommendationSearchText(input), signal.keywords);
 
     if (matches === 0) {
       return;
@@ -837,9 +860,13 @@ function scorePatternCandidates(
 
 function determineStrategies(input: CatalogRecommendationInput, selectedArchitectureId?: ArchitectureCatalogId): DiagnosisStrategyId[] {
   const strategies = new Set<DiagnosisStrategyId>(["rank-remixes-by-context"]);
+  const locked = isCurrentArchitectureLocked(input);
 
-  if (selectedArchitectureId && input.repoHealth === "healthy") {
+  if (selectedArchitectureId && input.repoHealth === "healthy" && locked) {
     strategies.add("continue-healthy-architecture");
+  } else if (input.repoHealth !== "drifting" && input.repoHealth !== "spaghetti") {
+    strategies.add("recommend-then-confirm");
+    strategies.add("guide-foundation-selection");
   }
 
   if (input.repoHealth === "drifting" || input.repoHealth === "spaghetti") {
@@ -852,6 +879,7 @@ function determineStrategies(input: CatalogRecommendationInput, selectedArchitec
 
   if (!selectedArchitectureId) {
     strategies.add("guide-foundation-selection");
+    strategies.add("recommend-then-confirm");
   }
 
   if (input.complexityProfile === "minimal" || input.complexityProfile === "balanced") {
@@ -866,12 +894,14 @@ function determineContinuationAdvice(
   selectedArchitectureId?: ArchitectureCatalogId,
   selectedRemixId?: RemixProfileId
 ): ContinuationAdvice {
-  if (selectedArchitectureId && input.repoHealth === "healthy") {
+  const locked = isCurrentArchitectureLocked(input);
+
+  if (selectedArchitectureId && input.repoHealth === "healthy" && locked) {
     return {
       mode: "continue",
       action: "continue-existing-architecture",
       autoContinue: true,
-      summary: `Continue the healthy ${getArchitectureCatalogEntry(selectedArchitectureId)?.displayName ?? selectedArchitectureId} path automatically.`,
+      summary: `Continue the healthy ${getArchitectureCatalogEntry(selectedArchitectureId)?.displayName ?? selectedArchitectureId} path because it was confirmed or locked.`,
       requiredPermission: "apply-safe-changes"
     };
   }
@@ -898,11 +928,15 @@ function determineContinuationAdvice(
     };
   }
 
+  const recommendedName = selectedArchitectureId
+    ? getArchitectureCatalogEntry(selectedArchitectureId)?.displayName ?? selectedArchitectureId
+    : "a catalog foundation";
+
   return {
     mode: "guide",
     action: "guide-new-foundation",
     autoContinue: false,
-    summary: "Guide the user toward a foundation choice because the architecture signal is still incomplete.",
+    summary: `Recommend ${recommendedName} from the architecture decision guide, then confirm before locking continuation.`,
     requiredPermission: "generate-plan"
   };
 }
@@ -941,14 +975,16 @@ function determineOverEngineeringRisk(
 export function recommendCatalog(input: CatalogRecommendationInput): CatalogRecommendationBundle {
   const architectureCandidates = scoreArchitectureCandidates(input);
   const selectedArchitectureId =
-    isArchitectureCatalogId(input.currentArchitecture) && input.repoHealth === "healthy"
+    input.selectedArchitectureId ??
+    (isCurrentArchitectureLocked(input) && isArchitectureCatalogId(input.currentArchitecture)
       ? input.currentArchitecture
-      : architectureCandidates[0]?.id;
+      : architectureCandidates[0]?.id);
   const remixCandidates = scoreRemixCandidates(input, architectureCandidates);
   const selectedRemixId = input.selectedRemixId ?? remixCandidates[0]?.id;
   const patternCandidates = scorePatternCandidates(input, selectedArchitectureId, selectedRemixId);
   const relevantStrategies = determineStrategies(input, selectedArchitectureId);
   const continuationAdvice = determineContinuationAdvice(input, selectedArchitectureId, selectedRemixId);
+  const guide = evaluateArchitectureDecisionGuide(input);
 
   return {
     selectedArchitectureId,
@@ -957,7 +993,9 @@ export function recommendCatalog(input: CatalogRecommendationInput): CatalogReco
     remixCandidates,
     patternCandidates,
     relevantStrategies,
-    continuationAdvice
+    continuationAdvice,
+    guideStepsApplied: guide.steps,
+    rejectedArchitectures: guide.rejected
   };
 }
 

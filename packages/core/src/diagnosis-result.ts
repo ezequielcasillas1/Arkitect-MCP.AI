@@ -135,6 +135,12 @@ function canApplyStructure(permission: ExecutionPermission): boolean {
 }
 
 function toCatalogRecommendationInput(intake: DiagnosisIntake, signals: DiagnosisSignals): CatalogRecommendationInput {
+  const architectureSource = signals.currentArchitecture.final.source;
+  const architectureLocked =
+    intake.catalogPreferences.lockCurrentArchitecture === true ||
+    architectureSource === "user-confirmed" ||
+    architectureSource === "user-override";
+
   return {
     platformType: signals.platformType.final.value,
     workloadType: signals.workloadType.final.value,
@@ -143,8 +149,12 @@ function toCatalogRecommendationInput(intake: DiagnosisIntake, signals: Diagnosi
     likelyDiagnosisIntent: signals.likelyDiagnosisIntent.final.value,
     executionPermission: intake.executionPermission,
     selectedRemixId: intake.catalogPreferences.selectedRemixId,
+    selectedArchitectureId: intake.catalogPreferences.selectedArchitectureId,
+    lockCurrentArchitecture: architectureLocked,
     complexityProfile: intake.catalogPreferences.complexityProfile,
-    requirementTags: intake.catalogPreferences.requirementTags
+    requirementTags: intake.catalogPreferences.requirementTags,
+    repoSummary: intake.repoSummary,
+    requestedOutcome: intake.requestedOutcome
   };
 }
 
@@ -178,8 +188,9 @@ function createDecision(
   } else {
     warnings.push("Detection confidence is not yet high enough to continue automatically.");
     nextSteps = [
-      "Ask the user to confirm or override the architecture direction from the encoded catalog.",
-      "Hold advanced pattern usage until the architecture choice is visible and stable."
+      "Ask the user to confirm or override the architecture recommended by the decision guide.",
+      "Call recommend_architecture or honor selectedArchitectureId before implementing.",
+      "Do not default to vertical slice."
     ];
   }
 
@@ -270,9 +281,6 @@ export function createDefaultIntake(repoPath = "C:\\Dev\\Arkitect-mcp.com"): Dia
       platformType: {
         hint: "desktop",
         confirmed: true
-      },
-      currentArchitecture: {
-        hint: "vertical-slice"
       }
     },
     catalogPreferences: {

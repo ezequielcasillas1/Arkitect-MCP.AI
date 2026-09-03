@@ -11,9 +11,12 @@ import type {
 import type { WorkbenchIntakeApplyRequest } from "@arkitect/contracts";
 import type {
   PatternIntelligenceLookupRequest,
-  PatternRecommendationRequest
+  PatternRecommendationRequest,
+  ArchitectureRecommendationRequest
 } from "@arkitect/contracts";
+import type { ClientSession } from "@arkitect/contracts";
 import {
+  applyClientSessionToIntake,
   buildRefactoringAnalysisResult,
   createDiagnosisResult,
   createRefactoringCatalogPayload,
@@ -26,12 +29,17 @@ import {
   listRemixProfileCatalog,
   lookupPatternIntelligence,
   recommendPatterns,
+  recommendArchitecture,
+  listArchitectureDecisionGuide,
   buildRequirementTagSuggestionInput,
   suggestRequirementTags,
   createDiagnosisSignals,
   mergeDiagnosisIntake,
+  resolveClientSession,
   runCodebaseVerification,
   runRepoTests,
+  sanitizeArchitectureRecommendationRequest,
+  buildClientSessionGuidance,
   buildTestingForArkApplyRequest,
   resolveWorkbenchApplyRequest
 } from "@arkitect/core";
@@ -52,10 +60,28 @@ export { toDiagnosisMcpPayload, toRefactoringMcpPayload };
 
 const analyzer = new MockRepositoryAnalyzer();
 let lastDiagnosis: DiagnosisResult | null = null;
+let lastClientSession: ClientSession | null = null;
 let lastRefactoringAnalysis: ReturnType<typeof toRefactoringMcpPayload> | null = null;
 
+function resolveDefaultRepoPath(input?: { repoPath?: string }): string {
+  return input?.repoPath?.trim() || process.env.ARKITECT_DEFAULT_REPO_PATH?.trim() || process.cwd();
+}
+
+function resolveToolSession(input?: { repoPath?: string }): ClientSession {
+  return resolveClientSession({
+    repoPath: resolveDefaultRepoPath(input),
+    defaultRepoPath: process.env.ARKITECT_DEFAULT_REPO_PATH,
+    hostRepoPath: process.env.ARKITECT_HOST_REPO_PATH
+  });
+}
+
 function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake {
-  return mergeDiagnosisIntake(partial);
+  const withPath = {
+    ...partial,
+    repoPath: resolveDefaultRepoPath(partial)
+  };
+  const session = resolveToolSession(withPath);
+  return applyClientSessionToIntake(mergeDiagnosisIntake(withPath), session);
 }
 
 function toArchitectureCatalogPayload(): CatalogMcpPayload<ArchitectureCatalogEntry> {
@@ -95,9 +121,11 @@ export function toLibraryMcpPayload(): LibraryMcpPayload {
 
 export async function diagnoseRepository(input: Partial<DiagnosisIntake> = {}): Promise<DiagnosisResult> {
   const intake = mergeIntake(input);
+  const session = resolveToolSession(intake);
   const autoDetections = await analyzer.analyze(intake);
   const result = createDiagnosisResult(intake, autoDetections);
   lastDiagnosis = result;
+  lastClientSession = session;
 
   return result;
 }
@@ -113,10 +141,6 @@ export async function suggestRequirementTagsForIntake(input: Partial<DiagnosisIn
     suggestions,
     appliedTags: intake.catalogPreferences.requirementTags
   };
-}
-
-function resolveDefaultRepoPath(input?: { repoPath?: string }): string {
-  return input?.repoPath?.trim() || process.env.ARKITECT_DEFAULT_REPO_PATH?.trim() || process.cwd();
 }
 
 function createJsonToolResult(json: unknown) {
@@ -178,11 +202,11 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
   const executeByName: Record<string, (input: unknown) => Promise<ReturnType<typeof createJsonToolResult>>> = {
     diagnose_repository: async (input) => {
       const result = await diagnoseRepository(input as Partial<DiagnosisIntake>);
-      return createJsonToolResult(toDiagnosisMcpPayload(result));
+      return createJsonToolResult(toDiagnosisMcpPayload(result, lastClientSession ?? resolveToolSession(result.intake)));
     },
     get_last_diagnosis: async () => {
       const result = lastDiagnosis ?? (await diagnoseRepository());
-      return createJsonToolResult(toDiagnosisMcpPayload(result));
+      return createJsonToolResult(toDiagnosisMcpPayload(result, lastClientSession ?? resolveToolSession(result.intake)));
     },
     list_architecture_catalog: async () => createJsonToolResult(toArchitectureCatalogPayload()),
     list_remix_profiles: async () => createJsonToolResult(toRemixCatalogPayload()),
@@ -231,6 +255,32 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
     recommend_patterns: async (input) => {
       const result = recommendPatterns((input as PatternRecommendationRequest) ?? {});
       return createJsonToolResult(result);
+    },
+    list_architecture_decision_guide: async () => {
+      const guide = listArchitectureDecisionGuide();
+      return createJsonToolResult({
+        summary: guide.summary,
+        total: guide.steps.length,
+        lenses: guide.lenses,
+        items: guide.steps
+      });
+    },
+    recommend_architecture: async (input) => {
+      const request = (input as ArchitectureRecommendationRequest) ?? {};
+      const session = resolveToolSession(request);
+      const sanitized = sanitizeArchitectureRecommendationRequest(request, session);
+      const result = recommendArchitecture(sanitized.request);
+      const lockDeniedGuidance = sanitized.lockDenied
+        ? [sanitized.reason ?? "Host architecture lock was denied for this client session."]
+        : [];
+
+      return createJsonToolResult({
+        ...result,
+        selectedRemixId: result.selectedRemixId ?? "",
+        lockApplied: sanitized.lockDenied ? false : result.lockApplied,
+        cursorGuidance: [...result.cursorGuidance, ...buildClientSessionGuidance(session), ...lockDeniedGuidance],
+        clientSession: session
+      });
     },
     apply_workbench_intake: async (input) => {
       const request = resolveWorkbenchApplyRequest(normalizeWorkbenchIntakeRequest(input as Record<string, unknown>));
@@ -289,7 +339,7 @@ export async function readArkitectMcpResource(uri: string): Promise<unknown> {
   switch (uri) {
     case "arkitect://diagnosis/latest": {
       const result = lastDiagnosis ?? (await diagnoseRepository());
-      return toDiagnosisMcpPayload(result);
+      return toDiagnosisMcpPayload(result, lastClientSession ?? resolveToolSession(result.intake));
     }
     case "arkitect://policy/default":
       return defaultArchitecturePolicy;
@@ -303,6 +353,15 @@ export async function readArkitectMcpResource(uri: string): Promise<unknown> {
       return createRefactoringCatalogPayload();
     case "arkitect://catalog/design-principles":
       return toDesignPrinciplesPayload();
+    case "arkitect://guide/architecture-decision": {
+      const guide = listArchitectureDecisionGuide();
+      return {
+        summary: guide.summary,
+        total: guide.steps.length,
+        lenses: guide.lenses,
+        items: guide.steps
+      };
+    }
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }

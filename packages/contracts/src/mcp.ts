@@ -1,4 +1,5 @@
 import type { ArchitectureCatalogEntry, DesignPatternCatalogEntry, RemixProfileCatalogEntry } from "./catalog.js";
+import type { ClientSession } from "./client-session.js";
 import type { DiagnosisResult } from "./diagnosis.js";
 import type { PatternRelationChainEntry } from "./pattern-intelligence.js";
 
@@ -36,6 +37,7 @@ export interface DiagnosisMcpPayload {
   summary: string;
   diagnosis: DiagnosisResult;
   cursorGuidance: string[];
+  clientSession?: ClientSession;
   patternRelationChains?: PatternRelationChainEntry[];
   patternAdrSummary?: string;
 }

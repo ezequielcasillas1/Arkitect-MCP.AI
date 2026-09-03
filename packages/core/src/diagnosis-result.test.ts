@@ -31,7 +31,9 @@ describe("createDiagnosisResult", () => {
     const result = createDiagnosisResult(intake, createTestAutoDetections());
 
     expect(result.intake.repoName).toBe("Arkitect");
+    expect(result.intake.userInput.currentArchitecture?.hint).toBeUndefined();
     expect(result.decision.recommendedAction).toBeTruthy();
+    expect(result.decision.autoContinue).toBe(false);
     expect(result.catalogRecommendation.architectureCandidates.length).toBeGreaterThan(0);
     expect(result.experienceFlow.some((step) => step.id === "results-overview")).toBe(true);
     expect(result.requirementTagSuggestions.length).toBeGreaterThan(0);

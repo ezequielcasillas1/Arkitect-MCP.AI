@@ -1,9 +1,9 @@
 # Request Guide
 
-1. Continue inside a healthy detected architecture automatically and surface that decision in results.
+1. Recommend a foundation from the architecture decision guide, then confirm before locking continuation.
 2. Report drift or spaghetti structure without refactoring or migration unless the user explicitly asks.
 3. Keep Arkitect local-repo-first, provider-agnostic, Cloudflare-first, and Stripe-backed for licensing.
-4. Prefer vertical slices and modular package boundaries for new implementation work.
+4. Follow `recommend_architecture` / `selectedArchitectureId`; do not default to vertical slice. Keep modularity regardless of the chosen architecture.
 5. Keep implementation notes concise in `implementations.md`.
 6. Keep the encoded architecture, remix, and pattern catalog shared across contracts, core, MCP, and desktop.
 - Pattern intelligence vertical slice (`packages/core/src/pattern-intelligence/`) owns deep GoF intent/applicability/relations plus SOLID principles.
@@ -62,3 +62,15 @@
 - Vertical slice (`features/about`); static content; match existing page layout and design-system styling.
 - Build plan mode: agent asks user about layout (page vs section), tone, and key blocks (story, team, links).
 - Content supplied by Ezequiel; connect-with-me / contact links aligned with reviews slice.
+
+16. Architecture decision guide + recommend_architecture API
+- Neutral diagnosis default: no vertical-slice hint; continue only when confirmed/locked.
+- Master guide with software-architect and senior-developer lenses; eliminate unfit styles then rank.
+- MCP tools `list_architecture_decision_guide` and `recommend_architecture`; resource `arkitect://guide/architecture-decision`.
+- Catalog preferences accept `selectedArchitectureId` and `lockCurrentArchitecture`.
+- Agents follow the recommended foundation instead of defaulting to vertical slice.
+
+17. Client-repo MCP unlock (host architecture guarded)
+- Client `.cursor/mcp.json` uses `ARKITECT_DEFAULT_REPO_PATH` = client repo and `ARKITECT_HOST_REPO_PATH` = this product.
+- Client sessions unlock read/write plus local overrides; other MCP servers stay.
+- Host architecture redesign only from the Arkitect-mcp.com repo root.

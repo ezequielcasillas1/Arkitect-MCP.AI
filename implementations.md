@@ -1,3 +1,13 @@
+### 2026-09-03 - Client-repo MCP unlock
+**Status:** PENDING
+**Files:** packages/contracts/src/client-session.ts, packages/core/src/client-access/*, packages/mcp-server/src/{index,diagnosis-payload,mcp-tool-definitions}.ts, apps/desktop/src/electron/mcp-cursor-install.ts, .cursor/mcp.json
+**Result:** Client sessions unlock read/write on the connected repo. Host architecture redesign stays limited to this repo root. Awaiting user confirmation.
+
+### 2026-09-03 - Architecture decision guide API
+**Status:** PENDING
+**Files:** packages/contracts/src/{architecture-recommendation.ts,catalog.ts}, packages/core/src/architecture-recommendation/*, packages/core/src/{recommendation-engine,diagnosis-result,desktop-library}.ts, packages/mcp-server/src/{mcp-tool-definitions,index,diagnosis-payload}.ts
+**Result:** Added recommend_architecture + decision guide. Diagnosis no longer locks vertical slice unless confirmed. Awaiting user confirmation.
+
 ### 2026-08-13 - Architecture pretty-path HTML
 **Status:** SUCCESS
 **Files:** apps/site/public/architecture/index.html, apps/site/public/_redirects, apps/site/public/index.html, apps/site/vite.config.ts, apps/site/src/components/NavBar.tsx, apps/site/src/components/Footer.tsx

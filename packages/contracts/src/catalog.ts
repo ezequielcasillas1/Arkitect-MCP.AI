@@ -53,6 +53,35 @@ export type RemixProfileId =
 
 export type ComplexityProfile = "minimal" | "balanced" | "structured" | "enterprise";
 
+export type ArchitectureDecisionLens = "software-architect" | "senior-developer";
+
+export type ArchitectureDecisionGuideStepId =
+  | "deploy-units"
+  | "domain-complexity"
+  | "consistency-model"
+  | "provider-integration"
+  | "audit-history"
+  | "extensibility"
+  | "migration-path"
+  | "platform-fit"
+  | "complexity-budget"
+  | "team-and-ownership";
+
+export interface ArchitectureGuideStepResult {
+  id: ArchitectureDecisionGuideStepId;
+  applied: boolean;
+  matchedKeywords: string[];
+  boosted: ArchitectureCatalogId[];
+  rejected: ArchitectureCatalogId[];
+  reason: string;
+}
+
+export interface ArchitectureRejection {
+  architectureId: ArchitectureCatalogId;
+  reason: string;
+  stepId: ArchitectureDecisionGuideStepId;
+}
+
 export type OverEngineeringRisk = "low" | "moderate" | "high";
 
 export type RecommendationReasonSource =
@@ -65,7 +94,8 @@ export type RecommendationReasonSource =
   | "diagnosis-intent"
   | "repo-health"
   | "continuation"
-  | "policy-guardrail";
+  | "policy-guardrail"
+  | "decision-guide";
 
 export type DiagnosisStrategyId =
   | "continue-healthy-architecture"
@@ -73,7 +103,8 @@ export type DiagnosisStrategyId =
   | "require-explicit-migration-intent"
   | "guide-foundation-selection"
   | "rank-remixes-by-context"
-  | "defer-heavy-patterns";
+  | "defer-heavy-patterns"
+  | "recommend-then-confirm";
 
 export type ContinuationMode = "continue" | "report-only" | "plan-only" | "guide";
 
@@ -142,6 +173,8 @@ export interface PatternRecommendationMap<TPatternId = DesignPatternId> {
 
 export interface CatalogSelectionInput {
   selectedRemixId?: RemixProfileId;
+  selectedArchitectureId?: ArchitectureCatalogId;
+  lockCurrentArchitecture?: boolean;
   complexityProfile: ComplexityProfile;
   requirementTags: string[];
 }
@@ -154,8 +187,13 @@ export interface CatalogRecommendationInput {
   likelyDiagnosisIntent: DiagnosisIntent;
   executionPermission: ExecutionPermission;
   selectedRemixId?: RemixProfileId;
+  selectedArchitectureId?: ArchitectureCatalogId;
+  lockCurrentArchitecture?: boolean;
   complexityProfile: ComplexityProfile;
   requirementTags: string[];
+  repoSummary?: string;
+  requestedOutcome?: string;
+  decisionLens?: ArchitectureDecisionLens;
 }
 
 export interface RecommendationReason {
@@ -200,6 +238,8 @@ export interface CatalogRecommendationBundle {
   };
   relevantStrategies: DiagnosisStrategyId[];
   continuationAdvice: ContinuationAdvice;
+  guideStepsApplied: ArchitectureGuideStepResult[];
+  rejectedArchitectures: ArchitectureRejection[];
 }
 
 export interface PatternGuidance {

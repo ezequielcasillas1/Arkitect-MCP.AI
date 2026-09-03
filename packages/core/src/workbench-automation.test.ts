@@ -17,7 +17,7 @@ describe("buildTestingForArkIntake", () => {
 
     expect(intake.repoPath).toContain("Arkitect-mcp.com");
     expect(intake.executionPermission).toBe("apply-structural-changes");
-    expect(intake.userInput.currentArchitecture?.hint).toBe("vertical-slice");
+    expect(intake.userInput.currentArchitecture?.hint).toBeUndefined();
     expect(intake.ai?.preferredProvider).toBe("composer-2.5");
   });
 });
