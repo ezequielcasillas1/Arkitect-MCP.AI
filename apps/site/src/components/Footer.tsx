@@ -13,6 +13,10 @@ export function Footer() {
           User guide
         </NavLink>
         {" · "}
+        <a href="/#install-path" className="footer-link">
+          Install
+        </a>
+        {" · "}
         <NavLink to="/mcp" className="footer-link">
           MCP tools
         </NavLink>

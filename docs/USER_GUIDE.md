@@ -2,7 +2,7 @@
 
 How to orchestrate **Arkitect MCP** (`@arkitect/mcp-server`) through an agentic platform such as **Cursor AI** — and how the agent uses Arkitect tools and resources to drive diagnosis-first architecture guidance on your local repos.
 
-The marketing site ([arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading)) handles free-spot claims and the Windows installer; [instructions](https://arkitect-mcp.com/instructions) mirror this guide. This doc covers **only** the desktop MCP server and agent workflow.
+The marketing site ([arkitect-mcp.com](https://arkitect-mcp.com/#install-path)) handles free-spot claims and the mcp.json install path; [instructions](https://arkitect-mcp.com/instructions) mirror this guide. This doc covers **only** the desktop MCP server and agent workflow.
 
 ---
 
@@ -135,13 +135,7 @@ You can mix paths: connect MCP in desktop, decide in chat.
 
 **Purpose:** Get a compiled stdio entrypoint on your machine.
 
-**Download options:**
-
-| Option | Link |
-|--------|------|
-| Website (free spot + installer) | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
-| GitHub Releases | [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
-| Windows installer (v2.1.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v2.1.0/Arkitect-Setup.exe) |
+**Install path:** reveal `.cursor/mcp.json` on [arkitect-mcp.com](https://arkitect-mcp.com/#install-path), or clone [the GitHub repo](https://github.com/ezequielcasillas1/Arkitect-MCP.AI) and build locally.
 
 **GitHub source (no clone):** On [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases), download **Source code (zip)** for a tagged version, extract, then run the commands below from that folder.
 
@@ -187,7 +181,7 @@ pnpm --filter @arkitect/mcp-server build
 
 ### Step 2 — Add MCP config
 
-Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP settings):
+Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP settings). The live site hides this JSON until you click **See the path to install**.
 
 ```json
 {
@@ -334,6 +328,7 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | Tool | When to call | Purpose |
 |------|--------------|---------|
 | `diagnose_repository` | Start of architecture work, before structural changes | Analyze intake signals, apply policy, return diagnosis + `cursorGuidance` |
+| `recommend_architecture` | After diagnosis, before scaffolding | Score a legal triple (foundation / internal / edge / supporting). Remix only names that triple. |
 | `get_last_diagnosis` | Need prior result without re-running | Return cached diagnosis; runs fresh if none exists |
 | `list_architecture_catalog` | Choosing or explaining architecture options | Full architecture library with metadata |
 | `list_remix_profiles` | Composed stack recommendations | Remix profiles (architectures + patterns + rationale) |

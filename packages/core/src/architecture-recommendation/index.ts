@@ -7,3 +7,5 @@ export {
   recommendArchitecture,
   toArchitectureRecommendationInput
 } from "./architecture-recommendation.js";
+export { getArchitectureRole, listArchitectureIdsForRole } from "./architecture-roles.js";
+export { assembleLegalTriple, rankRemixesForTriple } from "./architecture-triple.js";

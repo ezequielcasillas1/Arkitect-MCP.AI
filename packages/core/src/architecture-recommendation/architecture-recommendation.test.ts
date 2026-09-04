@@ -73,4 +73,38 @@ describe("recommendArchitecture", () => {
     expect(result.recommendedArchitectureId).toBe("hexagonal");
     expect(result.lockApplied).toBe(true);
   });
+
+  it("does not magnetize AI-Native from Ghost-like summary prose", () => {
+    const result = recommendArchitecture({
+      repoSummary:
+        "Ghost theme workspace with a custom-domain and leftover AI marketing copy for the publication.",
+      requestedOutcome: "Ship a publication theme",
+      requirementTags: ["ghost-theme", "publication", "handlebars"],
+      platformType: "web",
+      workloadType: "architecture-foundation",
+      complexityProfile: "balanced",
+      decisionLens: "software-architect"
+    });
+
+    expect(result.selectedRemixId).not.toBe("ai-native-stack");
+    expect(result.legalTriple.edge).not.toBe("hexagonal");
+    expect(result.legalTriple.internal).not.toBe("domain-driven-design");
+    expect(result.legalTriple.supporting).not.toBe("domain-driven-design");
+    expect(result.cursorGuidance.some((line) => line.startsWith("Foundation:"))).toBe(true);
+  });
+
+  it("rejects event-sourcing as a foundation only", () => {
+    const evaluation = evaluateArchitectureDecisionGuide(
+      toArchitectureRecommendationInput({
+        requestedOutcome: "ship simple forms",
+        complexityProfile: "balanced",
+        platformType: "web",
+        workloadType: "feature-delivery"
+      })
+    );
+
+    const eventSourcingRejects = evaluation.rejected.filter((entry) => entry.architectureId === "event-sourcing");
+    expect(eventSourcingRejects.length).toBeGreaterThan(0);
+    expect(eventSourcingRejects.every((entry) => entry.role === "foundation")).toBe(true);
+  });
 });

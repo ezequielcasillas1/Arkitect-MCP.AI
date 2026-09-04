@@ -868,6 +868,12 @@ input[type="checkbox"] {
   color: #dce7ff;
 }
 
+.install-json-reveal {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
 .verify-summary {
   margin: 12px 0 0;
   font-size: 0.84rem;

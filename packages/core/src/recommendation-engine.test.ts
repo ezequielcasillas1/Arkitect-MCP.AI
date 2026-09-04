@@ -134,4 +134,66 @@ describe("recommendCatalog", () => {
 
     expect(rankedIds).toContain("anti-corruption-layer");
   });
+
+  it("does not pick AI-Native or hexagonal from Ghost host-prose in the summary", () => {
+    const recommendation = recommendCatalog({
+      platformType: "web",
+      workloadType: "architecture-foundation",
+      currentArchitecture: "unknown",
+      repoHealth: "unknown",
+      likelyDiagnosisIntent: "feature",
+      executionPermission: "generate-plan",
+      complexityProfile: "balanced",
+      requirementTags: ["ghost-theme", "publication", "handlebars"],
+      repoSummary: "Ghost theme workspace with custom-domain and AI marketing copy leftover",
+      requestedOutcome: "Ship a publication theme"
+    });
+
+    expect(recommendation.selectedRemixId).not.toBe("ai-native-stack");
+    expect(recommendation.legalTriple.edge).not.toBe("hexagonal");
+    expect(recommendation.architectureCandidates.map((candidate) => candidate.id)).not.toContain("domain-driven-design");
+    expect(recommendation.legalTriple.rationale.some((line) => line.includes("relatedArchitectures"))).toBe(true);
+  });
+
+  it("keeps saga and event-sourcing available as supporting after foundation rejects", () => {
+    const sagaRecommendation = recommendCatalog({
+      platformType: "api",
+      workloadType: "feature-delivery",
+      currentArchitecture: "unknown",
+      repoHealth: "unknown",
+      likelyDiagnosisIntent: "feature",
+      executionPermission: "apply-safe-changes",
+      complexityProfile: "enterprise",
+      requirementTags: ["saga-workflow", "distributed transaction", "compensating"]
+    });
+
+    expect(sagaRecommendation.architectureCandidates.map((candidate) => candidate.id)).toContain("saga");
+    expect(["saga", "cqrs"]).toContain(sagaRecommendation.legalTriple.supporting);
+    expect(sagaRecommendation.rejectedArchitectures.filter((entry) => entry.architectureId === "saga").every((entry) => entry.role === "foundation")).toBe(true);
+    expect(sagaRecommendation.remixCandidates.map((candidate) => candidate.id)).toContain("udi-dahan-messaging-mix");
+
+    const ledgerRecommendation = recommendCatalog({
+      platformType: "api",
+      workloadType: "architecture-foundation",
+      currentArchitecture: "unknown",
+      repoHealth: "unknown",
+      likelyDiagnosisIntent: "architecture-upgrade",
+      executionPermission: "generate-plan",
+      complexityProfile: "enterprise",
+      requirementTags: ["ledger", "audit", "immutable history"]
+    });
+
+    expect(ledgerRecommendation.architectureCandidates.map((candidate) => candidate.id)).toContain("event-sourcing");
+    expect(["event-sourcing", "cqrs"]).toContain(ledgerRecommendation.legalTriple.supporting);
+    expect(
+      ledgerRecommendation.rejectedArchitectures
+        .filter((entry) => entry.architectureId === "event-sourcing")
+        .every((entry) => entry.role === "foundation")
+    ).toBe(true);
+    expect(
+      ledgerRecommendation.remixCandidates.some((candidate) =>
+        ["greg-young-event-machine", "vaughn-vernon-ddd-remix", "udi-dahan-messaging-mix"].includes(candidate.id)
+      )
+    ).toBe(true);
+  });
 });

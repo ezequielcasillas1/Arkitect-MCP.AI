@@ -34,7 +34,7 @@
 
 11. Marketing site: download counter + reviews — extend `apps/site` with pricing/CTA and feedback.
 - Two vertical slices (`features/download-counter`, `features/reviews`), own types/data-access/UI.
-- Counter: "free for first 1,000" claim, Supabase-backed, capped + dedup'd, milestone progress bar.
+- Counter slice now hosts open-source + Buy Me a Coffee CTA (scarcity/membership retired).
 - Reviews: public submit + list, Supabase RLS, per-visitor rate-limit trigger, "connect with me" links.
 - Data-access gateways swap mock/Supabase by env config; Cloudflare Pages build/deploy readiness added.
 - Needs real beaver logo asset and real contact links from Ezequiel (placeholders used for now).
@@ -74,3 +74,15 @@
 - Client `.cursor/mcp.json` uses `ARKITECT_DEFAULT_REPO_PATH` = client repo and `ARKITECT_HOST_REPO_PATH` = this product.
 - Client sessions unlock read/write plus local overrides; other MCP servers stay.
 - Host architecture redesign only from the Arkitect-mcp.com repo root.
+
+18. Marketing site: client-repo install path reveal
+- Click “See the path to install” to reveal `.cursor/mcp.json` (hidden by default).
+- JSON includes `ARKITECT_DEFAULT_REPO_PATH` (client repo) and `ARKITECT_HOST_REPO_PATH` (product root).
+- No Windows installer / download button on the site — JSON path is the install.
+- Same reveal on live homepage, SPA landing, `/mcp`; copy on revealed JSON.
+
+19. Marketing site: open-source + Buy Me a Coffee
+- Replace first-1,000 / membership scarcity block; keep rest of the site.
+- Donation: https://www.buymeacoffee.com/casiezeq
+- Keep install-path CTA; optional coffee only, no paid spots.
+- Continue `download-counter` vertical slice (clean-slice-fusion).

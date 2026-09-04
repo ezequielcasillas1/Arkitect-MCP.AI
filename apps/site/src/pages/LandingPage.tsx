@@ -5,6 +5,7 @@ import { ConnectSection } from "../components/ConnectSection";
 import { InstallSection } from "../components/InstallSection";
 import { HeroLogo } from "../components/Logo";
 import { RevealSection } from "../components/RevealSection";
+import { BuyMeACoffeeButton } from "../features/download-counter/BuyMeACoffeeButton";
 import { DownloadCounterSection } from "../features/download-counter/DownloadCounterSection";
 import { SeoHead } from "../features/seo";
 
@@ -29,8 +30,8 @@ const pillars = [
 ];
 
 const heroPills = [
-  { label: "Free for the first 1,000 users" },
-  { label: "v2.1.0 — packaged MCP stdio fix shipped" },
+  { label: "Open source" },
+  { label: "v2.2.0 — legal triple scoring shipped" },
   { label: "MCP-native for Cursor" }
 ];
 
@@ -49,12 +50,10 @@ export function LandingPage() {
             your actual repo.
           </p>
           <div className="hero-actions">
-            <a href="#download-counter-heading" className="primary-button">
-              Get the free download
+            <a href="#install-path" className="primary-button">
+              See the path to install
             </a>
-            <a href="#install-heading" className="secondary-button">
-              See install steps
-            </a>
+            <BuyMeACoffeeButton />
             <Link to="/reviews" className="ghost-button">
               See what people are saying
             </Link>
@@ -97,11 +96,11 @@ export function LandingPage() {
       </RevealSection>
 
       <RevealSection className="panel" delay={100}>
-        <p className="section-label">Pricing</p>
-        <h2>Free for the first 1,000 users.</h2>
+        <p className="section-label">Open Source</p>
+        <h2>Free forever. Optional coffee.</h2>
         <p>
-          Claim your spot above while free access lasts. Membership pricing for desktop, MCP, and
-          licensing features arrives after the free cohort — early claimants keep free access.
+          Arkitect is open source — desktop, MCP, and diagnosis stay free. No membership. If it
+          helps your work, you can buy me a coffee.
         </p>
       </RevealSection>
 

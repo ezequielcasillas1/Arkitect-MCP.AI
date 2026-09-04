@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL?: string;
   readonly VITE_SUPABASE_ANON_KEY?: string;
   readonly VITE_DOWNLOAD_URL?: string;
+  readonly VITE_BUY_ME_A_COFFEE_URL?: string;
 }
 
 interface ImportMeta {

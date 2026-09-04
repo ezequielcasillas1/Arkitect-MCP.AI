@@ -6,7 +6,7 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 
 | Option | Link |
 |--------|------|
-| **Website** (claim a free spot, then download) | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
+| **Website** (open source + mcp.json install) | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
 | **User guide & MCP setup** | [arkitect-mcp.com/instructions](https://arkitect-mcp.com/instructions) |
 | **GitHub Releases** (installer + source zip) | [github.com/ezequielcasillas1/Arkitect-MCP.AI/releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
 | **Windows installer** (direct, v2.1.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v2.1.0/Arkitect-Setup.exe) |
@@ -16,7 +16,7 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 ## Workspace layout
 
 - `apps/desktop`: Electron + React desktop-first Windows 11 shell for repo intake, detections, policy review, AI settings, permissions, and results.
-- `apps/site`: React marketing/download/membership surface aligned to the desktop-first product direction.
+- `apps/site`: React marketing site (open source + optional Buy Me a Coffee) aligned to the desktop-first product direction.
 - `apps/licensing-worker`: Cloudflare Worker scaffold for Stripe webhook intake plus entitlement/license validation routes.
 - `packages/contracts`: shared diagnosis, catalog, AI, licensing, and MCP result contracts.
 - `packages/core`: encoded architecture/remix/pattern library plus architecture-first decision logic and recommendation scoring.

@@ -8,7 +8,7 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/": {
     title: "Arkitect MCP — Architecture-first AI for Cursor & desktop repos",
     description:
-      "Arkitect MCP v2.1.0 — packaged installer MCP fix (zod + ajv stdio resolution) plus pattern intelligence, diagnosis, and refactor guidance for Cursor. Free for the first 1,000 users.",
+      "Arkitect MCP v2.2.0 — legal triple architecture scoring, pattern intelligence, diagnosis, and refactor guidance for Cursor. Open source.",
     canonicalPath: "/",
     ogImage: defaultOgImage,
     keywords:
@@ -51,7 +51,7 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/about": {
     title: "About — Arkitect MCP",
     description:
-      "Learn about Arkitect's mission, local-first MCP diagnosis, desktop app, and free tier for the first 1,000 users.",
+      "Learn about Arkitect's mission, local-first MCP diagnosis, desktop app, and open-source access.",
     canonicalPath: "/about",
     ogImage: defaultOgImage,
     keywords: "About Arkitect, architecture tool, MCP server, local repo diagnosis, Cursor MCP"
@@ -59,15 +59,15 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/terms": {
     title: "Terms of Use — Arkitect MCP",
     description:
-      "Terms for using the Arkitect desktop app, MCP server, and marketing site — including free product tier, bring-your-own AI keys, and acceptable use.",
+      "Terms for using the Arkitect desktop app, MCP server, and marketing site — including open-source access, bring-your-own AI keys, and acceptable use.",
     canonicalPath: "/terms",
     ogImage: defaultOgImage,
-    keywords: "Arkitect terms of use, MCP terms, free tier, bring your own key, acceptable use"
+    keywords: "Arkitect terms of use, MCP terms, open source, bring your own key, acceptable use"
   },
   "/privacy": {
     title: "Privacy Policy — Arkitect MCP",
     description:
-      "How Arkitect handles reviews, download tracking, local MCP analysis, and third-party AI keys stored on your device.",
+      "How Arkitect handles reviews, optional donations, local MCP analysis, and third-party AI keys stored on your device.",
     canonicalPath: "/privacy",
     ogImage: defaultOgImage,
     keywords: "Arkitect privacy policy, Supabase, local MCP, AI API keys, Cloudflare"

@@ -5,6 +5,7 @@ import type {
   ArchitectureGuideStepResult,
   ArchitectureRejection,
   ComplexityProfile,
+  LegalArchitectureTriple,
   RemixProfileId,
   ScoredRecommendation
 } from "./catalog.js";
@@ -22,7 +23,9 @@ export type {
   ArchitectureDecisionGuideStepId,
   ArchitectureGuideStepResult,
   ArchitectureRejection,
-  ArchitectureDecisionLens
+  ArchitectureDecisionLens,
+  ArchitectureRole,
+  LegalArchitectureTriple
 } from "./catalog.js";
 
 export interface ArchitectureDecisionGuideStep {
@@ -66,6 +69,7 @@ export interface ArchitectureRecommendationResult {
   summary: string;
   recommendedArchitectureId: ArchitectureCatalogId | "unknown";
   selectedRemixId?: RemixProfileId;
+  legalTriple: LegalArchitectureTriple;
   architectureCandidates: ScoredRecommendation<ArchitectureCatalogId>[];
   remixCandidates: ScoredRecommendation<RemixProfileId>[];
   rejected: ArchitectureRejection[];

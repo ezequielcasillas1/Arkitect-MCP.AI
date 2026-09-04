@@ -167,6 +167,7 @@ export interface McpCursorInstallResult {
   ok: boolean;
   deeplink: string;
   mcpJsonPath?: string;
+  mcpJsonPreview?: string;
   stdioPath: string;
   stdioBuilt: boolean;
   deeplinkOpened: boolean;

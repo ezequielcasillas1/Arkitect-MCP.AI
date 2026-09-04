@@ -205,6 +205,20 @@ export const mcpToolGroups: McpToolGroup[] = [
 
 export const mcpVersionHistory: McpVersionEntry[] = [
   {
+    version: "2.2.0",
+    releaseDate: "2026-09-03",
+    status: "released",
+    title: "Legal triple scoring — remix is no longer a magnet",
+    summary:
+      "Diagnosis and recommend_architecture now score foundation, internal, edge, and optional supporting roles from repo signals. Remix names the triple when a profile fits; otherwise it stays blank.",
+    highlights: [
+      "Stopped circular remix wins (for example AI-Native stacking modular monolith by catalog alone).",
+      "Signals come from inspection and intake — not host marketing prose or substring hunts for ai, workspace, or domain.",
+      "Desktop confirmation no longer copies unknown platform into false monolith defaults.",
+      "Guide rejections apply to one role; related catalog entries still propose the other roles."
+    ]
+  },
+  {
     version: "2.1.0",
     releaseDate: "2026-07-04",
     status: "released",

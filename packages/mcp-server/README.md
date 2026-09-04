@@ -2,15 +2,9 @@
 
 Stdio MCP server for Arkitect — diagnosis-first architecture guidance, catalogs, verification, and test tools for local repos.
 
-## Download
+## Install
 
-| Option | Link |
-|--------|------|
-| **Website** | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
-| **GitHub Releases** | [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
-| **Windows installer** (v2.1.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v2.1.0/Arkitect-Setup.exe) |
-
-The desktop app can also check GitHub Releases from the sidebar (**Check for updates**) and open the latest installer download.
+Reveal the Cursor `mcp.json` path on [arkitect-mcp.com](https://arkitect-mcp.com/#install-path), or clone [the GitHub repo](https://github.com/ezequielcasillas1/Arkitect-MCP.AI) and build locally.
 
 ## Install from source
 
@@ -32,12 +26,16 @@ Requires **Node.js 18+**. Confirm `packages/mcp-server/dist/stdio.js` exists bef
       "command": "node",
       "args": ["packages/mcp-server/dist/stdio.js"],
       "env": {
-        "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo"
+        "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo",
+        "ARKITECT_HOST_REPO_PATH": "C:\\path\\to\\Arkitect-mcp.com",
+        "ARKITECT_ANALYZER": "mock"
       }
     }
   }
 }
 ```
+
+`ARKITECT_DEFAULT_REPO_PATH` is the repo to diagnose. `ARKITECT_HOST_REPO_PATH` is the Arkitect-mcp.com product root so host architecture stays write-guarded.
 
 See [docs/USER_GUIDE.md](../../docs/USER_GUIDE.md) for tools, resources, and troubleshooting.
 

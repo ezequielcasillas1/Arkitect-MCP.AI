@@ -26,6 +26,20 @@ import {
   listRemixProfileCatalog
 } from "./catalog.js";
 import { evaluateArchitectureDecisionGuide } from "./architecture-recommendation/architecture-decision-guide.js";
+import {
+  countKeywordMatches,
+  fileAwareSignalText,
+  hasMonorepoFileSignal,
+  hasSliceFileSignal,
+  hasTrustedHostVocabulary,
+  isHostVocabularyKeyword,
+  trustedSignalText
+} from "./architecture-recommendation/architecture-signals.js";
+import {
+  assembleLegalTriple,
+  rankRemixesForTriple,
+  type ArchitectureScoreEntry
+} from "./architecture-recommendation/architecture-triple.js";
 
 type ScoreBucket<TId extends string> = Map<
   TId,
@@ -81,13 +95,8 @@ const workloadArchitectureWeights: Record<
   Partial<Record<ArchitectureCatalogId, number>>
 > = {
   "architecture-foundation": {
-    "vertical-slice": 1.8,
     "modular-monolith": 1.7,
-    monolithic: 1.4,
-    "clean-architecture": 1.4,
-    "onion-architecture": 1.3,
-    hexagonal: 1.2,
-    "screaming-architecture": 1
+    monolithic: 1.4
   },
   "feature-delivery": {
     "vertical-slice": 1.9,
@@ -133,17 +142,12 @@ const platformArchitectureWeights: Record<
   Partial<Record<ArchitectureCatalogId, number>>
 > = {
   desktop: {
-    "vertical-slice": 1.2,
-    "modular-monolith": 1.1,
-    "clean-architecture": 1,
-    microkernel: 0.9
+    "modular-monolith": 1.1
   },
   web: {
-    "vertical-slice": 1.1,
-    "clean-architecture": 1,
-    bff: 1.1,
-    layered: 0.9,
-    "minimal-api": 0.8
+    "modular-monolith": 1,
+    monolithic: 0.9,
+    layered: 1.1
   },
   api: {
     "minimal-api": 1.3,
@@ -187,7 +191,6 @@ const intentArchitectureWeights: Record<
     "clean-architecture": 0.8
   },
   feature: {
-    "vertical-slice": 1.4,
     "minimal-api": 1.1,
     "modular-monolith": 1
   },
@@ -270,9 +273,7 @@ const complexityArchitectureWeights: Record<ComplexityProfile, Partial<Record<Ar
     "modular-monolith": 0.7
   },
   balanced: {
-    "vertical-slice": 1.1,
-    "modular-monolith": 1,
-    "clean-architecture": 0.9
+    "modular-monolith": 1
   },
   structured: {
     "modular-monolith": 1,
@@ -368,13 +369,13 @@ const requirementArchitectureSignals: Array<{
 }> = [
   {
     keywords: ["ai", "agent", "mcp", "provider"],
-    architectures: ["vertical-slice", "hexagonal", "microkernel"],
+    architectures: ["hexagonal", "microkernel"],
     weight: 1.1,
-    summary: "AI and tool orchestration need feature isolation and replaceable adapters."
+    summary: "AI and tool orchestration need replaceable adapters at the edge."
   },
   {
-    keywords: ["real-time", "queue", "pubsub", "event", "workflow"],
-    architectures: ["event-driven", "cqrs", "event-sourcing"],
+    keywords: ["real-time", "queue", "pubsub", "event-driven", "workflow"],
+    architectures: ["event-driven", "cqrs"],
     weight: 1.1,
     summary: "Async and eventful workloads fit event-driven coordination patterns."
   },
@@ -439,7 +440,7 @@ const requirementArchitectureSignals: Array<{
     summary: "Channel-specific APIs benefit from dedicated BFF surfaces."
   },
   {
-    keywords: ["bounded context", "aggregate", "domain"],
+    keywords: ["bounded context", "aggregate", "ubiquitous language", "domain-driven", "ddd"],
     architectures: ["domain-driven-design", "hexagonal", "clean-architecture", "anti-corruption-layer"],
     weight: 1.1,
     summary: "Rich domain language points toward DDD and boundary-focused architecture."
@@ -483,18 +484,31 @@ function addScore<TId extends string>(
   });
 }
 
-function normalizeRecommendations<TId extends string>(bucket: ScoreBucket<TId>, limit = 5): ScoredRecommendation<TId>[] {
-  const values = Array.from(bucket.entries()).filter(([, value]) => value.score > 0);
+function entriesFromBucket<TId extends string>(bucket: ScoreBucket<TId>): Array<{ id: TId; score: number; reasons: RecommendationReason[] }> {
+  return Array.from(bucket.entries())
+    .filter(([, value]) => value.score > 0)
+    .map(([id, value]) => ({
+      id,
+      score: value.score,
+      reasons: value.reasons
+    }));
+}
+
+function normalizeRecommendations<TId extends string>(
+  bucket: ScoreBucket<TId> | Array<{ id: TId; score: number; reasons: RecommendationReason[] }>,
+  limit = 5
+): ScoredRecommendation<TId>[] {
+  const values = Array.isArray(bucket) ? bucket.filter((value) => value.score > 0) : entriesFromBucket(bucket);
 
   if (values.length === 0) {
     return [];
   }
 
-  const maxScore = Math.max(...values.map(([, value]) => value.score));
+  const maxScore = Math.max(...values.map((value) => value.score));
 
   return values
-    .map(([id, value]) => ({
-      id,
+    .map((value) => ({
+      id: value.id,
       score: Number((value.score / maxScore).toFixed(2)),
       reasons: value.reasons.sort((left, right) => right.weight - left.weight)
     }))
@@ -530,17 +544,21 @@ function isCurrentArchitectureLocked(input: CatalogRecommendationInput): boolean
 }
 
 function recommendationSearchText(input: CatalogRecommendationInput): string {
-  return `${input.requirementTags.join(" ")} ${input.repoSummary ?? ""} ${input.requestedOutcome ?? ""}`.toLowerCase();
+  return fileAwareSignalText(input);
+}
+
+function signalTextForKeywords(input: CatalogRecommendationInput, keywords: string[]): string {
+  return keywords.some((keyword) => isHostVocabularyKeyword(keyword))
+    ? trustedSignalText(input)
+    : fileAwareSignalText(input);
 }
 
 function getMatchedSignalCount(text: string, keywords: string[]): number {
-  const haystack = text.toLowerCase();
-  return keywords.filter((keyword) => haystack.includes(keyword)).length;
+  return countKeywordMatches(text, keywords);
 }
 
-function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredRecommendation<ArchitectureCatalogId>[] {
+function scoreArchitectureEntries(input: CatalogRecommendationInput): ArchitectureScoreEntry[] {
   const bucket = createScoreBucket(listArchitectureCatalog().map((entry) => entry.id));
-  const searchText = recommendationSearchText(input);
 
   if (isArchitectureCatalogId(input.currentArchitecture)) {
     const lockedHealthy = isCurrentArchitectureLocked(input) && input.repoHealth === "healthy";
@@ -598,7 +616,7 @@ function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredR
   }
 
   requirementArchitectureSignals.forEach((signal) => {
-    const matches = getMatchedSignalCount(searchText, signal.keywords);
+    const matches = getMatchedSignalCount(signalTextForKeywords(input, signal.keywords), signal.keywords);
 
     if (matches === 0) {
       return;
@@ -614,6 +632,26 @@ function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredR
       );
     });
   });
+
+  if (hasMonorepoFileSignal(input)) {
+    addScore(
+      bucket,
+      "modular-monolith",
+      "requirement-signal",
+      1.4,
+      "Monorepo manifests or apps/packages directories mark a modular monolith foundation."
+    );
+  }
+
+  if (hasSliceFileSignal(input) || hasTrustedHostVocabulary(input, ["vertical slice", "feature folder"])) {
+    addScore(
+      bucket,
+      "vertical-slice",
+      "requirement-signal",
+      1.3,
+      "Feature-folder or slice markers shape internal ownership, not the deploy unit."
+    );
+  }
 
   if (input.repoHealth === "spaghetti" || input.repoHealth === "drifting") {
     addScore(
@@ -636,122 +674,15 @@ function scoreArchitectureCandidates(input: CatalogRecommendationInput): ScoredR
   guide.boosts.forEach((boost) => {
     addScore(bucket, boost.architectureId, "decision-guide", boost.weight, boost.reason);
   });
-  guide.penalties.forEach((penalty) => {
-    addScore(bucket, penalty.architectureId, "decision-guide", penalty.weight, penalty.reason);
-  });
 
-  return normalizeRecommendations(bucket, 12);
+  return entriesFromBucket(bucket);
 }
 
 function scoreRemixCandidates(
   input: CatalogRecommendationInput,
-  architectureCandidates: ScoredRecommendation<ArchitectureCatalogId>[]
+  triple: { foundation?: ArchitectureCatalogId; internal?: ArchitectureCatalogId; edge?: ArchitectureCatalogId; supporting?: ArchitectureCatalogId }
 ): ScoredRecommendation<RemixProfileId>[] {
-  const bucket = createScoreBucket(listRemixProfileCatalog().map((entry) => entry.id));
-  const requirementTags = input.requirementTags.map((tag) => tag.toLowerCase());
-  const topArchitectureIds = architectureCandidates.slice(0, 3).map((candidate) => candidate.id);
-
-  listRemixProfileCatalog().forEach((remix) => {
-    topArchitectureIds.forEach((architectureId, index) => {
-      if (remix.architectureIds.includes(architectureId)) {
-        addScore(
-          bucket,
-          remix.id,
-          "architecture-affinity",
-          1.8 - index * 0.2,
-          `${remix.displayName} includes ${getArchitectureCatalogEntry(architectureId)?.displayName ?? architectureId}.`
-        );
-      }
-    });
-  });
-
-  if (input.selectedRemixId) {
-    addScore(
-      bucket,
-      input.selectedRemixId,
-      "continuation",
-      3.5,
-      "User-selected remix should stay visible in recommendations."
-    );
-  }
-
-  if (input.workloadType === "feature-delivery") {
-    addScore(bucket, "jimmy-bogard-slice", "workload-affinity", 1.4, "Feature delivery aligns well with slice-driven remixes.");
-    addScore(bucket, "clean-slice-fusion", "workload-affinity", 1.2, "Feature delivery can benefit from slices plus a clean core.");
-  }
-
-  if (input.workloadType === "migration") {
-    addScore(bucket, "microsoft-azure-blend", "workload-affinity", 1.6, "Migration work benefits from staged modernization blends.");
-  }
-
-  if (input.workloadType === "architecture-foundation") {
-    addScore(bucket, "clean-slice-fusion", "workload-affinity", 1.3, "Foundation work benefits from explicit slice and domain guidance.");
-    addScore(bucket, "uncle-bob-special", "workload-affinity", 1.1, "Foundation work often needs stronger boundary rules.");
-  }
-
-  if (input.complexityProfile === "enterprise") {
-    addScore(bucket, "vaughn-vernon-ddd-remix", "complexity-profile", 1.3, "Enterprise complexity benefits from rich domain remixing.");
-    addScore(bucket, "greg-young-event-machine", "complexity-profile", 1.1, "Enterprise scale can justify event-machine patterns.");
-  }
-
-  if (input.repoHealth === "drifting" || input.repoHealth === "spaghetti") {
-    addScore(bucket, "uncle-bob-special", "repo-health", 1, "Boundary-focused remixes help frame drift remediation.");
-    addScore(bucket, "clean-slice-fusion", "repo-health", 0.9, "A clean slice blend helps teams re-center structure without a full rewrite.");
-  }
-
-  const tagText = requirementTags.join(" ");
-
-  if (tagText.includes("ai") || tagText.includes("agent") || tagText.includes("mcp")) {
-    addScore(bucket, "ai-native-stack", "requirement-signal", 1.8, "AI and MCP requirements strongly favor the AI-Native Stack.");
-  }
-
-  if (tagText.includes("plugin") || tagText.includes("extension")) {
-    addScore(bucket, "neal-ford-hybrid-engine", "requirement-signal", 1.6, "Plugin or extension requirements map to the Hybrid Engine.");
-  }
-
-  if (tagText.includes("event") || tagText.includes("queue") || tagText.includes("workflow")) {
-    addScore(
-      bucket,
-      "udi-dahan-messaging-mix",
-      "requirement-signal",
-      1.5,
-      "Message-heavy workflow requirements favor the Messaging Mix."
-    );
-  }
-
-  if (tagText.includes("audit") || tagText.includes("ledger") || tagText.includes("history") || tagText.includes("compliance")) {
-    addScore(
-      bucket,
-      "greg-young-event-machine",
-      "requirement-signal",
-      1.7,
-      "Audit and history requirements favor the Event Machine."
-    );
-  }
-
-  if (tagText.includes("legacy") || tagText.includes("cloud") || tagText.includes("strangler") || tagText.includes("migration")) {
-    addScore(
-      bucket,
-      "microsoft-azure-blend",
-      "requirement-signal",
-      1.8,
-      "Legacy-to-cloud requirements fit the Azure Blend migration profile."
-    );
-  }
-
-  if (tagText.includes("saga") || tagText.includes("distributed transaction") || tagText.includes("compensating")) {
-    addScore(bucket, "udi-dahan-messaging-mix", "requirement-signal", 1.4, "Saga workflows align with the Messaging Mix remix.");
-  }
-
-  if (tagText.includes("anti-corruption") || tagText.includes("domain isolation") || tagText.includes("acl")) {
-    addScore(bucket, "vaughn-vernon-ddd-remix", "requirement-signal", 1.2, "ACL work aligns with the DDD remix profile.");
-  }
-
-  if (tagText.includes("data") || tagText.includes("enterprise")) {
-    addScore(bucket, "martin-fowler-stack", "requirement-signal", 1, "Data-heavy enterprise flows align with the Fowler Stack.");
-  }
-
-  return normalizeRecommendations(bucket, 5);
+  return rankRemixesForTriple(input, triple);
 }
 
 function scorePatternCandidates(
@@ -973,22 +904,28 @@ function determineOverEngineeringRisk(
 }
 
 export function recommendCatalog(input: CatalogRecommendationInput): CatalogRecommendationBundle {
-  const architectureCandidates = scoreArchitectureCandidates(input);
+  const architectureEntries = scoreArchitectureEntries(input);
+  const architectureCandidates = normalizeRecommendations(architectureEntries, 12);
+  const guide = evaluateArchitectureDecisionGuide(input);
+  const foundationRejected = new Set(
+    guide.rejected.filter((entry) => entry.role === "foundation").map((entry) => entry.architectureId)
+  );
+  const legalTriple = assembleLegalTriple(input, architectureEntries, foundationRejected);
   const selectedArchitectureId =
     input.selectedArchitectureId ??
     (isCurrentArchitectureLocked(input) && isArchitectureCatalogId(input.currentArchitecture)
       ? input.currentArchitecture
-      : architectureCandidates[0]?.id);
-  const remixCandidates = scoreRemixCandidates(input, architectureCandidates);
-  const selectedRemixId = input.selectedRemixId ?? remixCandidates[0]?.id;
+      : legalTriple.foundation);
+  const remixCandidates = scoreRemixCandidates(input, legalTriple);
+  const selectedRemixId = input.selectedRemixId ?? legalTriple.remixId;
   const patternCandidates = scorePatternCandidates(input, selectedArchitectureId, selectedRemixId);
   const relevantStrategies = determineStrategies(input, selectedArchitectureId);
   const continuationAdvice = determineContinuationAdvice(input, selectedArchitectureId, selectedRemixId);
-  const guide = evaluateArchitectureDecisionGuide(input);
 
   return {
     selectedArchitectureId,
     selectedRemixId,
+    legalTriple,
     architectureCandidates,
     remixCandidates,
     patternCandidates,

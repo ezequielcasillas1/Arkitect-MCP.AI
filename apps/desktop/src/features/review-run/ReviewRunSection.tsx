@@ -160,6 +160,12 @@ export function ReviewRunSection({
             <li>Detected architecture: {result.signals.currentArchitecture.final.value}</li>
             <li>Repo health: {result.signals.repoHealth.final.value}</li>
             <li>Selected remix: {result.decision.selectedRemixId ?? "auto-ranked only"}</li>
+            <li>
+              Legal triple: {result.catalogRecommendation.legalTriple.foundation ?? "none"} /{" "}
+              {result.catalogRecommendation.legalTriple.internal ?? "none"} /{" "}
+              {result.catalogRecommendation.legalTriple.edge ?? "none"} /{" "}
+              {result.catalogRecommendation.legalTriple.supporting ?? "none"}
+            </li>
             <li>Provider: {result.intake.ai.preferredProvider}</li>
             <li>Model: {result.intake.ai.modelName}</li>
             <li>AI connection: {aiConnected ? "connected" : "not connected / skipped"}</li>

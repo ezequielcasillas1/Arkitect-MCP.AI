@@ -85,7 +85,7 @@ export const architectureCatalog: ArchitectureCatalogEntry[] = [
     compatibleWorkloads: ["architecture-foundation", "feature-delivery", "migration", "repo-recovery", "diagnosis"],
     highAffinityPatterns: ["mediator", "command", "decorator", "factory-method"],
     relatedArchitectures: ["vertical-slice", "microservices", "clean-architecture", "microkernel"],
-    detectionKeywords: ["modular monolith", "module boundary", "internal module", "single deployable", "workspace"]
+    detectionKeywords: ["modular monolith", "module boundary", "internal module", "single deployable", "pnpm-workspace", "monorepo"]
   },
   {
     id: "minimal-api",

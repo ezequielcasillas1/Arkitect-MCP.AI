@@ -12,6 +12,7 @@ import type {
   DiagnosisSignal,
   DiagnosisSignals,
   ExecutionPermission,
+  RepoInspection,
   UserSignalInputs
 } from "@arkitect/contracts";
 import { buildPatternGuidance, recommendCatalog } from "./recommendation-engine.js";
@@ -79,14 +80,18 @@ function mergeSignal<K extends DiagnosisField>(
   }
 
   if (userValue.confirmed) {
+    const confirmedFromHint = Boolean(userValue.hint && userValue.hint !== auto.value);
+    const confirmedValue = userValue.hint ?? auto.value;
     return {
       auto,
       hint: userValue.hint,
       confirmed: true,
       final: createUserDrivenDetection(
         "user-confirmed",
-        auto.value,
-        `User confirmed the auto-detected ${field} value.`,
+        confirmedValue,
+        confirmedFromHint
+          ? `User confirmed the ${field} hint.`
+          : `User confirmed the auto-detected ${field} value.`,
         Math.max(auto.confidence, 0.98)
       )
     };
@@ -134,6 +139,20 @@ function canApplyStructure(permission: ExecutionPermission): boolean {
   return permission === "apply-structural-changes";
 }
 
+function flattenInspectionSignals(inspection?: RepoInspection): string[] {
+  if (!inspection) {
+    return [];
+  }
+
+  return [
+    ...inspection.manifestFiles,
+    ...inspection.topLevelDirectories,
+    ...inspection.frameworkHints,
+    ...inspection.detectedMarkers,
+    ...inspection.samplePaths.slice(0, 20)
+  ];
+}
+
 function toCatalogRecommendationInput(intake: DiagnosisIntake, signals: DiagnosisSignals): CatalogRecommendationInput {
   const architectureSource = signals.currentArchitecture.final.source;
   const architectureLocked =
@@ -154,7 +173,8 @@ function toCatalogRecommendationInput(intake: DiagnosisIntake, signals: Diagnosi
     complexityProfile: intake.catalogPreferences.complexityProfile,
     requirementTags: intake.catalogPreferences.requirementTags,
     repoSummary: intake.repoSummary,
-    requestedOutcome: intake.requestedOutcome
+    requestedOutcome: intake.requestedOutcome,
+    inspectionSignals: flattenInspectionSignals(intake.repoInspection)
   };
 }
 
@@ -214,6 +234,7 @@ function createDecision(
     autoContinue: recommendation.continuationAdvice.autoContinue,
     selectedArchitectureId: recommendation.selectedArchitectureId,
     selectedRemixId: recommendation.selectedRemixId,
+    legalTriple: recommendation.legalTriple,
     appliedStrategies: recommendation.relevantStrategies,
     reason: recommendation.continuationAdvice.summary,
     warnings,

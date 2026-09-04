@@ -46,6 +46,7 @@ export function ResultsOverviewSection({
       repoHealth: result.signals.repoHealth.final.value,
       selectedArchitectureId: result.decision.selectedArchitectureId,
       selectedRemixId: result.decision.selectedRemixId,
+      legalTriple: result.catalogRecommendation.legalTriple,
       recommendedAction: result.decision.recommendedAction,
       complexityProfile: result.patternGuidance.complexityProfile,
       patternAffinityScore: result.patternGuidance.patternAffinityScore,
@@ -139,6 +140,20 @@ export function ResultsOverviewSection({
                 <span className="metric-label">Recommended remix</span>
                 <strong>{selectedRemix?.displayName ?? "Auto-ranked only"}</strong>
                 <p>{selectedRemix?.summary ?? "Use remix ranking after the architecture direction stabilizes."}</p>
+                <div className="tag-row">
+                  <span className="soft-pill">
+                    Foundation: {result.catalogRecommendation.legalTriple.foundation ?? "none"}
+                  </span>
+                  <span className="soft-pill">
+                    Internal: {result.catalogRecommendation.legalTriple.internal ?? "none"}
+                  </span>
+                  <span className="soft-pill">
+                    Edge: {result.catalogRecommendation.legalTriple.edge ?? "none"}
+                  </span>
+                  <span className="soft-pill">
+                    Supporting: {result.catalogRecommendation.legalTriple.supporting ?? "none"}
+                  </span>
+                </div>
                 <div className="tag-row">
                   {result.catalogRecommendation.architectureCandidates.slice(0, 4).map((candidate) => (
                     <span className="soft-pill" key={candidate.id}>

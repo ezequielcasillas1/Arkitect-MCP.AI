@@ -50,4 +50,28 @@ describe("createDiagnosisResult", () => {
     expect(result.signals.currentArchitecture.final.value).toBe("event-driven");
     expect(result.signals.currentArchitecture.final.source).toBe("user-override");
   });
+
+  it("uses the desktop hint when platform confirm would otherwise copy unknown", () => {
+    const intake = createDefaultIntake();
+    intake.userInput.platformType = {
+      hint: "desktop",
+      confirmed: true
+    };
+
+    const result = createDiagnosisResult(intake, {
+      ...createTestAutoDetections(),
+      platformType: {
+        value: "unknown",
+        confidence: 0.38,
+        level: "low",
+        source: "auto-detected",
+        rationale: "No clear platform markers were found in the current intake."
+      }
+    });
+
+    expect(result.signals.platformType.final.value).toBe("desktop");
+    expect(result.signals.platformType.final.source).toBe("user-confirmed");
+    expect(result.signals.platformType.final.rationale).toContain("hint");
+    expect(result.decision.legalTriple?.foundation).toBeTruthy();
+  });
 });

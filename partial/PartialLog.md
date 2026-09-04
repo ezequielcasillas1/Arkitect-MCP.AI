@@ -1,6 +1,8 @@
-# Partial Log
+### 2026-09-03 - Live site install-path reveal
+**Status:** PARTIAL
+**Files:** apps/site/public/index.html, apps/site/src/features/install-path/*, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx
+**Result:** Click-to-reveal mcp.json works locally. Live Cloudflare deploy blocked — wrangler login expired.
 
-Reserved for partial-fix entries when work is incomplete or blocked.
 
 ### 2026-09-03 - Decision guide + client MCP unlock
 **Status:** PARTIAL

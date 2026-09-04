@@ -58,6 +58,8 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
   const [busy, setBusy] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
   const [installResult, setInstallResult] = useState<McpCursorInstallResult | null>(null);
+  const [showInstallJson, setShowInstallJson] = useState(false);
+  const [jsonCopied, setJsonCopied] = useState(false);
 
   const isElectron = shellInfo?.runtime === "electron";
   const isExternalSession = connectionState?.path === "external" && connectionState.status === "connected";
@@ -192,6 +194,8 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
         env: parseEnvInput(envInput)
       });
       setInstallResult(result);
+      setShowInstallJson(false);
+      setJsonCopied(false);
     } finally {
       setBusy(false);
     }
@@ -206,6 +210,16 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
     setInstallResult((current) =>
       current ? { ...current, message: `${current.message} Link copied to clipboard.` } : current
     );
+  }
+
+  async function handleCopyInstallJson() {
+    if (!installResult?.mcpJsonPreview) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(installResult.mcpJsonPreview);
+    setJsonCopied(true);
+    window.setTimeout(() => setJsonCopied(false), 1600);
   }
 
   return (
@@ -291,6 +305,11 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
               <span className="metric-label">Env (KEY=value per line)</span>
               <textarea id="mcp-env" onChange={(event) => setEnvInput(event.target.value)} rows={4} value={envInput} />
             </label>
+            <p className="helper-copy">
+              Client installs: <code>ARKITECT_DEFAULT_REPO_PATH</code> = this repo,{" "}
+              <code>ARKITECT_HOST_REPO_PATH</code> = Arkitect-mcp.com root. Host redesign stays limited to that
+              product root.
+            </p>
 
           <label className="checkbox-row">
             <input
@@ -345,7 +364,8 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
 
           <p className="helper-copy">
             Keep Arkitect Desktop open. Click <strong>Install in Cursor</strong> to write <code>.cursor/mcp.json</code>{" "}
-            and open Cursor&apos;s MCP install prompt. The stdio server reads{" "}
+            with the client/host env path, then open Cursor&apos;s MCP install prompt. After it writes, use{" "}
+            <strong>See the path to install</strong> to reveal the JSON. The stdio server reads{" "}
             <code>%LOCALAPPDATA%/arkitect-desktop/mcp-bridge.json</code> and posts register/heartbeat events to the
             bridge on port {connectionState?.bridgePort ?? 47821}.
           </p>
@@ -380,6 +400,28 @@ export function McpConnectionSection({ shellInfo, defaultRepoPath }: McpConnecti
                   <button className="ghost-button" disabled={busy} onClick={() => void handleCopyInstallLink()} type="button">
                     Copy install link
                   </button>
+                </div>
+              ) : null}
+              {installResult.mcpJsonPreview ? (
+                <div className="install-json-reveal">
+                  <button
+                    className="ghost-button"
+                    type="button"
+                    aria-expanded={showInstallJson}
+                    onClick={() => setShowInstallJson((current) => !current)}
+                  >
+                    {showInstallJson ? "Hide install path" : "See the path to install"}
+                  </button>
+                  {showInstallJson ? (
+                    <>
+                      <pre className="payload-preview">
+                        <code>{installResult.mcpJsonPreview}</code>
+                      </pre>
+                      <button className="ghost-button" type="button" onClick={() => void handleCopyInstallJson()}>
+                        {jsonCopied ? "Copied JSON" : "Copy JSON"}
+                      </button>
+                    </>
+                  ) : null}
                 </div>
               ) : null}
             </div>

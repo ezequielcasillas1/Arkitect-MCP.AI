@@ -47,6 +47,10 @@ function buildServerEntry(stdioPath: string, repoPath: string, env: Record<strin
   };
 }
 
+function previewMcpJson(config: CursorMcpJson) {
+  return `${JSON.stringify(config, null, 2)}\n`;
+}
+
 async function writeProjectMcpJson(repoPath: string, serverEntry: ReturnType<typeof buildServerEntry>) {
   const configPath = join(repoPath, ".cursor", "mcp.json");
   let existing: CursorMcpJson;
@@ -58,11 +62,12 @@ async function writeProjectMcpJson(repoPath: string, serverEntry: ReturnType<typ
   }
 
   const merged = mergeCursorMcpServers(existing, serverName, serverEntry);
+  const preview = previewMcpJson(merged);
 
   await mkdir(dirname(configPath), { recursive: true });
-  await writeFile(configPath, `${JSON.stringify(merged, null, 2)}\n`, "utf8");
+  await writeFile(configPath, preview, "utf8");
 
-  return configPath;
+  return { configPath, preview };
 }
 
 export async function installMcpInCursor(input: {
@@ -81,11 +86,13 @@ export async function installMcpInCursor(input: {
     env: serverEntry.env
   };
   const deeplink = buildCursorInstallDeeplink(serverName, transportConfig);
+  const intendedPreview = previewMcpJson({ mcpServers: { [serverName]: serverEntry } });
 
   if (!stdioBuilt) {
     return {
       ok: false,
       deeplink,
+      mcpJsonPreview: intendedPreview,
       stdioPath,
       stdioBuilt: false,
       deeplinkOpened: false,
@@ -95,15 +102,19 @@ export async function installMcpInCursor(input: {
   }
 
   let mcpJsonPath: string;
+  let mcpJsonPreview = intendedPreview;
 
   try {
-    mcpJsonPath = await writeProjectMcpJson(repoPath, serverEntry);
+    const written = await writeProjectMcpJson(repoPath, serverEntry);
+    mcpJsonPath = written.configPath;
+    mcpJsonPreview = written.preview;
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to write .cursor/mcp.json";
 
     return {
       ok: false,
       deeplink,
+      mcpJsonPreview: intendedPreview,
       stdioPath,
       stdioBuilt,
       deeplinkOpened: false,
@@ -126,6 +137,7 @@ export async function installMcpInCursor(input: {
       ok: true,
       deeplink,
       mcpJsonPath,
+      mcpJsonPreview,
       stdioPath,
       stdioBuilt,
       deeplinkOpened: true,
@@ -138,6 +150,7 @@ export async function installMcpInCursor(input: {
     ok: true,
     deeplink,
     mcpJsonPath,
+    mcpJsonPreview,
     stdioPath,
     stdioBuilt,
     deeplinkOpened: false,

@@ -23,10 +23,10 @@ export const termsDocument: LegalDocument = {
       ]
     },
     {
-      id: "free-tier",
-      title: "Free tier (first 1,000 users)",
+      id: "open-source",
+      title: "Open source access",
       paragraphs: [
-        "Arkitect desktop and MCP product access is free and unlimited for the first 1,000 registered users. This includes diagnosis, catalog recommendations, verification, and other core MCP tools — not managed AI inference.",
+        "Arkitect desktop and MCP product access is free and open source. This includes diagnosis, catalog recommendations, verification, and other core MCP tools — not managed AI inference.",
         "Core MCP analysis runs locally via @arkitect/core on your machine. It does not require Arkitect-provided AI or a cloud AI backend."
       ]
     },
@@ -67,8 +67,8 @@ export const termsDocument: LegalDocument = {
       id: "changes",
       title: "Changes",
       paragraphs: [
-        "We may modify these terms, product features, or free-tier limits with notice on this site or in the desktop app where practical.",
-        "Material changes to pricing or licensing after the free tier will be communicated before they take effect for existing users where feasible."
+        "We may modify these terms or product features with notice on this site or in the desktop app where practical.",
+        "Donations via Buy Me a Coffee are optional and do not purchase a membership or extra product entitlements."
       ]
     },
     {
@@ -91,16 +91,16 @@ export const privacyDocument: LegalDocument = {
       id: "what-we-collect",
       title: "What we collect",
       paragraphs: [
-        "On this website, we collect data you voluntarily submit (public reviews) and anonymous download-counter events used to track progress toward the 1,000-user free tier.",
-        "Reviews may include a display name, rating, comment, and optional social links you choose to share. Download events use a browser-local visitor identifier for deduplication — not for cross-site tracking."
+        "On this website, we collect data you voluntarily submit (public reviews). Optional donations go through Buy Me a Coffee and are handled by that service.",
+        "Reviews may include a display name, rating, comment, and optional social links you choose to share."
       ]
     },
     {
       id: "supabase",
       title: "Supabase storage",
       paragraphs: [
-        "Reviews and download counts are stored in Supabase with row-level security. Public review listings are readable by anyone; writes are rate-limited per visitor.",
-        "We do not sell review or download data. Data is used to display community feedback and enforce the free-tier milestone on the marketing site."
+        "Reviews are stored in Supabase with row-level security. Public review listings are readable by anyone; writes are rate-limited per visitor.",
+        "We do not sell review data. Data is used to display community feedback on the marketing site."
       ]
     },
     {
@@ -124,7 +124,7 @@ export const privacyDocument: LegalDocument = {
       title: "Cookies & hosting",
       paragraphs: [
         "This site is hosted on Cloudflare Pages. Cloudflare may process standard request metadata (IP address, user agent) for security and delivery.",
-        "We use browser local storage for anonymous visitor deduplication on the download counter. We do not use third-party advertising cookies on this site."
+        "The Buy Me a Coffee button opens their site. Donation payments and related data are governed by Buy Me a Coffee's privacy policy. We do not use third-party advertising cookies on this site."
       ]
     },
     {
@@ -132,7 +132,7 @@ export const privacyDocument: LegalDocument = {
       title: "Your rights",
       paragraphs: [
         "Depending on your jurisdiction, you may have rights to access, correct, or delete personal data we hold from site submissions. Contact us via the links on the About or Reviews pages.",
-        "You can clear local storage in your browser to reset the anonymous visitor identifier used for download deduplication."
+        "You can clear local storage in your browser at any time. Review submissions can be addressed through the contact links on the About or Reviews pages."
       ]
     },
     {

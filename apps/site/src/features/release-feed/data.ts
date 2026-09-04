@@ -3,6 +3,16 @@ import type { ReleaseEntry } from "./types";
 /** Newest first. Update this file when shipping a release. */
 export const releaseFeed: ReleaseEntry[] = [
   {
+    version: "2.2.0",
+    releaseDate: "2026-09-03",
+    status: "released",
+    changes: [
+      "Legal triple scoring: foundation, internal, edge, and optional supporting roles — remix only when a profile matches.",
+      "Repo signals drive ranking; host vocabulary and remix magnets no longer auto-pick AI-Native.",
+      "Diagnosis and recommend_architecture expose the four roles in MCP and desktop."
+    ]
+  },
+  {
     version: "2.1.0",
     releaseDate: "2026-07-04",
     status: "released",

@@ -6,8 +6,10 @@ import type {
   ArchitectureDecisionLens,
   ArchitectureGuideStepResult,
   ArchitectureRejection,
+  ArchitectureRole,
   CatalogRecommendationInput
 } from "@arkitect/contracts";
+import { fileAwareSignalText, guideSignalText, hasMonorepoFileSignal, hasSliceFileSignal, matchKeywords } from "./architecture-signals.js";
 
 export interface DecisionGuideAdjustment {
   architectureId: ArchitectureCatalogId;
@@ -120,7 +122,7 @@ const STEPS: ArchitectureDecisionGuideStep[] = [
     question: "Are features owned as slices, or is the repo already a modular workspace?",
     architectNote: "A monorepo with package boundaries is a modular monolith, not a forced slice tree.",
     developerNote: "Use slices inside modules when feature ownership helps; do not lock the whole system to slices.",
-    keywords: ["workspace", "monorepo", "module boundary", "feature folder", "vertical slice", "slice"],
+    keywords: ["monorepo", "module boundary", "pnpm-workspace", "feature folder", "vertical slice"],
     boost: ["modular-monolith", "vertical-slice"],
     reject: [],
     weight: 1.4
@@ -138,23 +140,6 @@ export const ARCHITECTURE_DECISION_GUIDE: ArchitectureDecisionGuide = {
 
 export function listArchitectureDecisionGuide(): ArchitectureDecisionGuide {
   return ARCHITECTURE_DECISION_GUIDE;
-}
-
-function combineGuideText(input: CatalogRecommendationInput): string {
-  return [
-    input.repoSummary ?? "",
-    input.requestedOutcome ?? "",
-    input.requirementTags.join(" "),
-    input.platformType,
-    input.workloadType,
-    input.likelyDiagnosisIntent
-  ]
-    .join(" ")
-    .toLowerCase();
-}
-
-function matchKeywords(text: string, keywords: string[]): string[] {
-  return keywords.filter((keyword) => text.includes(keyword.toLowerCase()));
 }
 
 function lensWeight(base: number, lens: ArchitectureDecisionLens, stepId: ArchitectureDecisionGuideStepId): number {
@@ -184,7 +169,8 @@ export function evaluateArchitectureDecisionGuide(
   input: CatalogRecommendationInput
 ): DecisionGuideEvaluation {
   const lens: ArchitectureDecisionLens = input.decisionLens ?? "software-architect";
-  const text = combineGuideText(input);
+  const text = guideSignalText(input);
+  const fileText = fileAwareSignalText(input);
   const simpleCrud = /\b(crud|mvp|simple|small team)\b/.test(text);
   const distributedIntent = matchKeywords(text, [
     "microservice",
@@ -238,11 +224,14 @@ export function evaluateArchitectureDecisionGuide(
   const addReject = (
     stepId: ArchitectureDecisionGuideStepId,
     architectureId: ArchitectureCatalogId,
-    reason: string
+    reason: string,
+    role: ArchitectureRole = "foundation"
   ) => {
-    penalties.push({ architectureId, weight: -3, reason, stepId });
-    if (!rejected.some((entry) => entry.architectureId === architectureId && entry.stepId === stepId)) {
-      rejected.push({ architectureId, reason, stepId });
+    if (role === "foundation") {
+      penalties.push({ architectureId, weight: -3, reason, stepId });
+    }
+    if (!rejected.some((entry) => entry.architectureId === architectureId && entry.stepId === stepId && entry.role === role)) {
+      rejected.push({ architectureId, reason, stepId, role });
     }
   };
 
@@ -263,8 +252,8 @@ export function evaluateArchitectureDecisionGuide(
         rejectedIds = ["microservices", "soa"];
         reason =
           lens === "software-architect"
-            ? "One operational unit should stay a modular monolith until ownership forces a split."
-            : "Avoid distributed services until delivery and ops are ready.";
+            ? "Do not use microservices or SOA as the foundation until ownership forces a split."
+            : "Avoid distributed services as the foundation until delivery and ops are ready.";
       }
     } else if (step.id === "domain-complexity") {
       if (complexDomain.length > 0) {
@@ -275,7 +264,7 @@ export function evaluateArchitectureDecisionGuide(
         applied = true;
         rejectedIds = ["domain-driven-design", "event-sourcing", "saga"];
         boosted = ["monolithic", "minimal-api", "layered"];
-        reason = "CRUD or a small complexity budget should not carry DDD or event machinery.";
+        reason = "CRUD or a small complexity budget should not use DDD or event machinery as the foundation.";
       }
     } else if (step.id === "consistency-model") {
       if (asyncIntent.length > 0) {
@@ -285,7 +274,7 @@ export function evaluateArchitectureDecisionGuide(
       } else if (auditIntent.length === 0) {
         applied = true;
         rejectedIds = ["event-sourcing"];
-        reason = "Request/response systems should not adopt event sourcing by default.";
+        reason = "Do not use event sourcing as the foundation for request/response systems.";
       }
     } else if (step.id === "provider-integration") {
       if (matchedKeywords.length > 0) {
@@ -304,7 +293,7 @@ export function evaluateArchitectureDecisionGuide(
       } else {
         applied = true;
         rejectedIds = ["event-sourcing"];
-        reason = "No ledger or compliance signal — reject event sourcing.";
+        reason = "No ledger or compliance signal — do not use event sourcing as the foundation.";
       }
     } else if (step.id === "extensibility") {
       if (matchedKeywords.length > 0) {
@@ -319,22 +308,18 @@ export function evaluateArchitectureDecisionGuide(
         reason = "Phased replacement should use strangler routes and an anti-corruption layer.";
       }
     } else if (step.id === "platform-fit") {
-      applied = true;
       if (input.platformType === "desktop" || input.platformType === "hybrid") {
-        boosted = ["modular-monolith", "microkernel", "hexagonal"];
-        reason = "Desktop/hybrid products fit a modular monolith with hexagonal edges.";
+        applied = true;
+        boosted = ["modular-monolith"];
+        reason = "Desktop/hybrid products fit a modular monolith foundation.";
       } else if (input.platformType === "api" || input.platformType === "worker") {
-        boosted = ["hexagonal", "minimal-api", "clean-architecture"];
-        reason = "API/worker surfaces favor hexagonal adapters and thin endpoints.";
+        applied = true;
+        boosted = ["hexagonal", "minimal-api"];
+        reason = "API/worker surfaces favor hexagonal adapters and thin endpoints at the edge.";
       } else if (input.platformType === "web") {
-        boosted = ["modular-monolith", "bff", "layered"];
-        reason = "Web products usually stay one deployable with optional BFF shaping.";
-      } else {
-        boosted = ["modular-monolith", "hexagonal"];
-        reason = "Default to modular boundaries with replaceable adapters.";
-      }
-      if (lens === "senior-developer" && (input.platformType === "web" || input.platformType === "api")) {
-        boosted = uniqueIds([...boosted, "vertical-slice", "minimal-api"]);
+        applied = true;
+        boosted = ["modular-monolith", "layered"];
+        reason = "Web products usually stay one deployable; layered ownership is a proposal, not a BFF default.";
       }
     } else if (step.id === "complexity-budget") {
       applied = true;
@@ -345,29 +330,33 @@ export function evaluateArchitectureDecisionGuide(
           ...(sagaIntent ? [] : (["saga"] as ArchitectureCatalogId[])),
           ...(distributedIntent.length === 0 ? (["microservices"] as ArchitectureCatalogId[]) : [])
         ]);
-        boosted = input.complexityProfile === "minimal" ? ["monolithic", "minimal-api", "layered"] : ["modular-monolith", "hexagonal"];
-        reason = `${input.complexityProfile} complexity budget suppresses heavy distributed and sourcing styles.`;
+        boosted = input.complexityProfile === "minimal" ? ["monolithic"] : ["modular-monolith"];
+        reason = `${input.complexityProfile} complexity budget should not use event sourcing, saga, or microservices as the foundation.`;
       } else {
-        boosted = ["clean-architecture", "hexagonal", "modular-monolith"];
-        reason = `${input.complexityProfile} complexity budget can carry stronger boundaries.`;
+        boosted = ["modular-monolith"];
+        reason = `${input.complexityProfile} complexity budget can carry a modular foundation; supporting styles still need their own signal.`;
       }
     } else if (step.id === "team-and-ownership") {
-      const workspaceHit = matchKeywords(text, ["workspace", "monorepo", "module boundary", "package"]);
-      const sliceHit = matchKeywords(text, ["feature folder", "vertical slice", "slice"]);
-      if (workspaceHit.length > 0 || sliceHit.length > 0 || input.platformType === "desktop") {
+      const monorepoHit = [
+        ...matchKeywords(text, ["monorepo", "module boundary", "pnpm-workspace"]),
+        ...(hasMonorepoFileSignal(input) ? ["pnpm-workspace"] : [])
+      ];
+      const sliceHit = [
+        ...matchKeywords(text, ["feature folder", "vertical slice"]),
+        ...matchKeywords(fileText, ["feature folder", "vertical slice"]),
+        ...(hasSliceFileSignal(input) ? ["feature folder"] : [])
+      ];
+      if (monorepoHit.length > 0 || sliceHit.length > 0) {
         applied = true;
-        boosted = workspaceHit.length > 0 || input.platformType === "desktop" ? ["modular-monolith"] : [];
-        if (sliceHit.length > 0 && lens === "senior-developer") {
+        boosted = monorepoHit.length > 0 ? ["modular-monolith"] : [];
+        if (sliceHit.length > 0) {
           boosted = uniqueIds([...boosted, "vertical-slice"]);
         }
-        if (workspaceHit.length > 0 && lens === "software-architect") {
-          boosted = uniqueIds([...boosted, "modular-monolith", "hexagonal"]);
-        }
         reason =
-          workspaceHit.length > 0
-            ? "Workspace/monorepo markers recommend a modular monolith foundation."
+          monorepoHit.length > 0
+            ? "Monorepo or module-boundary files recommend a modular monolith foundation."
             : "Feature-slice markers can shape delivery inside modules, not lock the foundation.";
-        matchedKeywords.push(...workspaceHit, ...sliceHit);
+        matchedKeywords.push(...monorepoHit, ...sliceHit);
       }
     }
 

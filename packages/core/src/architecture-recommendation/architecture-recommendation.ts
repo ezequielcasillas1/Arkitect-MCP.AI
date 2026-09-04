@@ -3,7 +3,8 @@ import type {
   ArchitectureRecommendationRequest,
   ArchitectureRecommendationResult,
   CatalogRecommendationInput,
-  ComplexityProfile
+  ComplexityProfile,
+  LegalArchitectureTriple
 } from "@arkitect/contracts";
 import { isArchitectureCatalogId } from "../catalog.js";
 import { recommendCatalog } from "../recommendation-engine.js";
@@ -17,7 +18,7 @@ export function toArchitectureRecommendationInput(
     workloadType: request.workloadType ?? "architecture-foundation",
     currentArchitecture: request.currentArchitecture ?? "unknown",
     repoHealth: request.repoHealth ?? "unknown",
-    likelyDiagnosisIntent: request.likelyDiagnosisIntent ?? "architecture-upgrade",
+    likelyDiagnosisIntent: request.likelyDiagnosisIntent ?? "unknown",
     executionPermission: request.executionPermission ?? "generate-plan",
     selectedRemixId: request.selectedRemixId,
     selectedArchitectureId: request.selectedArchitectureId,
@@ -30,19 +31,24 @@ export function toArchitectureRecommendationInput(
   };
 }
 
+function formatTriple(triple: LegalArchitectureTriple): string {
+  return `foundation ${triple.foundation ?? "none"} / internal ${triple.internal ?? "none"} / edge ${triple.edge ?? "none"} / supporting ${triple.supporting ?? "none"}`;
+}
+
 function buildAdrSummary(
   recommended: ArchitectureCatalogId | "unknown",
   remixId: string | undefined,
+  triple: LegalArchitectureTriple,
   steps: ArchitectureRecommendationResult["guideStepsApplied"],
   rejectedCount: number,
   profile: ComplexityProfile
 ): string {
   const applied = steps.filter((step) => step.applied).map((step) => step.id);
   const foundation = recommended === "unknown" ? "no stable foundation yet" : recommended;
-  const remix = remixId ? ` Remix ${remixId} is the supporting hybrid.` : "";
+  const remix = remixId ? ` Remix ${remixId} names this triple.` : " No remix covers enough of this triple to name it.";
   const stepText = applied.length > 0 ? ` Guide steps: ${applied.join(", ")}.` : "";
-  const rejectText = rejectedCount > 0 ? ` ${rejectedCount} unfit styles were eliminated.` : "";
-  return `Recommend ${foundation} for the ${profile} complexity profile.${remix}${stepText}${rejectText} Confirm before locking continuation.`;
+  const rejectText = rejectedCount > 0 ? ` ${rejectedCount} styles were rejected as a foundation.` : "";
+  return `Recommend ${foundation} (${formatTriple(triple)}) for the ${profile} complexity profile.${remix}${stepText}${rejectText} Confirm before locking continuation.`;
 }
 
 export function recommendArchitecture(
@@ -58,8 +64,11 @@ export function recommendArchitecture(
   );
 
   const cursorGuidance = [
-    `Recommended architecture: ${recommendedArchitectureId}`,
-    `Selected remix profile: ${catalog.selectedRemixId ?? "auto-ranked only"}`,
+    `Foundation: ${catalog.legalTriple.foundation ?? recommendedArchitectureId}`,
+    `Internal style: ${catalog.legalTriple.internal ?? "none"}`,
+    `Edge style: ${catalog.legalTriple.edge ?? "none"}`,
+    `Supporting: ${catalog.legalTriple.supporting ?? "none"}`,
+    `Selected remix profile: ${catalog.selectedRemixId ?? "none — remix only names a covered triple"}`,
     `Decision lens: ${evaluation.lens}`,
     `Lock applied: ${lockApplied ? "yes" : "no"}`,
     "Do not default to vertical slice.",
@@ -70,6 +79,7 @@ export function recommendArchitecture(
   const adrSummary = buildAdrSummary(
     recommendedArchitectureId,
     catalog.selectedRemixId,
+    catalog.legalTriple,
     evaluation.steps,
     evaluation.rejected.length,
     input.complexityProfile
@@ -78,12 +88,13 @@ export function recommendArchitecture(
   const summary =
     recommendedArchitectureId === "unknown"
       ? `No stable architecture emerged for the ${input.complexityProfile} profile — keep the foundation undecided until signals sharpen.`
-      : `Recommended ${recommendedArchitectureId} using the ${evaluation.lens} decision guide.`;
+      : `Recommended ${recommendedArchitectureId} using the ${evaluation.lens} decision guide (${formatTriple(catalog.legalTriple)}).`;
 
   return {
     summary,
     recommendedArchitectureId,
     selectedRemixId: catalog.selectedRemixId,
+    legalTriple: catalog.legalTriple,
     architectureCandidates: catalog.architectureCandidates,
     remixCandidates: catalog.remixCandidates,
     rejected: evaluation.rejected,

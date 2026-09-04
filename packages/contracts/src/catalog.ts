@@ -12,6 +12,8 @@ export type ArchitectureCatalogId = Exclude<ArchitectureStyle, "spaghetti" | "un
 
 export type ArchitectureCatalogCategory = "foundation" | "supporting" | "data-access";
 
+export type ArchitectureRole = "foundation" | "internal" | "edge" | "supporting";
+
 export type PatternFamily = "creational" | "structural" | "behavioral";
 
 export type DesignPatternId =
@@ -80,6 +82,7 @@ export interface ArchitectureRejection {
   architectureId: ArchitectureCatalogId;
   reason: string;
   stepId: ArchitectureDecisionGuideStepId;
+  role: ArchitectureRole;
 }
 
 export type OverEngineeringRisk = "low" | "moderate" | "high";
@@ -194,6 +197,16 @@ export interface CatalogRecommendationInput {
   repoSummary?: string;
   requestedOutcome?: string;
   decisionLens?: ArchitectureDecisionLens;
+  inspectionSignals?: string[];
+}
+
+export interface LegalArchitectureTriple {
+  foundation?: ArchitectureCatalogId;
+  internal?: ArchitectureCatalogId;
+  edge?: ArchitectureCatalogId;
+  supporting?: ArchitectureCatalogId;
+  remixId?: RemixProfileId;
+  rationale: string[];
 }
 
 export interface RecommendationReason {
@@ -229,6 +242,7 @@ export interface ContinuationAdvice {
 export interface CatalogRecommendationBundle {
   selectedArchitectureId?: ArchitectureCatalogId;
   selectedRemixId?: RemixProfileId;
+  legalTriple: LegalArchitectureTriple;
   architectureCandidates: ScoredRecommendation<ArchitectureCatalogId>[];
   remixCandidates: ScoredRecommendation<RemixProfileId>[];
   patternCandidates: {

@@ -105,6 +105,20 @@ export function ArchitecturePolicySection({
                 <span className="soft-pill">{selectedRemix?.displayName ?? "No explicit remix selected"}</span>
                 <span className="soft-pill">{complexityProfile}</span>
               </div>
+              <div className="tag-row">
+                <span className="soft-pill">
+                  Foundation: {result.catalogRecommendation.legalTriple.foundation ?? "none"}
+                </span>
+                <span className="soft-pill">
+                  Internal: {result.catalogRecommendation.legalTriple.internal ?? "none"}
+                </span>
+                <span className="soft-pill">
+                  Edge: {result.catalogRecommendation.legalTriple.edge ?? "none"}
+                </span>
+                <span className="soft-pill">
+                  Supporting: {result.catalogRecommendation.legalTriple.supporting ?? "none"}
+                </span>
+              </div>
             </article>
 
             <article className="metric-card">

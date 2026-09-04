@@ -1,4 +1,5 @@
 import { RevealSection } from "../components/RevealSection";
+import { McpJsonReveal } from "../features/install-path";
 import {
   AutoFillCallout,
   McpToolsSection,
@@ -16,6 +17,16 @@ export function McpPage() {
         <p className="section-label">{mcpHero.label}</p>
         <h1>{mcpHero.title}</h1>
         <p>{mcpHero.intro}</p>
+      </RevealSection>
+
+      <RevealSection className="panel panel-card-wide" delay={20}>
+        <p className="section-label">Install path</p>
+        <h2 id="mcp-install-heading">Client-repo Cursor config</h2>
+        <p>
+          Point Cursor at the local stdio server. Set the client repo as the default diagnosis target and the
+          Arkitect-mcp.com root as the host so product architecture stays write-guarded.
+        </p>
+        <McpJsonReveal />
       </RevealSection>
 
       <AutoFillCallout />

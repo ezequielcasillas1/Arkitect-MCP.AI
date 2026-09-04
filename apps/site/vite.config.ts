@@ -28,6 +28,12 @@ function serveStaticHome(): Plugin {
         if (pathName === "/architecture" || pathName === "/architecture/") {
           req.url = "/architecture/index.html";
         }
+        const spaMatch = spaRoutes.find(
+          (route) => pathName === `/${route}` || pathName.startsWith(`/${route}/`)
+        );
+        if (spaMatch) {
+          req.url = "/spa/index.html";
+        }
         next();
       });
     }

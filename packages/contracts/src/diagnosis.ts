@@ -4,6 +4,7 @@ import type {
   CatalogRecommendationBundle,
   CatalogSelectionInput,
   DiagnosisStrategyId,
+  LegalArchitectureTriple,
   PatternGuidance,
   RemixProfileId
 } from "./catalog.js";
@@ -91,6 +92,7 @@ export interface ArchitectureDecision {
   autoContinue: boolean;
   selectedArchitectureId?: ArchitectureCatalogId;
   selectedRemixId?: RemixProfileId;
+  legalTriple?: LegalArchitectureTriple;
   appliedStrategies: DiagnosisStrategyId[];
   reason: string;
   warnings: string[];

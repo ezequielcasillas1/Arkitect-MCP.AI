@@ -1,3 +1,23 @@
+### 2026-09-03 - Legal triple scoring
+**Status:** PENDING
+**Files:** packages/core/src/architecture-recommendation/*, packages/core/src/{recommendation-engine,diagnosis-result,catalog}.ts, packages/contracts/src/{catalog,architecture-recommendation,diagnosis}.ts, packages/mcp-server/src/diagnosis-payload.ts, apps/desktop/src/features/{architecture-policy,results-overview,review-run}/*
+**Result:** Scorer now picks foundation/internal/edge/supporting from repo signals. Remix names that triple. Platform confirm uses the hint. Awaiting user confirmation.
+
+### 2026-09-03 - Open-source CTA + Buy Me a Coffee
+**Status:** PENDING
+**Files:** apps/site/src/features/download-counter/*, apps/site/src/lib/arkitect-links.ts, apps/site/src/pages/LandingPage.tsx, apps/site/public/index.html, apps/site/src/features/{seo,legal,about,install-path}/*
+**Result:** Scarcity/membership CTA replaced with open-source copy and Buy Me a Coffee at casiezeq. Awaiting user confirmation.
+
+### 2026-09-03 - Drop Windows download CTA
+**Status:** PENDING
+**Files:** apps/site/public/index.html, apps/site/src/features/download-counter/DownloadCounterSection.tsx, apps/site/src/features/install-path/*, apps/site/src/pages/LandingPage.tsx, apps/site/public/architecture/index.html
+**Result:** Removed Windows installer download buttons. Install is click-to-reveal mcp.json only. Awaiting user confirmation.
+
+### 2026-09-03 - Live site install-path reveal
+**Status:** PENDING
+**Files:** apps/site/public/index.html, apps/site/src/features/install-path/*, apps/site/src/pages/{LandingPage,McpPage}.tsx, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx, apps/desktop/src/electron/mcp-cursor-install.ts
+**Result:** Click-to-reveal client/host mcp.json on live homepage, SPA, /mcp, and desktop. Awaiting user confirmation.
+
 ### 2026-09-03 - Client-repo MCP unlock
 **Status:** PENDING
 **Files:** packages/contracts/src/client-session.ts, packages/core/src/client-access/*, packages/mcp-server/src/{index,diagnosis-payload,mcp-tool-definitions}.ts, apps/desktop/src/electron/mcp-cursor-install.ts, .cursor/mcp.json
@@ -306,3 +326,9 @@ Template:
 **Status:** SUCCESS
 **Files:** apps/desktop/electron-builder.yml, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/LandingPage.tsx, instructions/refresh.md, bugfixes.md
 **Result:** Expanded asarUnpack for full MCP SDK runtime deps; updated release feed, /mcp version history, SEO, and hero pill; published GitHub Release v2.1.0 with Arkitect-Setup.exe; pushed master for Cloudflare Pages.
+
+### 2026-09-03 - Legal triple scoring + site changelog
+**Status:** SUCCESS
+**Files:** packages/core, packages/contracts, packages/mcp-server, apps/desktop, apps/site (release-feed, mcp-page, install-path, download-counter), docs/substack-legal-triple-scoring.md
+**Result:** Legal triple scorer shipped in core/MCP/desktop; marketing /mcp version history and landing release feed document v2.2.0; Cloudflare deploy via deploy:site.
+
