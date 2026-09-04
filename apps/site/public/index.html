@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Arkitect MCP — Architecture-first AI for Cursor & desktop repos</title>
-  <meta name="description" content="Arkitect MCP v2.1.0 — packaged installer MCP fix plus pattern intelligence, diagnosis, and refactor guidance for Cursor. Open source." />
+  <title>Arkitect MCP — Architecture-first AI for Cursor</title>
+  <meta name="description" content="Arkitect MCP — local mcp.json install for Cursor and other AI builders. Diagnosis, pattern intelligence, and refactor guidance. Open source." />
   <meta name="keywords" content="MCP server, Cursor MCP, architecture AI, repo diagnosis, code architecture tool, arkitect, vertical slice architecture, design patterns, software architecture, MCP tools, AI coding assistant" />
   <meta name="author" content="Arkitect" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
@@ -13,7 +13,7 @@
 
   <!-- Open Graph -->
   <meta property="og:title" content="Arkitect MCP — Architecture-first AI for Cursor" />
-  <meta property="og:description" content="Desktop-first architecture reasoning with MCP-native tools. Diagnosis, pattern intelligence, and refactor guidance. Open source." />
+  <meta property="og:description" content="Local MCP server for Cursor and other AI builders. Diagnosis, pattern intelligence, and refactor guidance. Open source." />
   <meta property="og:url" content="https://arkitect-mcp.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:image" content="https://arkitect-mcp.com/arkitect-mark.png" />
@@ -39,7 +39,7 @@
         "@type": "SoftwareApplication",
         "name": "Arkitect MCP",
         "url": "https://arkitect-mcp.com",
-        "description": "Desktop-first architecture reasoning tool with MCP server for Cursor. Diagnosis, pattern intelligence, catalog recommendations, and refactor guidance grounded in your actual repo.",
+        "description": "Local MCP server for Cursor and other AI builders. Diagnosis, pattern intelligence, catalog recommendations, and refactor guidance grounded in your actual repo.",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Windows",
         "offers": {
@@ -221,7 +221,7 @@
       </h1>
 
       <p class="hero-el mt-6 text-sm md:text-base text-slate-400 text-center max-w-2xl px-6 leading-relaxed">
-        Desktop-first architecture reasoning with MCP-native tools for Cursor.
+        Local MCP for Cursor and other AI builders.
         Diagnosis, pattern intelligence, and guidance grounded in your actual repo.
       </p>
 
@@ -519,13 +519,18 @@
     "arkitect-mcp": {
       "command": "node",
       "args": [
-        "packages/mcp-server/dist/stdio.js"
-      ]
+        "C:\\path\\to\\Arkitect-mcp.com\\packages\\mcp-server\\dist\\stdio.js"
+      ],
+      "env": {
+        "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo",
+        "ARKITECT_HOST_REPO_PATH": "C:\\path\\to\\Arkitect-mcp.com",
+        "ARKITECT_ANALYZER": "mock"
+      }
     }
   }
 }</code></pre>
           <div class="mt-6 pt-6 border-t border-white/5">
-            <p class="text-xs text-slate-500">Drop this into your Cursor MCP settings and restart the client.</p>
+            <p class="text-xs text-slate-500">Paste this into Cursor or any MCP host. Replace the three paths. No Windows installer.</p>
           </div>
         </div>
 
@@ -535,7 +540,7 @@
           </div>
           <h2 class="serif text-4xl md:text-5xl tracking-tight font-medium leading-tight">
             <span class="odyssey-el block text-white">GET STARTED</span>
-            <span class="odyssey-el block text-white">IN FOUR</span>
+            <span class="odyssey-el block text-white">IN FIVE</span>
             <span class="odyssey-el block text-cyan-300 italic">STEPS</span>
           </h2>
           <div class="odyssey-el mt-8 text-cyan-300/70">
@@ -545,29 +550,40 @@
             <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">01</span>
               <div>
-                <strong class="text-white text-sm">Reveal the mcp.json path</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Use the Cursor config for your client repo</p>
+                <strong class="text-white text-sm">Install Node.js 18+</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Node LTS, then corepack enable pnpm</p>
               </div>
             </div>
-            <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
+            <div class="flex items-start gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">02</span>
               <div>
-                <strong class="text-white text-sm">Add the MCP server</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Point Cursor at the Arkitect stdio server</p>
+                <strong class="text-white text-sm">Clone and build Arkitect</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Confirm packages/mcp-server/dist/stdio.js exists</p>
+                <pre class="mt-2 text-[11px] text-cyan-200/80 font-mono leading-relaxed overflow-x-auto"><code>git clone https://github.com/ezequielcasillas1/Arkitect-MCP.AI.git
+cd Arkitect-MCP.AI
+pnpm install
+pnpm --filter @arkitect/mcp-server build</code></pre>
               </div>
             </div>
             <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">03</span>
               <div>
-                <strong class="text-white text-sm">Connect in Cursor</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Drop the config into your MCP settings</p>
+                <strong class="text-white text-sm">Paste the JSON</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Cursor Settings → MCP, or project .cursor/mcp.json</p>
               </div>
             </div>
             <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">04</span>
               <div>
-                <strong class="text-white text-sm">Run your first diagnosis</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Ask your agent to scan repo structure</p>
+                <strong class="text-white text-sm">Replace the three paths</strong>
+                <p class="text-slate-500 text-xs mt-0.5">stdio.js, your repo, and the Arkitect clone</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
+              <span class="text-cyan-300 font-mono text-sm">05</span>
+              <div>
+                <strong class="text-white text-sm">Restart MCP and diagnose</strong>
+                <p class="text-slate-500 text-xs mt-0.5">Ask the agent to call diagnose_repository</p>
               </div>
             </div>
           </div>

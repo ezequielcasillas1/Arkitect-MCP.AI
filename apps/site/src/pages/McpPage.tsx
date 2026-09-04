@@ -1,5 +1,5 @@
 import { RevealSection } from "../components/RevealSection";
-import { McpJsonReveal } from "../features/install-path";
+import { InstallStepsList, McpJsonReveal } from "../features/install-path";
 import {
   AutoFillCallout,
   McpToolsSection,
@@ -23,9 +23,10 @@ export function McpPage() {
         <p className="section-label">Install path</p>
         <h2 id="mcp-install-heading">Client-repo Cursor config</h2>
         <p>
-          Point Cursor at the local stdio server. Set the client repo as the default diagnosis target and the
-          Arkitect-mcp.com root as the host so product architecture stays write-guarded.
+          JSON is the only settings paste. There is no Windows installer. Clone and build the MCP server,
+          then paste the block into Cursor or any other MCP host.
         </p>
+        <InstallStepsList />
         <McpJsonReveal />
       </RevealSection>
 

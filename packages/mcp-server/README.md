@@ -4,7 +4,7 @@ Stdio MCP server for Arkitect — diagnosis-first architecture guidance, catalog
 
 ## Install
 
-Reveal the Cursor `mcp.json` path on [arkitect-mcp.com](https://arkitect-mcp.com/#install-path), or clone [the GitHub repo](https://github.com/ezequielcasillas1/Arkitect-MCP.AI) and build locally.
+Clone [the GitHub repo](https://github.com/ezequielcasillas1/Arkitect-MCP.AI), build this package, then paste the Cursor `mcp.json` from [arkitect-mcp.com](https://arkitect-mcp.com/#install-path). No Windows installer.
 
 ## Install from source
 
@@ -24,7 +24,7 @@ Requires **Node.js 18+**. Confirm `packages/mcp-server/dist/stdio.js` exists bef
   "mcpServers": {
     "arkitect-mcp": {
       "command": "node",
-      "args": ["packages/mcp-server/dist/stdio.js"],
+      "args": ["C:\\path\\to\\Arkitect-mcp.com\\packages\\mcp-server\\dist\\stdio.js"],
       "env": {
         "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo",
         "ARKITECT_HOST_REPO_PATH": "C:\\path\\to\\Arkitect-mcp.com",

@@ -13,7 +13,6 @@
     "build": "tsc -p tsconfig.electron.json && tsc -p tsconfig.json --noEmit && vite build",
     "generate:integrity": "node scripts/generate-integrity-manifest.mjs",
     "build:deps": "pnpm --filter @arkitect/desktop^... build",
-    "build:installer": "pnpm run build:deps && pnpm run build && pnpm run generate:integrity && cross-env NODE_OPTIONS=--use-system-ca electron-builder --win nsis --config electron-builder.yml",
     "typecheck": "tsc -p tsconfig.electron.json --noEmit && tsc -p tsconfig.json --noEmit",
     "lint": "eslint \"src/**/*.{ts,tsx}\"",
     "test": "vitest run",
@@ -43,7 +42,6 @@
     "concurrently": "^10.0.3",
     "cross-env": "^10.1.0",
     "electron": "^42.4.0",
-    "electron-builder": "^26.0.12",
     "vite": "^8.0.16",
     "vitest": "^3.2.4",
     "wait-on": "^9.0.10"

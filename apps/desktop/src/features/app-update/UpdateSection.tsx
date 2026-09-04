@@ -49,8 +49,8 @@ export function UpdateSection({ isElectron }: UpdateSectionProps) {
     const openResult = await openAppUpdateDownloadViaBridge(targetUrl);
     setActionMessage(
       openResult.ok
-        ? "Installer download opened in your default browser. Run Arkitect-Setup.exe when it finishes."
-        : openResult.message ?? "Failed to open the download link."
+        ? "Opened the GitHub release page. Install is clone, build, and mcp.json — not a Windows installer."
+        : openResult.message ?? "Failed to open the release page."
     );
     setDownloadBusy(false);
   }
@@ -64,8 +64,8 @@ export function UpdateSection({ isElectron }: UpdateSectionProps) {
       <span className="metric-label">Software updates</span>
       <p className="sidebar-copy">
         {isElectron
-          ? "Check GitHub Releases for a newer Arkitect desktop installer."
-          : "Software updates are available in the packaged Electron app."}
+          ? "Check GitHub Releases for a newer source build. There is no Windows installer."
+          : "Updates are git pull plus a local MCP rebuild."}
       </p>
 
       {currentVersion ? (
@@ -85,7 +85,7 @@ export function UpdateSection({ isElectron }: UpdateSectionProps) {
       ) : null}
 
       {status === "ready" && updateAvailable ? (
-        <p className="sidebar-copy update-status-available">A newer installer is available.</p>
+        <p className="sidebar-copy update-status-available">A newer source build is available.</p>
       ) : null}
 
       {status === "error" && result && !result.ok ? (
@@ -111,7 +111,7 @@ export function UpdateSection({ isElectron }: UpdateSectionProps) {
             onClick={() => void handleDownloadUpdate()}
             type="button"
           >
-            {downloadBusy ? "Opening download…" : "Download update"}
+            {downloadBusy ? "Opening GitHub…" : "Open GitHub"}
           </button>
         ) : null}
       </div>

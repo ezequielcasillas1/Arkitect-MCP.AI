@@ -54,7 +54,9 @@ export function McpJsonReveal({ snippet = clientRepoMcpJson, defaultOpen = false
       {open ? (
         <div id={panelId} className="install-json-panel">
           <div className="install-config-toolbar">
-            <p className="helper-copy">Drop this into your project <code>.cursor/mcp.json</code>, then restart MCP.</p>
+            <p className="helper-copy">
+              This is the only block you paste into Cursor, Claude Desktop, or another MCP host. Replace the three paths first.
+            </p>
             <button type="button" className="ghost-button" onClick={() => void handleCopy()}>
               {copied ? <Check size={16} aria-hidden="true" /> : <Copy size={16} aria-hidden="true" />}
               {copied ? "Copied" : "Copy JSON"}

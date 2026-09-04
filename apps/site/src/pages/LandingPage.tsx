@@ -45,9 +45,8 @@ export function LandingPage() {
           <p className="eyebrow">Arkitect MCP</p>
           <h1>Design the structure before the code starts drifting.</h1>
           <p className="lede">
-            Arkitect is a desktop-first architecture reasoning tool with an MCP server Cursor and other
-            AI clients can call directly—diagnosis, pattern intelligence, catalog recommendations, and guidance, grounded in
-            your actual repo.
+            Arkitect is a local MCP server Cursor and other AI clients call directly—diagnosis, pattern
+            intelligence, catalog recommendations, and guidance, grounded in your actual repo.
           </p>
           <div className="hero-actions">
             <a href="#install-path" className="primary-button">

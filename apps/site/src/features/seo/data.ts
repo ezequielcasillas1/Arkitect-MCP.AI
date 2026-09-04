@@ -6,7 +6,7 @@ export const defaultOgImage = "/apple-touch-icon.png";
 
 export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/": {
-    title: "Arkitect MCP — Architecture-first AI for Cursor & desktop repos",
+    title: "Arkitect MCP — Architecture-first AI for Cursor",
     description:
       "Arkitect MCP v2.2.0 — legal triple architecture scoring, pattern intelligence, diagnosis, and refactor guidance for Cursor. Open source.",
     canonicalPath: "/",
@@ -51,7 +51,7 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/about": {
     title: "About — Arkitect MCP",
     description:
-      "Learn about Arkitect's mission, local-first MCP diagnosis, desktop app, and open-source access.",
+      "Learn about Arkitect's mission, local-first MCP diagnosis, and open-source mcp.json install.",
     canonicalPath: "/about",
     ogImage: defaultOgImage,
     keywords: "About Arkitect, architecture tool, MCP server, local repo diagnosis, Cursor MCP"
@@ -59,7 +59,7 @@ export const routeSeo: Record<RouteSeoKey, SeoMeta> = {
   "/terms": {
     title: "Terms of Use — Arkitect MCP",
     description:
-      "Terms for using the Arkitect desktop app, MCP server, and marketing site — including open-source access, bring-your-own AI keys, and acceptable use.",
+      "Terms for using the Arkitect MCP server and marketing site — including open-source access, bring-your-own AI keys, and acceptable use.",
     canonicalPath: "/terms",
     ogImage: defaultOgImage,
     keywords: "Arkitect terms of use, MCP terms, open source, bring your own key, acceptable use"

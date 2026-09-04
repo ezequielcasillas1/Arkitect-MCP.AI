@@ -76,10 +76,10 @@
 - Host architecture redesign only from the Arkitect-mcp.com repo root.
 
 18. Marketing site: client-repo install path reveal
-- Click “See the path to install” to reveal `.cursor/mcp.json` (hidden by default).
-- JSON includes `ARKITECT_DEFAULT_REPO_PATH` (client repo) and `ARKITECT_HOST_REPO_PATH` (product root).
-- No Windows installer / download button on the site — JSON path is the install.
-- Same reveal on live homepage, SPA landing, `/mcp`; copy on revealed JSON.
+- Five steps: Node 18+, clone/build, paste JSON, replace paths, diagnose.
+- JSON `args` is the absolute local `stdio.js`; env has client + host paths.
+- No Windows installer — GitHub Setup.exe assets removed.
+- Same steps on live homepage, SPA landing, `/mcp`; copy on revealed JSON.
 
 19. Marketing site: open-source + Buy Me a Coffee
 - Replace first-1,000 / membership scarcity block; keep rest of the site.

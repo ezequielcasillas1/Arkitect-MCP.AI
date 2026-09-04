@@ -2,7 +2,7 @@
 
 How to orchestrate **Arkitect MCP** (`@arkitect/mcp-server`) through an agentic platform such as **Cursor AI** — and how the agent uses Arkitect tools and resources to drive diagnosis-first architecture guidance on your local repos.
 
-The marketing site ([arkitect-mcp.com](https://arkitect-mcp.com/#install-path)) handles free-spot claims and the mcp.json install path; [instructions](https://arkitect-mcp.com/instructions) mirror this guide. This doc covers **only** the desktop MCP server and agent workflow.
+The marketing site ([arkitect-mcp.com](https://arkitect-mcp.com/#install-path)) shows the mcp.json install path; [instructions](https://arkitect-mcp.com/instructions) mirror this guide. This doc covers the local MCP server and agent workflow. No Windows installer.
 
 ---
 
@@ -113,9 +113,9 @@ You control orchestration through prompts:
 Equivalent outcomes via two routes (see `instructions/request.md`):
 
 - **Chat path:** You drive in Cursor; Arkitect MCP returns decisions; Cursor AI implements.
-- **Desktop path:** Arkitect Desktop wizard (`apps/desktop`) for repo intake, then MCP config install — same catalogs and diagnosis contracts.
+- **Optional desktop workbench:** `pnpm dev:desktop` for local intake UI. Not a shipped installer.
 
-You can mix paths: connect MCP in desktop, decide in chat.
+You can mix paths: connect MCP with JSON, decide in chat.
 
 ---
 
@@ -135,9 +135,7 @@ You can mix paths: connect MCP in desktop, decide in chat.
 
 **Purpose:** Get a compiled stdio entrypoint on your machine.
 
-**Install path:** reveal `.cursor/mcp.json` on [arkitect-mcp.com](https://arkitect-mcp.com/#install-path), or clone [the GitHub repo](https://github.com/ezequielcasillas1/Arkitect-MCP.AI) and build locally.
-
-**GitHub source (no clone):** On [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases), download **Source code (zip)** for a tagged version, extract, then run the commands below from that folder.
+**Install path:** clone [the GitHub repo](https://github.com/ezequielcasillas1/Arkitect-MCP.AI), build the MCP server, then paste `.cursor/mcp.json` from [arkitect-mcp.com](https://arkitect-mcp.com/#install-path). JSON is the only settings paste. There is no Windows installer.
 
 From the monorepo root:
 
@@ -188,10 +186,10 @@ Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP 
   "mcpServers": {
     "arkitect-mcp": {
       "command": "node",
-      "args": ["packages/mcp-server/dist/stdio.js"],
+      "args": ["C:\\path\\to\\Arkitect-mcp.com\\packages\\mcp-server\\dist\\stdio.js"],
       "env": {
         "ARKITECT_DEFAULT_REPO_PATH": "C:\\Dev\\YourRepo",
-        "ARKITECT_HOST_REPO_PATH": "C:\\Dev\\Occuring Projects\\Arkitect-mcp.com",
+        "ARKITECT_HOST_REPO_PATH": "C:\\path\\to\\Arkitect-mcp.com",
         "ARKITECT_ANALYZER": "mock"
       }
     }
@@ -202,9 +200,9 @@ Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP 
 **Path notes:**
 
 - Use double backslashes or forward slashes for Windows paths in JSON.
-- `args` is relative to the folder Cursor opens. If you open a subfolder, use an absolute path to `stdio.js`.
+- `args` must be the absolute path to `stdio.js` on this machine. A relative path only works if Cursor’s cwd is the Arkitect clone.
 - Set `ARKITECT_DEFAULT_REPO_PATH` to the repo the agent should diagnose by default.
-- For a client repo, also set `ARKITECT_HOST_REPO_PATH` to the Arkitect-mcp.com root so host architecture stays write-guarded.
+- Set `ARKITECT_HOST_REPO_PATH` to the Arkitect-mcp.com clone so host architecture stays write-guarded.
 
 ### Step 3 — Restart MCP
 
@@ -212,9 +210,9 @@ Create or edit `.cursor/mcp.json` at your **workspace root** (or user-level MCP 
 2. Confirm `arkitect-mcp` enables without errors.
 3. After code changes, rebuild and **restart** the MCP server — stdio processes do not hot-reload.
 
-### Desktop-assisted install
+### Optional local workbench
 
-Arkitect Desktop can write `.cursor/mcp.json` and open a Cursor deeplink from the MCP Connection step. Run `pnpm dev:desktop` if you prefer the wizard over manual JSON.
+`pnpm dev:desktop` can write `.cursor/mcp.json` from the MCP Connection step. Manual JSON is the supported install.
 
 ---
 
@@ -418,7 +416,7 @@ To disable bridge attempts:
 
 ## Other MCP Hosts
 
-Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern: stdio command pointing at `packages/mcp-server/dist/stdio.js`, equivalent env vars, restart the server after rebuilds. Config file location and UI differ; the Arkitect surface (12 tools, 6 resources) is identical.
+Claude Desktop, Windsurf, and other MCP-capable clients use the same `mcpServers.arkitect-mcp` block: `node` + absolute `stdio.js` + the two path env vars. Only the config file location changes. Restart after rebuilds.
 
 ---
 
@@ -484,8 +482,8 @@ Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern:
 
 **Fix:**
 
-1. From Arkitect Desktop MCP Connection, install into the **client** repo (writes `.cursor/mcp.json` and keeps other servers).
-2. Confirm env: `ARKITECT_DEFAULT_REPO_PATH` = the client repo, `ARKITECT_HOST_REPO_PATH` = Arkitect-mcp.com root.
+1. Put the `arkitect-mcp` block in the **client** repo `.cursor/mcp.json` (keep other servers).
+2. Confirm `args` is the absolute `stdio.js`, `ARKITECT_DEFAULT_REPO_PATH` is the client repo, and `ARKITECT_HOST_REPO_PATH` is the Arkitect clone.
 3. Reload MCP in Cursor. Client sessions unlock read/write on that repo; host architecture redesign stays limited to the Arkitect-mcp.com root.
 4. Restart the stdio process after changing `mcp.json`.
 
@@ -532,7 +530,7 @@ Claude Desktop, Windsurf, and other MCP-capable clients follow the same pattern:
 | Document | Purpose |
 |----------|---------|
 | [README.md](../README.md) | Monorepo overview and commands |
-| [apps/desktop/README.md](../apps/desktop/README.md) | Desktop wizard and MCP install helper |
+| [apps/desktop/README.md](../apps/desktop/README.md) | Optional local workbench |
 | [instructions/request.md](../instructions/request.md) | Product backlog (dual-path UX, chat orchestration) |
 
 ---

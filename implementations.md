@@ -1,3 +1,13 @@
+### 2026-09-04 - Live JSON install steps; delete Setup.exe
+**Status:** SUCCESS
+**Files:** apps/site/src/features/install-path/*, apps/site/public/index.html, apps/site/src/pages/McpPage.tsx, apps/desktop/src/electron/{update-config,app-update-service}.ts
+**Result:** Five-step install live on homepage + /mcp. GitHub Arkitect-Setup.exe assets removed. Shipping to master.
+
+### 2026-09-04 - Drop Windows installer pipeline
+**Status:** SUCCESS
+**Files:** package.json, apps/desktop/package.json, apps/desktop/README.md, pnpm-workspace.yaml, apps/site/src/features/install-path/*, apps/site/src/lib/{env,arkitect-links}.ts, README.md, docs/USER_GUIDE.md
+**Result:** Removed NSIS/electron-builder + release-desktop workflow. Install is clone + build + mcp.json.
+
 ### 2026-09-03 - Legal triple scoring
 **Status:** PENDING
 **Files:** packages/core/src/architecture-recommendation/*, packages/core/src/{recommendation-engine,diagnosis-result,catalog}.ts, packages/contracts/src/{catalog,architecture-recommendation,diagnosis}.ts, packages/mcp-server/src/diagnosis-payload.ts, apps/desktop/src/features/{architecture-policy,results-overview,review-run}/*

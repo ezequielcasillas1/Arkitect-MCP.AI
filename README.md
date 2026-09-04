@@ -6,16 +6,15 @@ Arkitect is now scaffolded as a real pnpm + turbo + TypeScript monorepo while pr
 
 | Option | Link |
 |--------|------|
-| **Website** (open source + mcp.json install) | [arkitect-mcp.com](https://arkitect-mcp.com/#download-counter-heading) |
+| **Website** (mcp.json install) | [arkitect-mcp.com](https://arkitect-mcp.com/#install-path) |
 | **User guide & MCP setup** | [arkitect-mcp.com/instructions](https://arkitect-mcp.com/instructions) |
-| **GitHub Releases** (installer + source zip) | [github.com/ezequielcasillas1/Arkitect-MCP.AI/releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases) |
-| **Windows installer** (direct, v2.1.0) | [Arkitect-Setup.exe](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases/download/v2.1.0/Arkitect-Setup.exe) |
+| **GitHub source** | [github.com/ezequielcasillas1/Arkitect-MCP.AI](https://github.com/ezequielcasillas1/Arkitect-MCP.AI) |
 
-**Install from source:** clone this repo (or download **Source code (zip)** from [Releases](https://github.com/ezequielcasillas1/Arkitect-MCP.AI/releases)), then follow [docs/USER_GUIDE.md](docs/USER_GUIDE.md). No npm registry — build locally with `pnpm install` and `pnpm --filter @arkitect/mcp-server build`.
+**Install:** clone this repo, build `@arkitect/mcp-server`, then paste `.cursor/mcp.json` from [arkitect-mcp.com](https://arkitect-mcp.com/#install-path). No Windows installer. No npm registry.
 
 ## Workspace layout
 
-- `apps/desktop`: Electron + React desktop-first Windows 11 shell for repo intake, detections, policy review, AI settings, permissions, and results.
+- `apps/desktop`: Optional local Electron workbench (not a shipped Windows installer).
 - `apps/site`: React marketing site (open source + optional Buy Me a Coffee) aligned to the desktop-first product direction.
 - `apps/licensing-worker`: Cloudflare Worker scaffold for Stripe webhook intake plus entitlement/license validation routes.
 - `packages/contracts`: shared diagnosis, catalog, AI, licensing, and MCP result contracts.

@@ -87,6 +87,12 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Result:** Packaged MCP stdio ajv/zod fix shipped; site version history and download CTAs synced to v2.1.0; GitHub Release v2.1.0 published with Arkitect-Setup.exe; master pushed for Cloudflare deploy. User confirmed SUCCESS.
 
 
+### 2026-09-04 - JSON-only install; drop Windows installer
+**Status:** SUCCESS
+**Commit:** pending
+**Files:** apps/site/src/features/install-path/*, apps/site/public/index.html, apps/desktop/electron-builder.yml, .github/workflows/release-desktop.yml, package.json, pnpm-workspace.yaml, docs/USER_GUIDE.md
+**Result:** Five-step clone/build/mcp.json install on site. NSIS pipeline and Setup.exe links removed. User asked git commit all + push.
+
 ### 2026-09-03 - Legal triple scoring + site v2.2.0 changelog
 **Status:** SUCCESS
 **Commit:** 27ce979

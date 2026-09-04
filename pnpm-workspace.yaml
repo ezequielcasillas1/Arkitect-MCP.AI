@@ -2,7 +2,7 @@ packages:
   - apps/*
   - packages/*
 allowBuilds:
-  electron-winstaller: true
+  electron-winstaller: false
   esbuild: true
   sharp: true
   sqlite3: true

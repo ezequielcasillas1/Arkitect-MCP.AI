@@ -68,8 +68,6 @@ export async function checkForAppUpdate(): Promise<AppUpdateCheckResult> {
     }
 
     const latestVersion = normalizeVersionTag(release.tag_name);
-    const asset = release.assets?.find((entry) => entry.name === config.installerAssetName);
-    const downloadUrl = asset?.browser_download_url;
 
     return {
       ok: true,
@@ -77,7 +75,7 @@ export async function checkForAppUpdate(): Promise<AppUpdateCheckResult> {
       latestVersion,
       updateAvailable: isUpdateAvailable(currentVersion, latestVersion),
       releaseUrl: release.html_url,
-      downloadUrl,
+      downloadUrl: release.html_url,
       publishedAt: release.published_at
     };
   } catch (error) {
