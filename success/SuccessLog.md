@@ -86,3 +86,10 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Files:** apps/desktop/electron-builder.yml, apps/site/src/features/{release-feed,mcp-page,seo}/data.ts, apps/site/src/pages/LandingPage.tsx, bugfixes.md, implementations.md
 **Result:** Packaged MCP stdio ajv/zod fix shipped; site version history and download CTAs synced to v2.1.0; GitHub Release v2.1.0 published with Arkitect-Setup.exe; master pushed for Cloudflare deploy. User confirmed SUCCESS.
 
+
+### 2026-09-03 - Legal triple scoring + site v2.2.0 changelog
+**Status:** SUCCESS
+**Commit:** 27ce979
+**Files:** packages/core, packages/contracts, packages/mcp-server, apps/desktop, apps/site (mcp-page, release-feed, seo, LandingPage), docs/substack-legal-triple-scoring.md
+**Result:** Committed and pushed master; local site build includes v2.2.0 changelog. Wrangler deploy blocked (no CLOUDFLARE_API_TOKEN); live still on spa-CWxd2rra.js until manual deploy.
+
