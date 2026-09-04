@@ -89,7 +89,7 @@ Reserved for confirmed successful work after explicit user confirmation.
 
 ### 2026-09-04 - JSON-only install; drop Windows installer
 **Status:** SUCCESS
-**Commit:** pending
+**Commit:** 81736d2
 **Files:** apps/site/src/features/install-path/*, apps/site/public/index.html, apps/desktop/electron-builder.yml, .github/workflows/release-desktop.yml, package.json, pnpm-workspace.yaml, docs/USER_GUIDE.md
 **Result:** Five-step clone/build/mcp.json install on site. NSIS pipeline and Setup.exe links removed. User asked git commit all + push.
 
