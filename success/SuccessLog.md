@@ -99,3 +99,9 @@ Reserved for confirmed successful work after explicit user confirmation.
 **Files:** packages/core, packages/contracts, packages/mcp-server, apps/desktop, apps/site (mcp-page, release-feed, seo, LandingPage), docs/substack-legal-triple-scoring.md
 **Result:** Committed and pushed master; local site build includes v2.2.0 changelog. Wrangler deploy blocked (no CLOUDFLARE_API_TOKEN); live still on spa-CWxd2rra.js until manual deploy.
 
+### 2026-09-25 - MCP verify: package manager, repo path, audit, reports
+**Status:** SUCCESS
+**Commit:** 4c380ae
+**Files:** packages/core (package-manager, codebase-verification, dependency-audit, verify-report, required-repo-path), packages/mcp-server, packages/contracts/verification.ts, docs/USER_GUIDE.md, packages/mcp-server/README.md
+**Result:** User confirmed SUCCESS. Detect PM from lockfiles; refuse missing repoPath; audit step + thresholds; dated `.arkitect/reports/`; PR #8 on branch cursor/mcp-verify-fixes-8832.
+
