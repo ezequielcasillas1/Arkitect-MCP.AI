@@ -37,6 +37,41 @@ describe("suggestRequirementTags", () => {
     expect(tags).toContain("desktop-shell");
   });
 
+  it("does not false-match keywords from absolute paths or substring noise", () => {
+    const suggestions = suggestRequirementTags({
+      repoSummary: "Brochure lawn site with application forms in assets.",
+      requestedOutcome: "Update marketing content",
+      platformType: "web",
+      workloadType: "diagnosis",
+      currentArchitecture: "layered",
+      repoHealth: "healthy",
+      likelyDiagnosisIntent: "review",
+      repoInspection: {
+        source: "local-path",
+        path: "/workspace/gracias-lawn/site",
+        repoName: "gracias-lawn",
+        exists: true,
+        isDirectory: true,
+        hasGit: false,
+        manifestFiles: ["index.php"],
+        topLevelDirectories: ["assets", "parts", "static-preview"],
+        topLevelFiles: ["index.php"],
+        samplePaths: ["assets/css/main.css", "parts/home1/body.php"],
+        frameworkHints: ["php", "html-static"],
+        detectedMarkers: ["php:index.php"],
+        validationErrors: [],
+        summary: "PHP brochure site",
+        inspectedAt: new Date().toISOString()
+      }
+    });
+
+    const tags = suggestions.map((item) => item.tag);
+
+    expect(tags).not.toContain("modular-packages");
+    expect(tags).not.toContain("real-time");
+    expect(tags).not.toContain("api-surface");
+  });
+
   it("prioritizes recovery tags for unhealthy repos", () => {
     const suggestions = suggestRequirementTags({
       repoSummary: "Legacy repo with drifting boundaries",

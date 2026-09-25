@@ -13,6 +13,7 @@ pnpm dev:site
 
 ## Cloudflare Pages deployment readiness
 
+- **Node.js 22+** required for site builds (pnpm 11 uses `node:sqlite`; set Pages Node version to 22 or use repo `.nvmrc`).
 - Static Vite build output: `apps/site/dist` (`pnpm --filter @arkitect/site build`).
 - Homepage is static `public/index.html` (v2). Architecture guide is `public/architecture/index.html` so Pretty URLs serve `/architecture` instead of 308-looping `architecture.html`. SPA builds from `spa/index.html` and is copied to per-route `index.html` folders so Pretty URLs never 308 `/mcp` to `/app`.
 - `wrangler.jsonc` sets `pages_build_output_dir` for `wrangler pages deploy`.

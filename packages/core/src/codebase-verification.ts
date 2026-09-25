@@ -13,7 +13,7 @@ import {
   validateDirectoryRoot,
   validateRepoRoot
 } from "./pnpm-runner.js";
-import { inspectRepoPath, listPhpFilesForSyntaxCheck } from "./repo-inspector.js";
+import { inspectRepoPath, listPhpFilesForSyntaxCheck, PHP_SYNTAX_CHECK_FILE_LIMIT } from "./repo-inspector.js";
 import { readGitMetadata, writeVerifyReport } from "./verify-report.js";
 import { assessProjectDependenciesInstalled } from "./project-dependencies.js";
 
@@ -44,6 +44,29 @@ function buildFailureResult(
 
 function missingScriptReason(script: string): string {
   return `Skipped — no "${script}" script is configured in package.json.`;
+}
+
+function buildStaticSiteLabel(frameworkHints: string[]): string {
+  const hasPhp = frameworkHints.includes("php");
+  const hasHtml = frameworkHints.includes("html-static");
+
+  if (hasPhp && hasHtml) {
+    return "Static PHP/HTML site";
+  }
+
+  if (hasPhp) {
+    return "Static PHP site";
+  }
+
+  if (hasHtml) {
+    return "Static HTML site";
+  }
+
+  if (frameworkHints.includes("wordpress")) {
+    return "WordPress site";
+  }
+
+  return "Static non-Node site";
 }
 
 function formatMissingScriptSummary(missing: string[]): string {
@@ -87,7 +110,7 @@ async function isPhpCliAvailable(): Promise<boolean> {
 
 async function runPhpSyntaxCheck(repoPath: string): Promise<CodebaseVerifyStepResult> {
   const startedAt = new Date();
-  const phpFiles = await listPhpFilesForSyntaxCheck(repoPath);
+  const { files: phpFiles, scanCapped } = await listPhpFilesForSyntaxCheck(repoPath);
 
   if (phpFiles.length === 0) {
     const finishedAt = new Date();
@@ -160,16 +183,21 @@ async function runPhpSyntaxCheck(repoPath: string): Promise<CodebaseVerifyStepRe
   }
 
   const finishedAt = new Date();
-  const ok = failures.length === 0;
+  const syntaxErrors = failures.length > 0;
+  const partialScan = scanCapped;
+  const status = syntaxErrors || partialScan ? "failure" : "success";
+  const outputTail = syntaxErrors
+    ? tailOutput(failures.join("\n"), 24)
+    : partialScan
+      ? `Partial PHP syntax scan: checked ${phpFiles.length} file(s); additional files were not scanned (cap ${PHP_SYNTAX_CHECK_FILE_LIMIT}).`
+      : `Checked ${phpFiles.length} PHP file(s) with php -l.`;
 
   return {
     id: "syntax",
     label: "PHP syntax",
-    status: ok ? "success" : "failure",
-    exitCode: ok ? 0 : 1,
-    outputTail: ok
-      ? `Checked ${phpFiles.length} PHP file(s) with php -l.`
-      : tailOutput(failures.join("\n"), 24),
+    status,
+    exitCode: status === "success" ? 0 : 1,
+    outputTail,
     command: "php -l",
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
@@ -188,8 +216,7 @@ async function runStaticCodebaseVerification(
     label: step.label,
     status: "not_run",
     exitCode: null,
-    outputTail: notApplicableNodeScriptReason,
-    command: formatPackageScriptCommand("npm", step.script)
+    outputTail: notApplicableNodeScriptReason
   }));
 
   const syntaxStep = inspection.frameworkHints.includes("php") ? await runPhpSyntaxCheck(repoPath) : null;
@@ -201,12 +228,12 @@ async function runStaticCodebaseVerification(
   const applicable = steps.filter((step) => step.status === "success" || step.status === "failure");
   const ok = applicable.length === 0 ? true : applicable.every((step) => step.status === "success");
   const finishedAt = new Date();
-  const stackLabel = inspection.frameworkHints.length > 0 ? inspection.frameworkHints.join(", ") : "non-Node";
+  const siteLabel = buildStaticSiteLabel(inspection.frameworkHints);
   const git = await readGitMetadata(repoPath);
 
   const summary = ok
-    ? `Static ${stackLabel} repo verification passed. Node lint/build/typecheck/test do not apply.${syntaxStep ? ` PHP syntax: ${syntaxStep.status}.` : ""}`
-    : `Static ${stackLabel} repo verification failed.${syntaxStep?.status === "failure" ? " PHP syntax check reported errors." : ""}`;
+    ? `${siteLabel} verification passed. Node lint/build/typecheck/test do not apply.${syntaxStep ? ` PHP syntax: ${syntaxStep.status}.` : ""}`
+    : `${siteLabel} verification failed.${syntaxStep?.status === "failure" ? " PHP syntax check reported errors or a partial scan." : ""}`;
 
   const baseResult: CodebaseVerifyResult = {
     ok,
@@ -321,8 +348,7 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
         label: step.label,
         status: "not_run" as const,
         exitCode: null,
-        outputTail: missingScriptReason(step.script),
-        command: formatPackageScriptCommand(packageManager, step.script)
+        outputTail: missingScriptReason(step.script)
       })),
       summary: "This repo does not expose any lint, build, typecheck, or test scripts.",
       errorCode: "missing_verify_script",
@@ -342,10 +368,9 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
       steps.push({
         id: step.id,
         label: step.label,
-        status: scripts[step.script] ? "not_run" : "not_run",
+        status: "not_run",
         exitCode: null,
-        outputTail: scripts[step.script] ? dependencyStatus.message : missingScriptReason(step.script),
-        command: formatPackageScriptCommand(packageManager, step.script)
+        outputTail: scripts[step.script] ? dependencyStatus.message : missingScriptReason(step.script)
       });
     }
   } else {
@@ -356,8 +381,7 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
           label: step.label,
           status: "not_run",
           exitCode: null,
-          outputTail: missingScriptReason(step.script),
-          command: formatPackageScriptCommand(packageManager, step.script)
+          outputTail: missingScriptReason(step.script)
         });
         continue;
       }

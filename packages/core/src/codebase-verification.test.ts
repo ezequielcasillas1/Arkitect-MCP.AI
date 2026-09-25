@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runCodebaseVerification } from "./codebase-verification.js";
+import * as repoInspector from "./repo-inspector.js";
 
 const spawnMock = vi.fn();
 
@@ -98,6 +99,7 @@ describe("runCodebaseVerification", () => {
     expect(result.command).toContain("non-Node");
     expect(result.steps.every((step) => step.status === "not_run")).toBe(true);
     expect(result.summary).toContain("do not apply");
+    expect(result.summary).toContain("Static HTML site");
     expect(result.ok).toBe(true);
   });
 
@@ -122,6 +124,7 @@ describe("runCodebaseVerification", () => {
     expect(result.steps[0]?.status).toBe("success");
     expect(result.steps[1]?.status).toBe("success");
     expect(result.steps[2]?.status).toBe("not_run");
+    expect(result.steps[2]?.command).toBeUndefined();
     expect(result.steps[3]?.status).toBe("not_run");
     expect(result.summary).toContain("typecheck and test not configured");
     expect(spawnMock).toHaveBeenCalledTimes(3);
@@ -263,5 +266,29 @@ describe("runCodebaseVerification", () => {
     expect(result.steps[3]?.status).toBe("skipped");
     expect(result.steps[4]?.id).toBe("audit");
     expect(spawnMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("marks PHP syntax verify as failed when scan cap is hit", async () => {
+    const listSpy = vi.spyOn(repoInspector, "listPhpFilesForSyntaxCheck").mockResolvedValue({
+      files: ["index.php"],
+      scanCapped: true
+    });
+
+    mockSpawnSequence([
+      { exitCode: 0, output: "PHP 8.4" },
+      { exitCode: 0, output: "No syntax errors detected" }
+    ]);
+
+    const repo = await mkdtemp(join(tmpdir(), "arkitect-php-cap-"));
+    await writeFile(join(repo, "index.php"), "<?php echo 'ok';");
+
+    const result = await runCodebaseVerification({ repoPath: repo, writeReport: false });
+    const syntax = result.steps.find((step) => step.id === "syntax");
+
+    expect(syntax?.status).toBe("failure");
+    expect(syntax?.outputTail).toContain("Partial PHP syntax scan");
+    expect(result.ok).toBe(false);
+
+    listSpy.mockRestore();
   });
 });

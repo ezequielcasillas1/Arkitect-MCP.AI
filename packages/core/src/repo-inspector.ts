@@ -37,8 +37,19 @@ const packageHintNames = [
   "wordpress"
 ];
 
-const maxPhpScanFiles = 48;
-const maxWalkDepth = 5;
+/** Sample cap for inspection markers only (syntax check uses {@link PHP_SYNTAX_CHECK_FILE_LIMIT}). */
+const PHP_INSPECTION_MARKER_SAMPLE = 48;
+
+/** Maximum PHP files to syntax-check in one verify run (vendor/node_modules skipped). */
+export const PHP_SYNTAX_CHECK_FILE_LIMIT = 5000;
+
+const maxWalkDepth = 32;
+
+export interface PhpFileListResult {
+  files: string[];
+  /** True when the walk stopped at the file limit and additional PHP files may exist. */
+  scanCapped: boolean;
+}
 
 function uniqueSorted(values: string[]) {
   return Array.from(new Set(values)).sort((left, right) => left.localeCompare(right));
@@ -119,10 +130,15 @@ async function collectRelativePaths(
   relativeDir: string,
   depth: number,
   extension: string,
-  bucket: string[]
-): Promise<void> {
-  if (depth > maxWalkDepth || bucket.length >= maxPhpScanFiles) {
-    return;
+  bucket: string[],
+  maxFiles: number
+): Promise<boolean> {
+  if (depth > maxWalkDepth) {
+    return false;
+  }
+
+  if (bucket.length >= maxFiles) {
+    return true;
   }
 
   let entries;
@@ -130,11 +146,14 @@ async function collectRelativePaths(
   try {
     entries = await readdir(join(repoPath, relativeDir), { withFileTypes: true });
   } catch {
-    return;
+    return false;
   }
 
+  let scanCapped = false;
+
   for (const entry of entries) {
-    if (bucket.length >= maxPhpScanFiles) {
+    if (bucket.length >= maxFiles) {
+      scanCapped = true;
       break;
     }
 
@@ -150,9 +169,12 @@ async function collectRelativePaths(
     }
 
     if (entry.isDirectory()) {
-      await collectRelativePaths(repoPath, relativePath, depth + 1, extension, bucket);
+      const childCapped = await collectRelativePaths(repoPath, relativePath, depth + 1, extension, bucket, maxFiles);
+      scanCapped = scanCapped || childCapped;
     }
   }
+
+  return scanCapped;
 }
 
 async function detectStaticStackHints(
@@ -164,7 +186,7 @@ async function detectStaticStackHints(
   const detectedMarkers: string[] = [];
 
   const phpFiles: string[] = [];
-  await collectRelativePaths(repoPath, "", 0, ".php", phpFiles);
+  await collectRelativePaths(repoPath, "", 0, ".php", phpFiles, PHP_INSPECTION_MARKER_SAMPLE);
 
   if (phpFiles.length > 0 || topLevelFiles.some((file) => file.endsWith(".php"))) {
     frameworkHints.push("php");
@@ -172,7 +194,7 @@ async function detectStaticStackHints(
   }
 
   const htmlFiles: string[] = [];
-  await collectRelativePaths(repoPath, "", 0, ".html", htmlFiles);
+  await collectRelativePaths(repoPath, "", 0, ".html", htmlFiles, PHP_INSPECTION_MARKER_SAMPLE);
 
   const hasPackageJson = topLevelFiles.includes("package.json");
 
@@ -318,8 +340,11 @@ export async function inspectRepoPath(repoPath: string): Promise<RepoInspection>
   }
 }
 
-export async function listPhpFilesForSyntaxCheck(repoPath: string, limit = maxPhpScanFiles): Promise<string[]> {
+export async function listPhpFilesForSyntaxCheck(
+  repoPath: string,
+  limit = PHP_SYNTAX_CHECK_FILE_LIMIT
+): Promise<PhpFileListResult> {
   const files: string[] = [];
-  await collectRelativePaths(repoPath, "", 0, ".php", files);
-  return files.slice(0, limit);
+  const scanCapped = await collectRelativePaths(repoPath, "", 0, ".php", files, limit);
+  return { files, scanCapped };
 }

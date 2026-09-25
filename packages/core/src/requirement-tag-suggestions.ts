@@ -8,11 +8,30 @@ interface TagCandidate {
 }
 
 function includesAny(text: string, needles: string[]): boolean {
-  return needles.some((needle) => text.includes(needle));
+  return needles.some((needle) => scopeKeywordMatches(text, needle));
 }
 
 function hasAny(values: string[], needles: string[]): boolean {
-  return needles.some((needle) => values.some((value) => value.toLowerCase().includes(needle)));
+  return needles.some((needle) => values.some((value) => scopeKeywordMatches(value.toLowerCase(), needle)));
+}
+
+function scopeKeywordMatches(scopeText: string, keyword: string): boolean {
+  const normalizedKeyword = keyword.toLowerCase().trim();
+
+  if (!normalizedKeyword) {
+    return false;
+  }
+
+  if (normalizedKeyword.endsWith("/")) {
+    return scopeText.includes(normalizedKeyword);
+  }
+
+  if (normalizedKeyword.includes(" ") || normalizedKeyword.includes("/")) {
+    return scopeText.includes(normalizedKeyword);
+  }
+
+  const escaped = normalizedKeyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`(?:^|[^a-z0-9_/-])${escaped}(?:$|[^a-z0-9_/-])`, "i").test(scopeText);
 }
 
 function toInspectionText(inspection?: RepoInspection): string {
@@ -22,7 +41,6 @@ function toInspectionText(inspection?: RepoInspection): string {
 
   return [
     inspection.repoName,
-    inspection.path,
     inspection.summary,
     ...inspection.manifestFiles,
     ...inspection.topLevelDirectories,
@@ -62,7 +80,7 @@ function addKeywordRules(
   }>
 ) {
   rules.forEach((rule) => {
-    const matches = rule.keywords.filter((keyword) => scopeText.includes(keyword));
+    const matches = rule.keywords.filter((keyword) => scopeKeywordMatches(scopeText, keyword));
 
     if (matches.length === 0) {
       return;
