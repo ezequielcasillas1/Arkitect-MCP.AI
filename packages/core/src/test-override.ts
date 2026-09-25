@@ -9,7 +9,16 @@ import type {
   TestRunResult
 } from "@arkitect/contracts";
 import { runCodebaseVerification } from "./codebase-verification.js";
-import { readPackageScripts, runPnpmScript, tailOutput, validateRepoRoot } from "./pnpm-runner.js";
+import {
+  detectPackageManager,
+  formatPackageScriptCommand,
+  isPackageManagerInstalled,
+  packageManagerMissingHint,
+  readPackageScripts,
+  runPackageScript,
+  tailOutput,
+  validateRepoRoot
+} from "./pnpm-runner.js";
 import { runRepoTests } from "./test-runner.js";
 
 const capabilityDefs: Array<{
@@ -87,6 +96,8 @@ export async function discoverTestCapabilities(input: { repoPath: string }): Pro
   }
 
   const repoPath = validation.repoPath;
+  const detection = await detectPackageManager(repoPath);
+  const packageManager = detection.id;
   let scripts: Record<string, string>;
 
   try {
@@ -97,7 +108,7 @@ export async function discoverTestCapabilities(input: { repoPath: string }): Pro
       capabilities: capabilityDefs.map((def) => ({
         id: def.id,
         label: def.label,
-        command: `pnpm ${def.script}`,
+        command: formatPackageScriptCommand(packageManager, def.script),
         available: false,
         category: def.category
       })),
@@ -112,7 +123,7 @@ export async function discoverTestCapabilities(input: { repoPath: string }): Pro
     return {
       id: def.id,
       label: def.label,
-      command: `pnpm ${def.script}`,
+      command: formatPackageScriptCommand(packageManager, def.script),
       available,
       category: def.category
     };
@@ -137,7 +148,6 @@ async function runSingleQualityStep(input: {
   label: string;
 }): Promise<TestOverrideRunResult> {
   const startedAt = new Date();
-  const command = `pnpm ${input.script}`;
   const validation = validateRepoRoot(input.repoPath);
 
   if (!validation.ok) {
@@ -145,7 +155,7 @@ async function runSingleQualityStep(input: {
       ok: false,
       kind: input.kind,
       repoPath: validation.repoPath,
-      command,
+      command: input.script,
       startedAt: startedAt.toISOString(),
       finishedAt: new Date().toISOString(),
       durationMs: 0,
@@ -157,6 +167,28 @@ async function runSingleQualityStep(input: {
   }
 
   const repoPath = validation.repoPath;
+  const detection = await detectPackageManager(repoPath);
+  const packageManager = detection.id;
+  const command = formatPackageScriptCommand(packageManager, input.script);
+
+  const pmInstalled = await isPackageManagerInstalled(packageManager);
+
+  if (!pmInstalled) {
+    return {
+      ok: false,
+      kind: input.kind,
+      repoPath,
+      command,
+      startedAt: startedAt.toISOString(),
+      finishedAt: new Date().toISOString(),
+      durationMs: 0,
+      steps: [],
+      summary: `${packageManager} is not installed or not on PATH.`,
+      errorCode: "spawn_failed",
+      hint: packageManagerMissingHint(packageManager, detection)
+    };
+  }
+
   let scripts: Record<string, string>;
 
   try {
@@ -192,7 +224,7 @@ async function runSingleQualityStep(input: {
     };
   }
 
-  const result = await runPnpmScript(repoPath, input.script);
+  const result = await runPackageScript(repoPath, input.script, packageManager);
   const stepOk = result.exitCode === 0;
   const finishedAt = new Date();
 
@@ -200,7 +232,7 @@ async function runSingleQualityStep(input: {
     ok: stepOk,
     kind: input.kind,
     repoPath,
-    command,
+    command: result.command,
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
     durationMs: finishedAt.getTime() - startedAt.getTime(),

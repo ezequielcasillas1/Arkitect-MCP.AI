@@ -12,6 +12,14 @@ vi.mock("node:child_process", () => ({
   spawn: (...args: unknown[]) => spawnMock(...args)
 }));
 
+vi.mock("./pnpm-runner.js", async () => {
+  const actual = await vi.importActual<typeof import("./pnpm-runner.js")>("./pnpm-runner.js");
+  return {
+    ...actual,
+    isPackageManagerInstalled: vi.fn(async () => true)
+  };
+});
+
 function mockSpawnSequence(results: Array<{ exitCode: number; output?: string }>) {
   spawnMock.mockImplementation(() => {
     const next = results.shift() ?? { exitCode: 0, output: "" };
@@ -48,6 +56,7 @@ describe("runRepoTests", () => {
         }
       })
     );
+    await writeFile(join(repoPath, "pnpm-lock.yaml"), "lockfileVersion: 9\n");
   });
 
   afterEach(() => {
@@ -78,7 +87,7 @@ describe("runRepoTests", () => {
     const result = await runRepoTests({ repoPath, suite: "all" });
 
     expect(result.ok).toBe(true);
-    expect(result.command).toBe("pnpm test");
+    expect(result.command).toBe("pnpm run test");
     expect(result.steps[0]?.id).toBe("all");
     expect(spawnMock).toHaveBeenCalledTimes(1);
   });
@@ -89,7 +98,7 @@ describe("runRepoTests", () => {
     const result = await runRepoTests({ repoPath, suite: "unit" });
 
     expect(result.ok).toBe(true);
-    expect(result.command).toBe("pnpm test:unit");
+    expect(result.command).toBe("pnpm run test:unit");
     expect(result.steps[0]?.id).toBe("unit");
   });
 

@@ -14,3 +14,6 @@ export * from "./refactoring-analysis.js";
 export * from "./pattern-intelligence/index.js";
 export * from "./intake-merge.js";
 export * from "./workbench-automation.js";
+export * from "./package-manager.js";
+export * from "./dependency-audit.js";
+export * from "./verify-report.js";

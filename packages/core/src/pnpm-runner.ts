@@ -1,54 +1,32 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
-import { spawn } from "node:child_process";
+import {
+  detectPackageManager,
+  formatPackageAuditCommand,
+  formatPackageScriptCommand,
+  isPackageManagerInstalled,
+  packageManagerMissingHint,
+  runPackageAudit,
+  runPackageScript,
+  type DetectedPackageManager
+} from "./package-manager.js";
 
-export function tailOutput(output: string, maxLines = 24): string {
-  const lines = output.trim().split(/\r?\n/);
+export { tailOutput } from "./process-output.js";
+export {
+  detectPackageManager,
+  formatPackageAuditCommand,
+  formatPackageScriptCommand,
+  isPackageManagerInstalled,
+  packageManagerMissingHint,
+  runPackageAudit,
+  runPackageScript,
+  type DetectedPackageManager
+};
 
-  if (lines.length <= maxLines) {
-    return lines.join("\n");
-  }
-
-  return lines.slice(-maxLines).join("\n");
-}
-
-export function resolvePnpmCommand(): string {
-  return process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-}
-
-export function runPnpmScript(repoPath: string, script: string): Promise<{ exitCode: number; output: string }> {
-  return new Promise((resolvePromise) => {
-    const child = spawn(resolvePnpmCommand(), ["run", script], {
-      cwd: repoPath,
-      shell: process.platform === "win32",
-      env: process.env
-    });
-
-    let output = "";
-
-    child.stdout.on("data", (chunk: Buffer | string) => {
-      output += chunk.toString();
-    });
-
-    child.stderr.on("data", (chunk: Buffer | string) => {
-      output += chunk.toString();
-    });
-
-    child.on("error", (error: Error) => {
-      resolvePromise({
-        exitCode: 1,
-        output: `${output}\n${error.message}`.trim()
-      });
-    });
-
-    child.on("close", (code: number | null) => {
-      resolvePromise({
-        exitCode: code ?? 1,
-        output
-      });
-    });
-  });
+export async function runPnpmScript(repoPath: string, script: string): Promise<{ exitCode: number; output: string }> {
+  const result = await runPackageScript(repoPath, script, "pnpm");
+  return { exitCode: result.exitCode, output: result.output };
 }
 
 export async function readPackageScripts(repoPath: string): Promise<Record<string, string>> {

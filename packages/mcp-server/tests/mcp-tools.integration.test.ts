@@ -20,6 +20,7 @@ describe("MCP test tools integration", () => {
         }
       })
     );
+    await writeFile(join(repoPath, "package-lock.json"), "{}");
   });
 
   afterEach(async () => {
@@ -47,7 +48,7 @@ describe("MCP test tools integration", () => {
         ok: true,
         repoPath,
         suite: "unit",
-        command: "pnpm test:unit",
+        command: "npm run test:unit",
         summary: "Unit tests passed."
       });
       expect(Array.isArray((payload.json as { steps: unknown[] }).steps)).toBe(true);
@@ -66,7 +67,7 @@ describe("MCP test tools integration", () => {
       expect(payload.json).toMatchObject({
         ok: true,
         suite: "all",
-        command: "pnpm test"
+        command: "npm run test"
       });
     }
   });
@@ -76,7 +77,7 @@ describe("MCP test tools integration", () => {
 
     expect(result.ok).toBe(true);
     expect(result.suite).toBe("integration");
-    expect(result.command).toBe("pnpm test:integration");
+    expect(result.command).toBe("npm run test:integration");
     expect(result.steps).toHaveLength(1);
     expect(result.steps[0]?.outputTail).toContain("integration tests ok");
   });

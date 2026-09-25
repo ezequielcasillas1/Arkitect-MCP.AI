@@ -1,6 +1,30 @@
-export type CodebaseVerifyStepId = "lint" | "build" | "typecheck" | "test";
+export type PackageManagerId = "npm" | "pnpm" | "yarn" | "bun";
+
+export type CodebaseVerifyStepId = "lint" | "build" | "typecheck" | "test" | "audit";
 
 export type CodebaseVerifyStepStatus = "success" | "failure" | "skipped";
+
+export type AuditFailThreshold = "critical" | "high" | "none";
+
+export type DependencyAuditStatus = "success" | "failure" | "inconclusive";
+
+export interface DependencyAuditCounts {
+  info: number;
+  low: number;
+  moderate: number;
+  high: number;
+  critical: number;
+}
+
+export interface DependencyAuditResult {
+  status: DependencyAuditStatus;
+  command: string;
+  exitCode: number | null;
+  counts: DependencyAuditCounts;
+  failThreshold: AuditFailThreshold;
+  outputTail: string;
+  durationMs: number;
+}
 
 export interface CodebaseVerifyStepResult {
   id: CodebaseVerifyStepId;
@@ -8,6 +32,10 @@ export interface CodebaseVerifyStepResult {
   status: CodebaseVerifyStepStatus;
   exitCode: number | null;
   outputTail: string;
+  command?: string;
+  durationMs?: number;
+  startedAt?: string;
+  finishedAt?: string;
 }
 
 export interface CodebaseVerifyResult {
@@ -20,11 +48,27 @@ export interface CodebaseVerifyResult {
   steps: CodebaseVerifyStepResult[];
   summary: string;
   hint?: string;
-  errorCode?: "missing_repo" | "missing_package_json" | "missing_verify_script" | "spawn_failed" | "not_local_repo";
+  packageManager?: PackageManagerId;
+  audit?: DependencyAuditResult;
+  reportPath?: string;
+  reportJsonPath?: string;
+  gitCommit?: string;
+  gitBranch?: string;
+  errorCode?:
+    | "missing_repo"
+    | "missing_repo_path"
+    | "missing_package_json"
+    | "missing_verify_script"
+    | "spawn_failed"
+    | "not_local_repo"
+    | "package_manager_missing";
 }
 
 export interface CodebaseVerifyRequest {
   repoPath: string;
+  auditFailThreshold?: AuditFailThreshold;
+  reportDir?: string;
+  writeReport?: boolean;
 }
 
 export type TestSuiteId = "unit" | "integration" | "all";
@@ -50,7 +94,7 @@ export interface TestRunResult {
   steps: TestRunStepResult[];
   summary: string;
   hint?: string;
-  errorCode?: "missing_repo" | "missing_package_json" | "missing_test_script" | "spawn_failed";
+  errorCode?: "missing_repo" | "missing_repo_path" | "missing_package_json" | "missing_test_script" | "spawn_failed";
 }
 
 export interface TestRunRequest {
@@ -102,7 +146,15 @@ export interface TestOverrideRunResult {
   steps: TestOverrideStepView[];
   summary: string;
   hint?: string;
-  errorCode?: "missing_repo" | "missing_package_json" | "missing_verify_script" | "missing_test_script" | "spawn_failed" | "not_local_repo";
+  errorCode?:
+    | "missing_repo"
+    | "missing_repo_path"
+    | "missing_package_json"
+    | "missing_verify_script"
+    | "missing_test_script"
+    | "spawn_failed"
+    | "not_local_repo"
+    | "package_manager_missing";
 }
 
 export interface TestOverrideRunRequest {

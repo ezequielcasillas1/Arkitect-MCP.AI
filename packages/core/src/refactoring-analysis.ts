@@ -231,7 +231,10 @@ function recommendTechniques(
     .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
     .sort((left, right) => right.matchScore - left.matchScore);
 
-  return scored.slice(0, 12).map(({ matchScore: _matchScore, ...entry }) => entry);
+  return scored.slice(0, 12).map(({ matchScore, ...entry }) => {
+    void matchScore;
+    return entry;
+  });
 }
 
 function buildOrchestrationPlan(

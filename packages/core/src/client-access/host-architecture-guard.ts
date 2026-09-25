@@ -1,17 +1,13 @@
 import type {
   ArchitectureRecommendationRequest,
   ClientSession,
-  HostArchitectureAction,
   HostArchitectureGuardResult
 } from "@arkitect/contracts";
 
 const HOST_REDESIGN_BLOCKED =
   "Host architecture redesign is only allowed from the Arkitect-mcp.com repo root.";
 
-export function guardHostArchitectureWrite(
-  session: ClientSession,
-  _action: HostArchitectureAction
-): HostArchitectureGuardResult {
+export function guardHostArchitectureWrite(session: ClientSession): HostArchitectureGuardResult {
   if (session.allowHostArchitectureRedesign) {
     return { allowed: true };
   }
@@ -31,7 +27,7 @@ export function sanitizeArchitectureRecommendationRequest(
   session: ClientSession
 ): { request: ArchitectureRecommendationRequest; lockDenied: boolean; reason?: string } {
   const wantsHostLock = Boolean(request.lockCurrentArchitecture || request.selectedArchitectureId);
-  const guard = wantsHostLock ? guardHostArchitectureWrite(session, "lock") : { allowed: true };
+  const guard = wantsHostLock ? guardHostArchitectureWrite(session) : { allowed: true };
 
   if (guard.allowed) {
     return { request, lockDenied: false };

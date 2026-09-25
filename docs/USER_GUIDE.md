@@ -333,7 +333,7 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | `list_design_patterns` | Pattern-level guidance | Design patterns grouped by family |
 | `suggest_requirement_tags` | Scoping a feature or policy pass | Tags derived from repo inspection and diagnosis signals |
 | `list_diagnosis_strategies` | Explaining continuation guardrails | Strategies for healthy continuation, deferral, reporting |
-| `verify_codebase` | Pre-merge or CI parity check | Runs `pnpm lint`, `build`, `typecheck`, `test` at repo root |
+| `verify_codebase` | Pre-merge or CI parity check | Detects npm/pnpm/yarn/bun, runs lint/build/typecheck/test, dependency audit, writes `.arkitect/reports/` |
 | `run_tests` | Test-only pass | Runs `pnpm test` |
 | `run_test_suite` | Targeted suite | `suite`: `unit` \| `integration` \| `all` |
 | `list_refactoring_techniques` | Refactoring Guru catalog browse | Techniques grouped by category with reference URLs |
@@ -378,7 +378,10 @@ Set in `.cursor/mcp.json` `env` block or your shell:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ARKITECT_DEFAULT_REPO_PATH` | `process.cwd()` | Default repo root when tools omit `repoPath` |
+| `ARKITECT_DEFAULT_REPO_PATH` | *(required for repo tools)* | Default repo root when tools omit `repoPath`; Arkitect never falls back to the MCP server cwd |
+| `ARKITECT_AUDIT_FAIL_THRESHOLD` | `critical` | Fail verify on audit severities at/above the threshold (`critical`, `high`, `none`) |
+| `ARKITECT_REPORT_DIR` | `<repo>/.arkitect/reports` | Directory for dated verify markdown/JSON reports |
+| `ARKITECT_WRITE_VERIFY_REPORT` | enabled | Set `false`/`0` to skip report files |
 | `ARKITECT_HOST_REPO_PATH` | unset | Arkitect-mcp.com product root. Client installs set this so host architecture stays write-guarded |
 | `ARKITECT_ANALYZER` | `mock` | Set to `real` when real filesystem analysis is wired |
 | `ARKITECT_SKIP_DESKTOP_BRIDGE` | unset | Set to `1` to skip desktop bridge registration |

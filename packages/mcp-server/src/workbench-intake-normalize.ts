@@ -22,16 +22,14 @@ export function normalizeWorkbenchIntakeRequest(input: Record<string, unknown>):
     };
   }
 
-  const {
-    markStepsReviewed: _m,
-    advanceToStep: _a,
-    source: _s,
-    sessionId: _sid,
-    autoRun: _ar,
-    saveAsPreset: _sp,
-    applyAllTestSources: _ats,
-    ...intakeFields
-  } = input;
+  const intakeFields = { ...input };
+  delete intakeFields.markStepsReviewed;
+  delete intakeFields.advanceToStep;
+  delete intakeFields.source;
+  delete intakeFields.sessionId;
+  delete intakeFields.autoRun;
+  delete intakeFields.saveAsPreset;
+  delete intakeFields.applyAllTestSources;
 
   return {
     source,

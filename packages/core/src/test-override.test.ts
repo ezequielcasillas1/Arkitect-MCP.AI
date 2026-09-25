@@ -10,7 +10,8 @@ vi.mock("./pnpm-runner.js", async () => {
 
   return {
     ...actual,
-    runPnpmScript: vi.fn()
+    isPackageManagerInstalled: vi.fn(async () => true),
+    runPackageScript: vi.fn()
   };
 });
 
@@ -76,8 +77,13 @@ describe("runTestOverride", () => {
       join(repoPath, "package.json"),
       JSON.stringify({ scripts: { lint: "eslint ." } })
     );
+    await writeFile(join(repoPath, "pnpm-lock.yaml"), "lockfileVersion: 9\n");
 
-    vi.mocked(pnpmRunner.runPnpmScript).mockResolvedValue({ exitCode: 0, output: "ok" });
+    vi.mocked(pnpmRunner.runPackageScript).mockResolvedValue({
+      exitCode: 0,
+      output: "ok",
+      command: "pnpm run lint"
+    });
 
     const result = await runTestOverride({ repoPath, kind: "lint" });
 

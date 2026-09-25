@@ -5,3 +5,4 @@ export { buildClientMcpEnv } from "./mcp-env.js";
 export { mergeCursorMcpServers } from "./mcp-json-merge.js";
 export { capPermission, raisePermissionFloor } from "./permissions.js";
 export { resolveClientSession } from "./resolve-session.js";
+export { buildMissingRepoPathResult, resolveRequiredRepoPath } from "./required-repo-path.js";

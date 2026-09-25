@@ -2,8 +2,7 @@ import type {
   DesktopLibraryState,
   SavedArchitectureProfile,
   SavedProviderPreset,
-  SavedWorkbenchPreset,
-  SavedWorkbenchPresetInput
+  SavedWorkbenchPreset
 } from "@arkitect/contracts";
 import { createDefaultIntake } from "./diagnosis-result.js";
 

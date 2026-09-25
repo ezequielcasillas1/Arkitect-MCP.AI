@@ -1,6 +1,7 @@
+import { mkdtemp, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createArkitectMcpServer, diagnoseRepository } from "../src/index.js";
 import { toMcpToolResult } from "../src/mcp-result-mapper.js";
 
@@ -73,13 +74,27 @@ describe("diagnose_repository tool", () => {
     vi.unstubAllEnvs();
   });
 
+  it("refuses when repoPath and ARKITECT_DEFAULT_REPO_PATH are missing", async () => {
+    const server = createArkitectMcpServer();
+    const tool = server.tools.find((entry) => entry.name === "diagnose_repository");
+
+    const result = await tool!.execute({});
+    const payload = result.content[0]?.json as { errorCode?: string; cursorGuidance: string[] };
+
+    expect(payload.errorCode).toBe("missing_repo_path");
+    expect(payload.cursorGuidance.join(" ")).toContain("ARKITECT_DEFAULT_REPO_PATH");
+  });
+
   it("returns the MCP diagnosis payload shape", async () => {
+    const repoPath = await mkdtemp(join(tmpdir(), "arkitect-diagnose-"));
+    await writeFile(join(repoPath, "package.json"), JSON.stringify({ name: "demo" }));
+
     const server = createArkitectMcpServer();
     const tool = server.tools.find((entry) => entry.name === "diagnose_repository");
 
     expect(tool).toBeDefined();
 
-    const result = await tool!.execute({ repoName: "Test Repo" });
+    const result = await tool!.execute({ repoName: "Test Repo", repoPath });
     const json = result.content[0];
 
     expect(json.type).toBe("json");
@@ -137,6 +152,14 @@ describe("diagnose_repository tool", () => {
 });
 
 describe("MCP structuredContent compliance", () => {
+  beforeEach(() => {
+    vi.stubEnv("ARKITECT_DEFAULT_REPO_PATH", join(tmpdir(), "arkitect-mcp-default-repo-placeholder"));
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it("returns structuredContent matching each tool's declared outputSchema", async () => {
     const server = createArkitectMcpServer();
     expect(server.tools.length).toBeGreaterThan(0);

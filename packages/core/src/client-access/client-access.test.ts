@@ -55,7 +55,7 @@ describe("resolveClientSession", () => {
     expect(session.targetIsHost).toBe(true);
     expect(session.allowHostArchitectureRedesign).toBe(false);
     expect(session.blockedReason).toMatch(/Arkitect-mcp.com repo root/);
-    expect(guardHostArchitectureWrite(session, "lock").allowed).toBe(false);
+    expect(guardHostArchitectureWrite(session).allowed).toBe(false);
   });
 });
 

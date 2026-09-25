@@ -66,7 +66,10 @@ export const catalogToolOutputSchema = {
 export const verifyToolInputSchema = {
   type: "object",
   properties: {
-    repoPath: { type: "string" }
+    repoPath: { type: "string" },
+    auditFailThreshold: { type: "string", enum: ["critical", "high", "none"] },
+    reportDir: { type: "string" },
+    writeReport: { type: "boolean" }
   }
 };
 
@@ -448,14 +451,14 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
     {
       name: "verify_codebase",
       description:
-        "Run the full verify pipeline: pnpm lint, build, typecheck, and test from a repo root. Use the connected local path — not a system folder like C:\\Windows\\System32.",
+        "Run the full verify pipeline: lint, build, typecheck, test, and dependency audit using the target repo's package manager (npm, pnpm, yarn, or bun). Writes a dated report under .arkitect/reports by default.",
       inputSchema: verifyToolInputSchema,
       outputSchema: verifyToolOutputSchema
     },
     {
       name: "run_tests",
       description:
-        "Run unit and integration tests only (pnpm test) from a repo root. Returns structured pass/fail, step output tails, and summary.",
+        "Run unit and integration tests only from a repo root using the detected package manager. Returns structured pass/fail, step output tails, and summary.",
       inputSchema: testToolInputSchema,
       outputSchema: testToolOutputSchema
     },

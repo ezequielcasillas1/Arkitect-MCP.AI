@@ -1,7 +1,11 @@
 import type { TestRunResult, TestRunStepResult, TestSuiteId } from "@arkitect/contracts";
 import {
+  detectPackageManager,
+  formatPackageScriptCommand,
+  isPackageManagerInstalled,
+  packageManagerMissingHint,
   readPackageScripts,
-  runPnpmScript,
+  runPackageScript,
   tailOutput,
   validateRepoRoot
 } from "./pnpm-runner.js";
@@ -26,7 +30,6 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
   const startedAt = new Date();
   const suite = resolveSuite(input);
   const script = suiteScripts[suite];
-  const command = `pnpm ${script}`;
   const validation = validateRepoRoot(input.repoPath);
 
   if (!validation.ok) {
@@ -34,7 +37,7 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
       ok: false,
       repoPath: validation.repoPath,
       suite,
-      command,
+      command: script,
       startedAt: startedAt.toISOString(),
       finishedAt: new Date().toISOString(),
       durationMs: 0,
@@ -46,6 +49,28 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
   }
 
   const repoPath = validation.repoPath;
+  const detection = await detectPackageManager(repoPath);
+  const packageManager = detection.id;
+  const command = formatPackageScriptCommand(packageManager, script);
+
+  const pmInstalled = await isPackageManagerInstalled(packageManager);
+
+  if (!pmInstalled) {
+    return {
+      ok: false,
+      repoPath,
+      suite,
+      command,
+      startedAt: startedAt.toISOString(),
+      finishedAt: new Date().toISOString(),
+      durationMs: 0,
+      steps: [],
+      summary: `${packageManager} is not installed or not on PATH.`,
+      errorCode: "spawn_failed",
+      hint: packageManagerMissingHint(packageManager, detection)
+    };
+  }
+
   let scripts: Record<string, string>;
 
   try {
@@ -79,12 +104,12 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
       errorCode: "missing_test_script",
       hint:
         suite === "all"
-          ? "Arkitect run_tests expects pnpm test at the repo root."
+          ? `Arkitect run_tests expects ${formatPackageScriptCommand(packageManager, "test")} at the repo root.`
           : `Add a root "${script}" script (e.g. turbo run ${script}) before running the ${suite} suite.`
     };
   }
 
-  const result = await runPnpmScript(repoPath, script);
+  const result = await runPackageScript(repoPath, script, packageManager);
   const stepOk = result.exitCode === 0;
   const steps: TestRunStepResult[] = [
     {
@@ -101,7 +126,7 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
     ok: stepOk,
     repoPath,
     suite,
-    command,
+    command: result.command,
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
     durationMs: finishedAt.getTime() - startedAt.getTime(),

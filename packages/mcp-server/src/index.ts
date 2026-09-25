@@ -8,7 +8,6 @@ import type {
   RefactoringAnalysisInput,
   RemixProfileCatalogEntry
 } from "@arkitect/contracts";
-import type { WorkbenchIntakeApplyRequest } from "@arkitect/contracts";
 import type {
   PatternIntelligenceLookupRequest,
   PatternRecommendationRequest,
@@ -41,7 +40,9 @@ import {
   sanitizeArchitectureRecommendationRequest,
   buildClientSessionGuidance,
   buildTestingForArkApplyRequest,
-  resolveWorkbenchApplyRequest
+  resolveWorkbenchApplyRequest,
+  resolveRequiredRepoPath,
+  buildMissingRepoPathResult
 } from "@arkitect/core";
 import { normalizeWorkbenchIntakeRequest } from "./workbench-intake-normalize.js";
 import { postWorkbenchIntake } from "./desktop-bridge-client.js";
@@ -63,25 +64,44 @@ let lastDiagnosis: DiagnosisResult | null = null;
 let lastClientSession: ClientSession | null = null;
 let lastRefactoringAnalysis: ReturnType<typeof toRefactoringMcpPayload> | null = null;
 
-function resolveDefaultRepoPath(input?: { repoPath?: string }): string {
-  return input?.repoPath?.trim() || process.env.ARKITECT_DEFAULT_REPO_PATH?.trim() || process.cwd();
+function resolveTargetRepoPath(input?: { repoPath?: string }) {
+  return resolveRequiredRepoPath(input);
 }
 
 function resolveToolSession(input?: { repoPath?: string }): ClientSession {
+  const resolved = resolveTargetRepoPath(input);
+
   return resolveClientSession({
-    repoPath: resolveDefaultRepoPath(input),
+    repoPath: resolved.ok ? resolved.repoPath : undefined,
     defaultRepoPath: process.env.ARKITECT_DEFAULT_REPO_PATH,
     hostRepoPath: process.env.ARKITECT_HOST_REPO_PATH
   });
 }
 
-function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake {
+function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake | null {
+  const resolved = resolveTargetRepoPath(partial);
+
+  if (!resolved.ok) {
+    return null;
+  }
+
   const withPath = {
     ...partial,
-    repoPath: resolveDefaultRepoPath(partial)
+    repoPath: resolved.repoPath
   };
   const session = resolveToolSession(withPath);
   return applyClientSessionToIntake(mergeDiagnosisIntake(withPath), session);
+}
+
+function createMissingRepoPathPayload() {
+  const missing = buildMissingRepoPathResult();
+
+  return {
+    summary: missing.summary,
+    diagnosis: {},
+    cursorGuidance: [missing.summary, missing.hint],
+    errorCode: missing.errorCode
+  };
 }
 
 function toArchitectureCatalogPayload(): CatalogMcpPayload<ArchitectureCatalogEntry> {
@@ -121,6 +141,11 @@ export function toLibraryMcpPayload(): LibraryMcpPayload {
 
 export async function diagnoseRepository(input: Partial<DiagnosisIntake> = {}): Promise<DiagnosisResult> {
   const intake = mergeIntake(input);
+
+  if (!intake) {
+    throw new Error(buildMissingRepoPathResult().hint);
+  }
+
   const session = resolveToolSession(intake);
   const autoDetections = await analyzer.analyze(intake);
   const result = createDiagnosisResult(intake, autoDetections);
@@ -132,6 +157,17 @@ export async function diagnoseRepository(input: Partial<DiagnosisIntake> = {}): 
 
 export async function suggestRequirementTagsForIntake(input: Partial<DiagnosisIntake> = {}) {
   const intake = mergeIntake(input);
+
+  if (!intake) {
+    return {
+      summary: buildMissingRepoPathResult().summary,
+      suggestions: [],
+      appliedTags: [],
+      errorCode: "missing_repo_path" as const,
+      hint: buildMissingRepoPathResult().hint
+    };
+  }
+
   const autoDetections = await analyzer.analyze(intake);
   const signals = createDiagnosisSignals(autoDetections, intake.userInput);
   const suggestions = suggestRequirementTags(buildRequirementTagSuggestionInput(intake, signals));
@@ -154,32 +190,121 @@ function createJsonToolResult(json: unknown) {
   };
 }
 
-export async function verifyCodebase(input: { repoPath?: string } = {}) {
-  const repoPath = resolveDefaultRepoPath(input);
-  return runCodebaseVerification({ repoPath });
+export async function verifyCodebase(
+  input: {
+    repoPath?: string;
+    auditFailThreshold?: "critical" | "high" | "none";
+    reportDir?: string;
+    writeReport?: boolean;
+  } = {}
+) {
+  const resolved = resolveTargetRepoPath(input);
+
+  if (!resolved.ok) {
+    return {
+      ok: false,
+      repoPath: resolved.repoPath,
+      command: "verify",
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      durationMs: 0,
+      steps: [],
+      summary: resolved.summary,
+      hint: resolved.hint,
+      errorCode: resolved.errorCode
+    };
+  }
+
+  return runCodebaseVerification({
+    repoPath: resolved.repoPath,
+    auditFailThreshold: input.auditFailThreshold,
+    reportDir: input.reportDir,
+    writeReport: input.writeReport
+  });
 }
 
 export async function runTests(input: { repoPath?: string } = {}) {
-  const repoPath = resolveDefaultRepoPath(input);
-  return runRepoTests({ repoPath, suite: "all" });
+  const resolved = resolveTargetRepoPath(input);
+
+  if (!resolved.ok) {
+    return {
+      ok: false,
+      repoPath: resolved.repoPath,
+      suite: "all" as const,
+      command: "test",
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      durationMs: 0,
+      steps: [],
+      summary: resolved.summary,
+      hint: resolved.hint,
+      errorCode: resolved.errorCode
+    };
+  }
+
+  return runRepoTests({ repoPath: resolved.repoPath, suite: "all" });
 }
 
 export async function runTestSuite(input: { repoPath?: string; suite?: "unit" | "integration" | "all" } = {}) {
-  const repoPath = resolveDefaultRepoPath(input);
-  return runRepoTests({ repoPath, suite: input.suite ?? "all" });
+  const resolved = resolveTargetRepoPath(input);
+
+  if (!resolved.ok) {
+    return {
+      ok: false,
+      repoPath: resolved.repoPath,
+      suite: input.suite ?? ("all" as const),
+      command: "test",
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
+      durationMs: 0,
+      steps: [],
+      summary: resolved.summary,
+      hint: resolved.hint,
+      errorCode: resolved.errorCode
+    };
+  }
+
+  return runRepoTests({ repoPath: resolved.repoPath, suite: input.suite ?? "all" });
 }
 
 export async function analyzeRefactoring(input: RefactoringAnalysisInput = {}) {
+  const resolved = resolveTargetRepoPath(input);
+
+  if (!resolved.ok) {
+    return {
+      summary: resolved.summary,
+      hint: resolved.hint,
+      errorCode: resolved.errorCode,
+      opportunities: [],
+      orchestrationPlan: [],
+      cursorGuidance: [resolved.summary, resolved.hint]
+    };
+  }
+
   const intake = mergeIntake(input as Partial<DiagnosisIntake>);
+
+  if (!intake) {
+    const missing = buildMissingRepoPathResult();
+    return {
+      summary: missing.summary,
+      hint: missing.hint,
+      errorCode: missing.errorCode,
+      opportunities: [],
+      orchestrationPlan: [],
+      cursorGuidance: [missing.summary, missing.hint]
+    };
+  }
+
   const mergedInput = {
     ...input,
-    repoPath: input.repoPath?.trim() || process.env.ARKITECT_DEFAULT_REPO_PATH?.trim() || process.cwd()
+    repoPath: resolved.repoPath
   };
   const autoDetections = await analyzer.analyze(intake);
   const diagnosis = createDiagnosisResult(intake, autoDetections);
   const result = buildRefactoringAnalysisResult(diagnosis, mergedInput, mergedInput.repoPath);
   const payload = toRefactoringMcpPayload(result);
   lastRefactoringAnalysis = payload;
+  void lastRefactoringAnalysis;
   return payload;
 }
 
@@ -201,11 +326,29 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
   const resources = createMcpResources(counts);
   const executeByName: Record<string, (input: unknown) => Promise<ReturnType<typeof createJsonToolResult>>> = {
     diagnose_repository: async (input) => {
+      const resolved = resolveTargetRepoPath(input as Partial<DiagnosisIntake>);
+
+      if (!resolved.ok) {
+        return createJsonToolResult(createMissingRepoPathPayload());
+      }
+
       const result = await diagnoseRepository(input as Partial<DiagnosisIntake>);
       return createJsonToolResult(toDiagnosisMcpPayload(result, lastClientSession ?? resolveToolSession(result.intake)));
     },
     get_last_diagnosis: async () => {
-      const result = lastDiagnosis ?? (await diagnoseRepository());
+      if (lastDiagnosis) {
+        return createJsonToolResult(
+          toDiagnosisMcpPayload(lastDiagnosis, lastClientSession ?? resolveToolSession(lastDiagnosis.intake))
+        );
+      }
+
+      const resolved = resolveTargetRepoPath();
+
+      if (!resolved.ok) {
+        return createJsonToolResult(createMissingRepoPathPayload());
+      }
+
+      const result = await diagnoseRepository();
       return createJsonToolResult(toDiagnosisMcpPayload(result, lastClientSession ?? resolveToolSession(result.intake)));
     },
     list_architecture_catalog: async () => createJsonToolResult(toArchitectureCatalogPayload()),
@@ -220,7 +363,14 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
         items: listDiagnosisStrategies()
       }),
     verify_codebase: async (input) => {
-      const result = await verifyCodebase(input as { repoPath?: string });
+      const result = await verifyCodebase(
+        input as {
+          repoPath?: string;
+          auditFailThreshold?: "critical" | "high" | "none";
+          reportDir?: string;
+          writeReport?: boolean;
+        }
+      );
       return createJsonToolResult(result);
     },
     run_tests: async (input) => {
@@ -285,6 +435,11 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
     apply_workbench_intake: async (input) => {
       const request = resolveWorkbenchApplyRequest(normalizeWorkbenchIntakeRequest(input as Record<string, unknown>));
       const merged = mergeIntake(request.intake);
+
+      if (!merged) {
+        return createJsonToolResult(createMissingRepoPathPayload());
+      }
+
       const bridgeResponse = await postWorkbenchIntake({
         ...request,
         source: request.source ?? "mcp-tool",
@@ -338,7 +493,17 @@ export const arkitectMcpServer = createArkitectMcpServer();
 export async function readArkitectMcpResource(uri: string): Promise<unknown> {
   switch (uri) {
     case "arkitect://diagnosis/latest": {
-      const result = lastDiagnosis ?? (await diagnoseRepository());
+      if (lastDiagnosis) {
+        return toDiagnosisMcpPayload(lastDiagnosis, lastClientSession ?? resolveToolSession(lastDiagnosis.intake));
+      }
+
+      const resolved = resolveTargetRepoPath();
+
+      if (!resolved.ok) {
+        return createMissingRepoPathPayload();
+      }
+
+      const result = await diagnoseRepository();
       return toDiagnosisMcpPayload(result, lastClientSession ?? resolveToolSession(result.intake));
     }
     case "arkitect://policy/default":

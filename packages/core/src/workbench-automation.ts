@@ -135,6 +135,7 @@ export function applyRequestToWorkbenchPreset(
   presetName: string,
   createId: (prefix: string) => string
 ): SavedWorkbenchPresetInput {
+  void createId;
   return {
     name: presetName,
     intake: payload.intake,

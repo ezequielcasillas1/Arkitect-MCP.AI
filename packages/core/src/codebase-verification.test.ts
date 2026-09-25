@@ -12,6 +12,22 @@ vi.mock("node:child_process", () => ({
   spawn: (...args: unknown[]) => spawnMock(...args)
 }));
 
+vi.mock("./pnpm-runner.js", async () => {
+  const actual = await vi.importActual<typeof import("./pnpm-runner.js")>("./pnpm-runner.js");
+  return {
+    ...actual,
+    isPackageManagerInstalled: vi.fn(async () => true)
+  };
+});
+
+vi.mock("./verify-report.js", () => ({
+  readGitMetadata: vi.fn(async () => ({})),
+  writeVerifyReport: vi.fn(async () => ({
+    reportPath: "/tmp/arkitect-verify-report.md",
+    reportJsonPath: "/tmp/arkitect-verify-report.json"
+  }))
+}));
+
 function mockSpawnSequence(results: Array<{ exitCode: number; output?: string }>) {
   spawnMock.mockImplementation(() => {
     const next = results.shift() ?? { exitCode: 0, output: "" };
@@ -49,6 +65,7 @@ describe("runCodebaseVerification", () => {
         }
       })
     );
+    await writeFile(join(repoPath, "package-lock.json"), "{}");
   });
 
   afterEach(() => {
@@ -81,26 +98,62 @@ describe("runCodebaseVerification", () => {
     expect(result.summary).toContain("test");
   });
 
-  it("runs lint, build, typecheck, and test in order", async () => {
+  it("runs lint, build, typecheck, test, and audit using npm for package-lock repos", async () => {
     mockSpawnSequence([
       { exitCode: 0, output: "lint ok" },
       { exitCode: 0, output: "build ok" },
       { exitCode: 0, output: "typecheck ok" },
-      { exitCode: 0, output: "tests passed" }
+      { exitCode: 0, output: "tests passed" },
+      {
+        exitCode: 0,
+        output: JSON.stringify({
+          metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0 } }
+        })
+      }
     ]);
 
     const result = await runCodebaseVerification({ repoPath });
 
     expect(result.ok).toBe(true);
-    expect(result.steps.map((step) => step.id)).toEqual(["lint", "build", "typecheck", "test"]);
+    expect(result.packageManager).toBe("npm");
+    expect(result.steps.map((step) => step.id)).toEqual(["lint", "build", "typecheck", "test", "audit"]);
     expect(result.steps.every((step) => step.status === "success")).toBe(true);
-    expect(spawnMock).toHaveBeenCalledTimes(4);
+    expect(result.reportPath).toBeDefined();
+    expect(spawnMock).toHaveBeenCalledTimes(5);
+    expect(spawnMock.mock.calls[0]?.[0]).toBe("npm");
   });
 
-  it("skips remaining steps after the first failure", async () => {
+  it("fails verify when audit reports critical vulnerabilities", async () => {
     mockSpawnSequence([
       { exitCode: 0, output: "lint ok" },
-      { exitCode: 1, output: "build failed" }
+      { exitCode: 0, output: "build ok" },
+      { exitCode: 0, output: "typecheck ok" },
+      { exitCode: 0, output: "tests passed" },
+      {
+        exitCode: 1,
+        output: JSON.stringify({
+          metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 2 } }
+        })
+      }
+    ]);
+
+    const result = await runCodebaseVerification({ repoPath, auditFailThreshold: "critical" });
+
+    expect(result.ok).toBe(false);
+    expect(result.audit?.status).toBe("failure");
+    expect(result.audit?.counts.critical).toBe(2);
+  });
+
+  it("skips remaining script steps after the first failure", async () => {
+    mockSpawnSequence([
+      { exitCode: 0, output: "lint ok" },
+      { exitCode: 1, output: "build failed" },
+      {
+        exitCode: 0,
+        output: JSON.stringify({
+          metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0 } }
+        })
+      }
     ]);
 
     const result = await runCodebaseVerification({ repoPath });
@@ -109,6 +162,7 @@ describe("runCodebaseVerification", () => {
     expect(result.steps[1]?.status).toBe("failure");
     expect(result.steps[2]?.status).toBe("skipped");
     expect(result.steps[3]?.status).toBe("skipped");
-    expect(spawnMock).toHaveBeenCalledTimes(2);
+    expect(result.steps[4]?.id).toBe("audit");
+    expect(spawnMock).toHaveBeenCalledTimes(3);
   });
 });
