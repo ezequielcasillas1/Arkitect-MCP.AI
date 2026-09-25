@@ -454,6 +454,22 @@ Claude Desktop, Windsurf, and other MCP-capable clients use the same `mcpServers
 1. *"Use verify_codebase on C:\Dev\Arkitect-mcp.com and list any failing steps."*
 2. *"Run run_test_suite with suite unit on this repo."*
 
+### Smoke test — npm client site (after upgrading MCP)
+
+Rebuild `@arkitect/mcp-server`, restart the **arkitect-mcp** server in Cursor, then ask in chat:
+
+> Run Arkitect verify_codebase with repoPath C:\Dev\Unocurring Projects\Freeplug.Dev\freeplug-landing.
+
+**Expected (current server):**
+
+- Detects **npm** from `package-lock.json` (does not require `pnpm` on PATH).
+- Runs lint, build, typecheck, and test via `npm run …` when dependencies are installed.
+- Runs a **dependency audit** from the lockfile and reports severity counts.
+- Returns **`reportPath`** / **`reportJsonPath`** (default under `<repo>\.arkitect\reports\`) with local timestamps in the report body.
+- If `node_modules` is missing, script steps are **`not_run`** with `packages not installed; run npm install` — audit still runs.
+
+**Old behavior:** verify always invoked **pnpm** only; no audit step; no dated report paths.
+
 ---
 
 ## Troubleshooting
@@ -504,9 +520,9 @@ Claude Desktop, Windsurf, and other MCP-capable clients use the same `mcpServers
 
 ### verify_codebase fails immediately
 
-**Cause:** Target is not a pnpm monorepo root or scripts missing.
+**Cause:** Wrong `repoPath`, missing scripts, package manager not on PATH, or dependencies not installed (`node_modules` / Yarn PnP / pnpm layout).
 
-**Fix:** Ensure `repoPath` has `package.json` with expected scripts (`lint`, `build`, `typecheck`, `test`).
+**Fix:** Ensure `repoPath` is the project root with `package.json` scripts (`lint`, `build`, `typecheck`, `test`). Run the detected manager's install (`npm install`, `pnpm install`, etc.) before verify. Arkitect picks npm/pnpm/yarn/bun from lockfiles — not pnpm-only.
 
 ### Resource read returns error
 

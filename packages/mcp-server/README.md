@@ -47,7 +47,7 @@ Optional verify/report env:
 
 `verify_codebase` detects the target repo package manager from `packageManager` and lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`) and runs `npm`/`pnpm`/`yarn`/`bun` scripts accordingly. If neither `repoPath` nor `ARKITECT_DEFAULT_REPO_PATH` is set, repo-scoped tools refuse with a clear error instead of using the MCP server working directory.
 
-See [docs/USER_GUIDE.md](../../docs/USER_GUIDE.md) for tools, resources, and troubleshooting.
+See [docs/USER_GUIDE.md](../../docs/USER_GUIDE.md) for tools, resources, troubleshooting, and a **smoke test** prompt for `verify_codebase` on an npm client repo (audit + report paths).
 
 ## Catalog coverage
 
