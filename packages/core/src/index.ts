@@ -17,3 +17,4 @@ export * from "./workbench-automation.js";
 export * from "./package-manager.js";
 export * from "./dependency-audit.js";
 export * from "./verify-report.js";
+export * from "./project-dependencies.js";

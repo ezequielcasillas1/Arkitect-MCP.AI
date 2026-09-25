@@ -12,6 +12,7 @@ import {
   validateRepoRoot
 } from "./pnpm-runner.js";
 import { readGitMetadata, writeVerifyReport } from "./verify-report.js";
+import { assessProjectDependenciesInstalled } from "./project-dependencies.js";
 
 const verifySteps: Array<{ id: "lint" | "build" | "typecheck" | "test"; label: string; script: string }> = [
   { id: "lint", label: "Lint", script: "lint" },
@@ -106,39 +107,55 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
 
   const steps: CodebaseVerifyStepResult[] = [];
   let ok = true;
+  const dependencyStatus = await assessProjectDependenciesInstalled(repoPath, packageManager);
 
-  for (const step of verifySteps) {
-    if (!ok) {
+  if (!dependencyStatus.installed) {
+    ok = false;
+
+    for (const step of verifySteps) {
       steps.push({
         id: step.id,
         label: step.label,
-        status: "skipped",
+        status: "not_run",
         exitCode: null,
-        outputTail: "",
+        outputTail: dependencyStatus.message,
         command: formatPackageScriptCommand(packageManager, step.script)
       });
-      continue;
     }
+  } else {
+    for (const step of verifySteps) {
+      if (!ok) {
+        steps.push({
+          id: step.id,
+          label: step.label,
+          status: "skipped",
+          exitCode: null,
+          outputTail: "",
+          command: formatPackageScriptCommand(packageManager, step.script)
+        });
+        continue;
+      }
 
-    const stepStarted = new Date();
-    const result = await runPackageScript(repoPath, step.script, packageManager);
-    const stepFinished = new Date();
-    const stepOk = result.exitCode === 0;
+      const stepStarted = new Date();
+      const result = await runPackageScript(repoPath, step.script, packageManager);
+      const stepFinished = new Date();
+      const stepOk = result.exitCode === 0;
 
-    steps.push({
-      id: step.id,
-      label: step.label,
-      status: stepOk ? "success" : "failure",
-      exitCode: result.exitCode,
-      outputTail: tailOutput(result.output),
-      command: result.command,
-      startedAt: stepStarted.toISOString(),
-      finishedAt: stepFinished.toISOString(),
-      durationMs: stepFinished.getTime() - stepStarted.getTime()
-    });
+      steps.push({
+        id: step.id,
+        label: step.label,
+        status: stepOk ? "success" : "failure",
+        exitCode: result.exitCode,
+        outputTail: tailOutput(result.output),
+        command: result.command,
+        startedAt: stepStarted.toISOString(),
+        finishedAt: stepFinished.toISOString(),
+        durationMs: stepFinished.getTime() - stepStarted.getTime()
+      });
 
-    if (!stepOk) {
-      ok = false;
+      if (!stepOk) {
+        ok = false;
+      }
     }
   }
 
@@ -178,11 +195,19 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
     ? `Codebase verification passed (${passedCount}/${steps.length} steps).`
     : `Codebase verification failed after ${passedCount}/${steps.length} steps.`;
 
-  if (audit.status === "inconclusive") {
+  if (!dependencyStatus.installed) {
+    summary = `Codebase verification failed: ${dependencyStatus.message}`;
+  } else if (audit.status === "inconclusive") {
     summary = `${summary} Dependency audit inconclusive (not counted as pass).`;
   } else if (audit.status === "failure") {
     summary = `${summary} Dependency audit failed (${auditThreshold} threshold).`;
   }
+
+  const hint = ok
+    ? undefined
+    : !dependencyStatus.installed
+      ? dependencyStatus.message
+      : "Fix the failing step output below, then run verify again from the connected repo root.";
 
   const baseResult: CodebaseVerifyResult = {
     ok,
@@ -196,10 +221,10 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
     audit,
     gitCommit: git.commit,
     gitBranch: git.branch,
+    dependenciesInstalled: dependencyStatus.installed,
     summary,
-    hint: ok
-      ? undefined
-      : "Fix the failing step output below, then run verify again from the connected repo root."
+    hint,
+    ...(!dependencyStatus.installed ? { errorCode: "packages_not_installed" as const } : {})
   };
 
   const reportPaths = await writeVerifyReport(baseResult, {

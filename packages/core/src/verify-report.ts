@@ -87,6 +87,7 @@ function renderMarkdownReport(result: CodebaseVerifyResult, reportTimestampLocal
     `- **Git commit:** ${result.gitCommit ?? "n/a"}`,
     `- **Git branch:** ${result.gitBranch ?? "n/a"}`,
     `- **Package manager:** ${result.packageManager ?? "unknown"}`,
+    `- **Dependencies installed:** ${result.dependenciesInstalled === false ? "no" : "yes"}`,
     `- **Overall:** ${result.ok ? "PASS" : "FAIL"}`,
     `- **Summary:** ${result.summary}`,
     "",

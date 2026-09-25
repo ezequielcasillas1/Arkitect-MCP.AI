@@ -2,7 +2,7 @@ export type PackageManagerId = "npm" | "pnpm" | "yarn" | "bun";
 
 export type CodebaseVerifyStepId = "lint" | "build" | "typecheck" | "test" | "audit";
 
-export type CodebaseVerifyStepStatus = "success" | "failure" | "skipped";
+export type CodebaseVerifyStepStatus = "success" | "failure" | "skipped" | "not_run";
 
 export type AuditFailThreshold = "critical" | "high" | "none";
 
@@ -61,7 +61,9 @@ export interface CodebaseVerifyResult {
     | "missing_verify_script"
     | "spawn_failed"
     | "not_local_repo"
-    | "package_manager_missing";
+    | "package_manager_missing"
+    | "packages_not_installed";
+  dependenciesInstalled?: boolean;
 }
 
 export interface CodebaseVerifyRequest {
@@ -154,7 +156,8 @@ export interface TestOverrideRunResult {
     | "missing_test_script"
     | "spawn_failed"
     | "not_local_repo"
-    | "package_manager_missing";
+    | "package_manager_missing"
+    | "packages_not_installed";
 }
 
 export interface TestOverrideRunRequest {

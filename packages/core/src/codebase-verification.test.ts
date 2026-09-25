@@ -1,6 +1,6 @@
 import type { EventEmitter } from "node:events";
 import { EventEmitter as NodeEventEmitter } from "node:events";
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -66,6 +66,7 @@ describe("runCodebaseVerification", () => {
       })
     );
     await writeFile(join(repoPath, "package-lock.json"), "{}");
+    await mkdir(join(repoPath, "node_modules"), { recursive: true });
   });
 
   afterEach(() => {
@@ -142,6 +143,43 @@ describe("runCodebaseVerification", () => {
     expect(result.ok).toBe(false);
     expect(result.audit?.status).toBe("failure");
     expect(result.audit?.counts.critical).toBe(2);
+  });
+
+  it("marks lint/build/typecheck/test as not_run when node_modules is missing but still runs audit", async () => {
+    const bareRepo = await mkdtemp(join(tmpdir(), "arkitect-verify-bare-"));
+    await writeFile(
+      join(bareRepo, "package.json"),
+      JSON.stringify({
+        devDependencies: { eslint: "^9.0.0", typescript: "^5.0.0" },
+        scripts: {
+          lint: "eslint .",
+          build: "next build",
+          typecheck: "tsc --noEmit",
+          test: "vitest run"
+        }
+      })
+    );
+    await writeFile(join(bareRepo, "package-lock.json"), "{}");
+
+    mockSpawnSequence([
+      {
+        exitCode: 0,
+        output: JSON.stringify({
+          metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0 } }
+        })
+      }
+    ]);
+
+    const result = await runCodebaseVerification({ repoPath: bareRepo });
+
+    expect(result.ok).toBe(false);
+    expect(result.errorCode).toBe("packages_not_installed");
+    expect(result.dependenciesInstalled).toBe(false);
+    expect(result.steps.slice(0, 4).every((step) => step.status === "not_run")).toBe(true);
+    expect(result.steps[0]?.outputTail).toContain("npm install");
+    expect(result.steps[4]?.id).toBe("audit");
+    expect(spawnMock).toHaveBeenCalledTimes(1);
+    expect(spawnMock.mock.calls[0]?.[1]).toEqual(["audit", "--json"]);
   });
 
   it("skips remaining script steps after the first failure", async () => {
