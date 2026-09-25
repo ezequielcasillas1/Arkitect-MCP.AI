@@ -451,21 +451,21 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
     {
       name: "verify_codebase",
       description:
-        "Run the full verify pipeline: lint, build, typecheck, test, and dependency audit using the target repo's package manager (npm, pnpm, yarn, or bun). Writes a dated report under .arkitect/reports by default.",
+        "Run lint, build, typecheck, test, and a dependency audit on a repo root. Detects npm, pnpm, yarn, or bun from lockfiles/packageManager and runs that tool's scripts. Writes a dated markdown/JSON report (default: <repo>/.arkitect/reports/). Requires repoPath or ARKITECT_DEFAULT_REPO_PATH.",
       inputSchema: verifyToolInputSchema,
       outputSchema: verifyToolOutputSchema
     },
     {
       name: "run_tests",
       description:
-        "Run unit and integration tests only from a repo root using the detected package manager. Returns structured pass/fail, step output tails, and summary.",
+        "Run test scripts from a repo root using the detected package manager (npm/pnpm/yarn/bun). Executes the root test script and returns structured pass/fail, output tails, and summary.",
       inputSchema: testToolInputSchema,
       outputSchema: testToolOutputSchema
     },
     {
       name: "run_test_suite",
       description:
-        "Run a specific test suite from a repo root: unit (test:unit), integration (test:integration), or all (test). Returns structured JSON with steps and output tails.",
+        "Run a scoped test suite from a repo root using the detected package manager: unit (test:unit), integration (test:integration), or all (test). Returns structured JSON with steps and output tails.",
       inputSchema: testSuiteToolInputSchema,
       outputSchema: testToolOutputSchema
     },
