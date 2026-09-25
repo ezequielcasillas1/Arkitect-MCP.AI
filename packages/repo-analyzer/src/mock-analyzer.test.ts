@@ -29,4 +29,33 @@ describe("createMockAutoDetections", () => {
     expect(["vertical-slice", "modular-monolith"]).toContain(detections.currentArchitecture.value);
     expect(detections.repoHealth.confidence).toBeGreaterThan(0.5);
   });
+
+  it("detects web platform for PHP inspection markers", () => {
+    const intake = createDefaultIntake("/tmp/gracias-lawn");
+    intake.repoSummary = "Local lawn care brochure site.";
+    intake.requestedOutcome = "Review site structure before content updates.";
+    intake.userInput = {};
+    intake.repoInspection = {
+      source: "local-path",
+      path: intake.repoPath,
+      repoName: "gracias-lawn",
+      exists: true,
+      isDirectory: true,
+      hasGit: false,
+      manifestFiles: ["index.php"],
+      topLevelDirectories: ["assets", "parts", "static-preview"],
+      topLevelFiles: ["index.php"],
+      samplePaths: ["parts/home1/body.php", "static-preview/home.html"],
+      frameworkHints: ["php"],
+      detectedMarkers: ["php:index.php"],
+      validationErrors: [],
+      summary: "PHP site markers",
+      inspectedAt: new Date().toISOString()
+    };
+
+    const detections = createMockAutoDetections(intake);
+
+    expect(detections.platformType.value).toBe("web");
+    expect(detections.currentArchitecture.value).toBe("layered");
+  });
 });

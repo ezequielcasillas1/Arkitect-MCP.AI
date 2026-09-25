@@ -1,8 +1,9 @@
 import type { EventEmitter } from "node:events";
 import { EventEmitter as NodeEventEmitter } from "node:events";
-import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
+import { cp, mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runCodebaseVerification } from "./codebase-verification.js";
 
@@ -48,8 +49,17 @@ function mockSpawnSequence(results: Array<{ exitCode: number; output?: string }>
   });
 }
 
+const fixturesRoot = join(dirname(fileURLToPath(import.meta.url)), "fixtures", "verify");
+
 describe("runCodebaseVerification", () => {
   let repoPath = "";
+
+  async function copyFixture(name: string) {
+    const target = await mkdtemp(join(tmpdir(), `arkitect-verify-${name}-`));
+    await cp(join(fixturesRoot, name), target, { recursive: true });
+    await mkdir(join(target, "node_modules"), { recursive: true });
+    return target;
+  }
 
   beforeEach(async () => {
     spawnMock.mockReset();
@@ -81,22 +91,51 @@ describe("runCodebaseVerification", () => {
     expect(spawnMock).not.toHaveBeenCalled();
   });
 
-  it("returns missing_package_json for non-project folders", async () => {
-    const emptyPath = await mkdtemp(join(tmpdir(), "arkitect-empty-"));
-    const result = await runCodebaseVerification({ repoPath: emptyPath });
+  it("runs static verification for plain HTML fixtures", async () => {
+    const htmlRepo = await copyFixture("plain-html");
+    const result = await runCodebaseVerification({ repoPath: htmlRepo, writeReport: false });
 
-    expect(result.ok).toBe(false);
-    expect(result.errorCode).toBe("missing_package_json");
+    expect(result.command).toContain("non-Node");
+    expect(result.steps.every((step) => step.status === "not_run")).toBe(true);
+    expect(result.summary).toContain("do not apply");
+    expect(result.ok).toBe(true);
   });
 
-  it("requires lint, build, typecheck, and test scripts", async () => {
-    await writeFile(join(repoPath, "package.json"), JSON.stringify({ scripts: { lint: "eslint ." } }));
+  it("runs partial Node scripts and marks missing ones as not_run", async () => {
+    const partialRepo = await copyFixture("node-partial");
+
+    mockSpawnSequence([
+      { exitCode: 0, output: "lint ok" },
+      { exitCode: 0, output: "build ok" },
+      {
+        exitCode: 0,
+        output: JSON.stringify({
+          metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0 } }
+        })
+      }
+    ]);
+
+    const result = await runCodebaseVerification({ repoPath: partialRepo, writeReport: false });
+
+    expect(result.ok).toBe(true);
+    expect(result.errorCode).toBeUndefined();
+    expect(result.steps[0]?.status).toBe("success");
+    expect(result.steps[1]?.status).toBe("success");
+    expect(result.steps[2]?.status).toBe("not_run");
+    expect(result.steps[3]?.status).toBe("not_run");
+    expect(result.summary).toContain("typecheck and test not configured");
+    expect(spawnMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("refuses when no lint/build/typecheck/test scripts exist", async () => {
+    await writeFile(join(repoPath, "package.json"), JSON.stringify({ scripts: { dev: "vite" } }));
 
     const result = await runCodebaseVerification({ repoPath });
 
     expect(result.ok).toBe(false);
     expect(result.errorCode).toBe("missing_verify_script");
-    expect(result.summary).toContain("test");
+    expect(result.steps).toHaveLength(4);
+    expect(spawnMock).not.toHaveBeenCalled();
   });
 
   it("runs lint, build, typecheck, test, and audit using npm for package-lock repos", async () => {
@@ -122,6 +161,28 @@ describe("runCodebaseVerification", () => {
     expect(result.reportPath).toBeDefined();
     expect(spawnMock).toHaveBeenCalledTimes(5);
     expect(spawnMock.mock.calls[0]?.[0]).toBe("npm");
+  });
+
+  it("runs all configured scripts for the full Node fixture", async () => {
+    const fullRepo = await copyFixture("node-full");
+
+    mockSpawnSequence([
+      { exitCode: 0, output: "lint ok" },
+      { exitCode: 0, output: "build ok" },
+      { exitCode: 0, output: "typecheck ok" },
+      { exitCode: 0, output: "tests passed" },
+      {
+        exitCode: 0,
+        output: JSON.stringify({
+          metadata: { vulnerabilities: { info: 0, low: 0, moderate: 0, high: 0, critical: 0 } }
+        })
+      }
+    ]);
+
+    const result = await runCodebaseVerification({ repoPath: fullRepo, writeReport: false });
+
+    expect(result.ok).toBe(true);
+    expect(result.steps.filter((step) => step.status === "success")).toHaveLength(5);
   });
 
   it("fails verify when audit reports critical vulnerabilities", async () => {

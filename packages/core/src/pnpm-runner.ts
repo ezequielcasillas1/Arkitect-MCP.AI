@@ -46,7 +46,15 @@ export interface RepoRootValidation {
   hint?: string;
 }
 
-export function validateRepoRoot(inputPath: string): RepoRootValidation {
+export interface DirectoryValidation {
+  ok: boolean;
+  repoPath: string;
+  errorCode?: "missing_repo";
+  summary?: string;
+  hint?: string;
+}
+
+export function validateDirectoryRoot(inputPath: string): DirectoryValidation {
   const trimmed = inputPath.trim();
 
   if (!trimmed) {
@@ -61,7 +69,29 @@ export function validateRepoRoot(inputPath: string): RepoRootValidation {
 
   const repoPath = resolve(trimmed);
 
-  if (!existsSync(repoPath) || !existsSync(join(repoPath, "package.json"))) {
+  if (!existsSync(repoPath)) {
+    return {
+      ok: false,
+      repoPath,
+      errorCode: "missing_repo",
+      summary: "The repo path does not exist.",
+      hint: "Pass an existing directory as repoPath."
+    };
+  }
+
+  return { ok: true, repoPath };
+}
+
+export function validateRepoRoot(inputPath: string): RepoRootValidation {
+  const directory = validateDirectoryRoot(inputPath);
+
+  if (!directory.ok) {
+    return directory;
+  }
+
+  const repoPath = directory.repoPath;
+
+  if (!existsSync(join(repoPath, "package.json"))) {
     return {
       ok: false,
       repoPath,

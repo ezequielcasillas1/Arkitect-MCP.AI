@@ -45,7 +45,7 @@ Optional verify/report env:
 | `ARKITECT_REPORT_DIR` | Override report output directory (default: `<repo>/.arkitect/reports/`) |
 | `ARKITECT_WRITE_VERIFY_REPORT` | Set to `0`/`false` to skip writing markdown/JSON reports |
 
-`verify_codebase` detects the target repo package manager from `packageManager` and lockfiles (`package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lock`) and runs `npm`/`pnpm`/`yarn`/`bun` scripts accordingly. If neither `repoPath` nor `ARKITECT_DEFAULT_REPO_PATH` is set, repo-scoped tools refuse with a clear error instead of using the MCP server working directory.
+`verify_codebase` requires `repoPath` (or `ARKITECT_DEFAULT_REPO_PATH`). It detects npm/pnpm/yarn/bun from lockfiles, runs each configured lint/build/typecheck/test script, skips missing scripts with `not_run`, always runs the dependency audit for Node repos, and uses a static/PHP syntax path when no `package.json` exists. `diagnose_repository` and `suggest_requirement_tags` inspect the connected repo filesystem before applying mock analyzer heuristics. If neither `repoPath` nor `ARKITECT_DEFAULT_REPO_PATH` is set, repo-scoped tools refuse with a clear error instead of using the MCP server working directory.
 
 See [docs/USER_GUIDE.md](../../docs/USER_GUIDE.md) for tools, resources, and troubleshooting.
 

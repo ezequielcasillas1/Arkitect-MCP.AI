@@ -451,7 +451,7 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
     {
       name: "verify_codebase",
       description:
-        "Run lint, build, typecheck, test, and a dependency audit on a repo root. Detects npm, pnpm, yarn, or bun from lockfiles/packageManager and runs that tool's scripts. Writes a dated markdown/JSON report (default: <repo>/.arkitect/reports/). Requires repoPath or ARKITECT_DEFAULT_REPO_PATH.",
+        "Run every configured lint, build, typecheck, and test script plus a dependency audit on a repo root. Detects npm, pnpm, yarn, or bun from lockfiles/packageManager; skips scripts that are not configured with a clear not_run reason. Non-Node repos get a static verification path (PHP syntax when php is available). Writes a dated markdown/JSON report (default: <repo>/.arkitect/reports/). Requires repoPath or ARKITECT_DEFAULT_REPO_PATH.",
       inputSchema: verifyToolInputSchema,
       outputSchema: verifyToolOutputSchema
     },

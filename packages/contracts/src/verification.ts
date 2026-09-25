@@ -1,6 +1,6 @@
 export type PackageManagerId = "npm" | "pnpm" | "yarn" | "bun";
 
-export type CodebaseVerifyStepId = "lint" | "build" | "typecheck" | "test" | "audit";
+export type CodebaseVerifyStepId = "lint" | "build" | "typecheck" | "test" | "audit" | "syntax";
 
 export type CodebaseVerifyStepStatus = "success" | "failure" | "skipped" | "not_run";
 

@@ -333,7 +333,7 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | `list_design_patterns` | Pattern-level guidance | Design patterns grouped by family |
 | `suggest_requirement_tags` | Scoping a feature or policy pass | Tags derived from repo inspection and diagnosis signals |
 | `list_diagnosis_strategies` | Explaining continuation guardrails | Strategies for healthy continuation, deferral, reporting |
-| `verify_codebase` | Pre-merge or CI parity check | Detects npm/pnpm/yarn/bun, runs lint/build/typecheck/test, dependency audit, writes `.arkitect/reports/` |
+| `verify_codebase` | Pre-merge or CI parity check | Requires `repoPath`. Detects npm/pnpm/yarn/bun, runs configured lint/build/typecheck/test scripts (skips missing ones), dependency audit for Node repos, static/PHP syntax path otherwise; writes `.arkitect/reports/` |
 | `run_tests` | Test-only pass | Runs `pnpm test` |
 | `run_test_suite` | Targeted suite | `suite`: `unit` \| `integration` \| `all` |
 | `list_refactoring_techniques` | Refactoring Guru catalog browse | Techniques grouped by category with reference URLs |
@@ -504,9 +504,9 @@ Claude Desktop, Windsurf, and other MCP-capable clients use the same `mcpServers
 
 ### verify_codebase fails immediately
 
-**Cause:** Target is not a pnpm monorepo root or scripts missing.
-
-**Fix:** Ensure `repoPath` has `package.json` with expected scripts (`lint`, `build`, `typecheck`, `test`).
+- Confirm `repoPath` points at the site root (Node `package.json` or plain PHP/HTML tree).
+- Node repos need at least one of `lint`, `build`, `typecheck`, or `test` in root `package.json`; missing scripts are skipped, not fatal.
+- Non-Node repos skip Node scripts and may run `php -l` when PHP files and the `php` CLI are present.
 
 ### Resource read returns error
 
@@ -520,7 +520,7 @@ Claude Desktop, Windsurf, and other MCP-capable clients use the same `mcpServers
 
 | Item | Status |
 |------|--------|
-| **Repo analyzer** | Mock by default — `diagnose_repository` uses simulated detections unless real analyzer is wired |
+| **Repo analyzer** | Mock heuristics with real filesystem inspection when `repoPath` is provided (`ARKITECT_ANALYZER=mock` still reads the tree) |
 | **Session diagnosis cache** | `get_last_diagnosis` / `arkitect://diagnosis/latest` are in-process; lost on MCP restart |
 | **MCP rebuild** | Rebuild + restart Cursor MCP manually after pulling server changes |
 | **Licensing worker** | Deferred — see `instructions/future-licensing-worker.md` |

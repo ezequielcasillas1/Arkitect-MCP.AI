@@ -1,4 +1,4 @@
-import { mkdtemp, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -116,6 +116,26 @@ describe("diagnose_repository tool", () => {
     expect(payload.diagnosis.intake.repoName).toBe("Test Repo");
     expect(payload.cursorGuidance.length).toBeGreaterThan(0);
     expect(payload).toHaveProperty("clientSession");
+  });
+
+  it("inspects plain PHP client repos instead of host scaffold defaults", async () => {
+    const repoPath = await mkdtemp(join(tmpdir(), "arkitect-diagnose-php-"));
+    await mkdir(join(repoPath, "parts", "home1"), { recursive: true });
+    await writeFile(join(repoPath, "index.php"), "<?php echo 'home';");
+    await writeFile(join(repoPath, "parts/home1/body.php"), "<?php echo 'body';");
+
+    const server = createArkitectMcpServer();
+    const tool = server.tools.find((entry) => entry.name === "diagnose_repository");
+    const result = await tool!.execute({ repoPath });
+    const payload = result.content[0]?.json as {
+      diagnosis: { intake: { repoSummary: string; repoInspection?: { frameworkHints: string[] } }; signals: { platformType: { final: { value: string } } } };
+      cursorGuidance: string[];
+    };
+
+    expect(payload.diagnosis.intake.repoInspection?.frameworkHints).toContain("php");
+    expect(payload.diagnosis.intake.repoSummary.toLowerCase()).toContain("php");
+    expect(payload.diagnosis.signals.platformType.final.value).toBe("web");
+    expect(payload.cursorGuidance.some((line) => line.includes("desktop"))).toBe(false);
   });
 
   it("unlocks client read/write and blocks host architecture lock", async () => {

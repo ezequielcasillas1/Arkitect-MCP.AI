@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -p tsconfig.json --noEmit && vite build",
+    "build": "pnpm --filter @arkitect/design-system build && pnpm --filter @arkitect/ai build && tsc -p tsconfig.json --noEmit && vite build",
     "generate:favicon": "python scripts/generate-favicon.py",
     "process:logo": "python scripts/process-official-logo.py",
     "typecheck": "tsc -p tsconfig.json --noEmit",

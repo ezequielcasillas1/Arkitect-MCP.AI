@@ -105,6 +105,17 @@ function detectPlatformType(summary: string, inspection?: RepoInspection): Detec
   const inspectionText = toInspectionText(inspection);
 
   if (
+    hasAny(inspection?.frameworkHints ?? [], ["wordpress", "php", "html-static"]) ||
+    includesAny(inspectionText, [".php", "php:", "html:", "static-preview"])
+  ) {
+    return createDetection(
+      "web",
+      0.9,
+      "Inspected PHP or static HTML markers indicate a brochure or server-rendered web site."
+    );
+  }
+
+  if (
     hasAny(inspection?.frameworkHints ?? [], ["electron", "tauri", "wpf", "winui"]) ||
     includesAny(inspectionText, ["desktop", "electron", "windows", "tauri", "wpf", "winui"])
   ) {
@@ -174,6 +185,17 @@ function detectArchitecture(summary: string, inspection?: RepoInspection): Detec
       "spaghetti",
       0.84,
       "The intake explicitly calls out spaghetti structure or a ball-of-mud architecture."
+    );
+  }
+
+  if (
+    hasAny(inspection?.frameworkHints ?? [], ["php"]) ||
+    includesAny(inspectionText, ["index.php", "parts/", "php:"])
+  ) {
+    return createDetection(
+      "layered",
+      0.7,
+      "PHP include-style folders suggest a simple layered brochure or content site."
     );
   }
 

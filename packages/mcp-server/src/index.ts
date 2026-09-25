@@ -34,6 +34,8 @@ import {
   suggestRequirementTags,
   createDiagnosisSignals,
   mergeDiagnosisIntake,
+  enrichIntakeWithRepoInspection,
+  inspectRepoPath,
   resolveClientSession,
   runCodebaseVerification,
   runRepoTests,
@@ -78,11 +80,11 @@ function resolveToolSession(input?: { repoPath?: string }): ClientSession {
   });
 }
 
-function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake | null {
+function mergeIntake(partial: Partial<DiagnosisIntake>): Promise<DiagnosisIntake | null> {
   const resolved = resolveTargetRepoPath(partial);
 
   if (!resolved.ok) {
-    return null;
+    return Promise.resolve(null);
   }
 
   const withPath = {
@@ -90,7 +92,11 @@ function mergeIntake(partial: Partial<DiagnosisIntake>): DiagnosisIntake | null 
     repoPath: resolved.repoPath
   };
   const session = resolveToolSession(withPath);
-  return applyClientSessionToIntake(mergeDiagnosisIntake(withPath), session);
+  const merged = mergeDiagnosisIntake(withPath);
+
+  return inspectRepoPath(resolved.repoPath).then((inspection) =>
+    applyClientSessionToIntake(enrichIntakeWithRepoInspection(merged, inspection, partial), session)
+  );
 }
 
 function createMissingRepoPathPayload() {
@@ -140,7 +146,7 @@ export function toLibraryMcpPayload(): LibraryMcpPayload {
 }
 
 export async function diagnoseRepository(input: Partial<DiagnosisIntake> = {}): Promise<DiagnosisResult> {
-  const intake = mergeIntake(input);
+  const intake = await mergeIntake(input);
 
   if (!intake) {
     throw new Error(buildMissingRepoPathResult().hint);
@@ -156,7 +162,7 @@ export async function diagnoseRepository(input: Partial<DiagnosisIntake> = {}): 
 }
 
 export async function suggestRequirementTagsForIntake(input: Partial<DiagnosisIntake> = {}) {
-  const intake = mergeIntake(input);
+  const intake = await mergeIntake(input);
 
   if (!intake) {
     return {
@@ -281,7 +287,7 @@ export async function analyzeRefactoring(input: RefactoringAnalysisInput = {}) {
     };
   }
 
-  const intake = mergeIntake(input as Partial<DiagnosisIntake>);
+  const intake = await mergeIntake(input as Partial<DiagnosisIntake>);
 
   if (!intake) {
     const missing = buildMissingRepoPathResult();
@@ -434,7 +440,7 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
     },
     apply_workbench_intake: async (input) => {
       const request = resolveWorkbenchApplyRequest(normalizeWorkbenchIntakeRequest(input as Record<string, unknown>));
-      const merged = mergeIntake(request.intake);
+      const merged = await mergeIntake(request.intake);
 
       if (!merged) {
         return createJsonToolResult(createMissingRepoPathPayload());

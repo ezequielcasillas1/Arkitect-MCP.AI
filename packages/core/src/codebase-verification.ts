@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process";
 import type { CodebaseVerifyRequest, CodebaseVerifyResult, CodebaseVerifyStepResult } from "@arkitect/contracts";
 import { auditBlocksVerifyPass, buildAuditResult, resolveAuditFailThreshold } from "./dependency-audit.js";
 import {
@@ -9,8 +10,10 @@ import {
   runPackageAudit,
   runPackageScript,
   tailOutput,
+  validateDirectoryRoot,
   validateRepoRoot
 } from "./pnpm-runner.js";
+import { inspectRepoPath, listPhpFilesForSyntaxCheck } from "./repo-inspector.js";
 import { readGitMetadata, writeVerifyReport } from "./verify-report.js";
 import { assessProjectDependenciesInstalled } from "./project-dependencies.js";
 
@@ -20,6 +23,9 @@ const verifySteps: Array<{ id: "lint" | "build" | "typecheck" | "test"; label: s
   { id: "typecheck", label: "Typecheck", script: "typecheck" },
   { id: "test", label: "Test", script: "test" }
 ];
+
+const notApplicableNodeScriptReason =
+  "Not applicable — this repo is not a Node.js project (no package.json at the repo root).";
 
 function buildFailureResult(
   partial: Omit<CodebaseVerifyResult, "startedAt" | "finishedAt" | "durationMs"> & { startedAt?: Date }
@@ -36,24 +42,234 @@ function buildFailureResult(
   };
 }
 
+function missingScriptReason(script: string): string {
+  return `Skipped — no "${script}" script is configured in package.json.`;
+}
+
+function formatMissingScriptSummary(missing: string[]): string {
+  if (missing.length === 0) {
+    return "";
+  }
+
+  if (missing.length === 1) {
+    return `${missing[0]} not configured`;
+  }
+
+  if (missing.length === 2) {
+    return `${missing[0]} and ${missing[1]} not configured`;
+  }
+
+  return `${missing.slice(0, -1).join(", ")}, and ${missing.at(-1)} not configured`;
+}
+
+function buildExecutedSummary(ok: boolean, steps: CodebaseVerifyStepResult[], missingScripts: string[]): string {
+  const executed = steps.filter((step) => step.status === "success" || step.status === "failure");
+  const passed = executed.filter((step) => step.status === "success").length;
+  const missingSummary = formatMissingScriptSummary(missingScripts);
+  const base = ok
+    ? `Codebase verification passed (${passed}/${executed.length} executed steps`
+    : `Codebase verification failed after ${passed}/${executed.length} executed steps`;
+
+  if (!missingSummary) {
+    return `${base}).`;
+  }
+
+  return `${base}; ${missingSummary}).`;
+}
+
+async function isPhpCliAvailable(): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn("php", ["-v"], { stdio: "ignore" });
+    child.on("error", () => resolve(false));
+    child.on("close", (code) => resolve(code === 0));
+  });
+}
+
+async function runPhpSyntaxCheck(repoPath: string): Promise<CodebaseVerifyStepResult> {
+  const startedAt = new Date();
+  const phpFiles = await listPhpFilesForSyntaxCheck(repoPath);
+
+  if (phpFiles.length === 0) {
+    const finishedAt = new Date();
+    return {
+      id: "syntax",
+      label: "PHP syntax",
+      status: "skipped",
+      exitCode: null,
+      outputTail: "No PHP files found to lint.",
+      command: "php -l",
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime()
+    };
+  }
+
+  const phpAvailable = await isPhpCliAvailable();
+
+  if (!phpAvailable) {
+    const finishedAt = new Date();
+    return {
+      id: "syntax",
+      label: "PHP syntax",
+      status: "skipped",
+      exitCode: null,
+      outputTail: "php CLI is not installed or not on PATH.",
+      command: "php -l",
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime()
+    };
+  }
+
+  const failures: string[] = [];
+
+  for (const relativePath of phpFiles) {
+    const exitCode = await new Promise<number | null>((resolve) => {
+      const child = spawn("php", ["-l", relativePath], { cwd: repoPath });
+      let output = "";
+
+      child.stdout.on("data", (chunk) => {
+        output += chunk.toString();
+      });
+      child.stderr.on("data", (chunk) => {
+        output += chunk.toString();
+      });
+      child.on("error", () => resolve(null));
+      child.on("close", (code) => {
+        if (code !== 0) {
+          failures.push(`${relativePath}: ${tailOutput(output, 8)}`);
+        }
+        resolve(code);
+      });
+    });
+
+    if (exitCode === null) {
+      const finishedAt = new Date();
+      return {
+        id: "syntax",
+        label: "PHP syntax",
+        status: "skipped",
+        exitCode: null,
+        outputTail: "php -l could not be executed.",
+        command: "php -l",
+        startedAt: startedAt.toISOString(),
+        finishedAt: finishedAt.toISOString(),
+        durationMs: finishedAt.getTime() - startedAt.getTime()
+      };
+    }
+  }
+
+  const finishedAt = new Date();
+  const ok = failures.length === 0;
+
+  return {
+    id: "syntax",
+    label: "PHP syntax",
+    status: ok ? "success" : "failure",
+    exitCode: ok ? 0 : 1,
+    outputTail: ok
+      ? `Checked ${phpFiles.length} PHP file(s) with php -l.`
+      : tailOutput(failures.join("\n"), 24),
+    command: "php -l",
+    startedAt: startedAt.toISOString(),
+    finishedAt: finishedAt.toISOString(),
+    durationMs: finishedAt.getTime() - startedAt.getTime()
+  };
+}
+
+async function runStaticCodebaseVerification(
+  repoPath: string,
+  input: CodebaseVerifyRequest,
+  startedAt: Date
+): Promise<CodebaseVerifyResult> {
+  const inspection = await inspectRepoPath(repoPath);
+  const steps: CodebaseVerifyStepResult[] = verifySteps.map((step) => ({
+    id: step.id,
+    label: step.label,
+    status: "not_run",
+    exitCode: null,
+    outputTail: notApplicableNodeScriptReason,
+    command: formatPackageScriptCommand("npm", step.script)
+  }));
+
+  const syntaxStep = inspection.frameworkHints.includes("php") ? await runPhpSyntaxCheck(repoPath) : null;
+
+  if (syntaxStep) {
+    steps.push(syntaxStep);
+  }
+
+  const applicable = steps.filter((step) => step.status === "success" || step.status === "failure");
+  const ok = applicable.length === 0 ? true : applicable.every((step) => step.status === "success");
+  const finishedAt = new Date();
+  const stackLabel = inspection.frameworkHints.length > 0 ? inspection.frameworkHints.join(", ") : "non-Node";
+  const git = await readGitMetadata(repoPath);
+
+  const summary = ok
+    ? `Static ${stackLabel} repo verification passed. Node lint/build/typecheck/test do not apply.${syntaxStep ? ` PHP syntax: ${syntaxStep.status}.` : ""}`
+    : `Static ${stackLabel} repo verification failed.${syntaxStep?.status === "failure" ? " PHP syntax check reported errors." : ""}`;
+
+  const baseResult: CodebaseVerifyResult = {
+    ok,
+    repoPath,
+    command: "static stack inspection (non-Node)",
+    startedAt: startedAt.toISOString(),
+    finishedAt: finishedAt.toISOString(),
+    durationMs: finishedAt.getTime() - startedAt.getTime(),
+    steps,
+    gitCommit: git.commit,
+    gitBranch: git.branch,
+    summary,
+    hint: ok ? undefined : "Fix PHP syntax errors or structural issues, then run verify again."
+  };
+
+  const reportPaths = await writeVerifyReport(baseResult, {
+    reportDir: input.reportDir,
+    writeReport: input.writeReport
+  });
+
+  return {
+    ...baseResult,
+    ...reportPaths
+  };
+}
+
 export async function runCodebaseVerification(input: CodebaseVerifyRequest): Promise<CodebaseVerifyResult> {
   const startedAt = new Date();
-  const validation = validateRepoRoot(input.repoPath);
+  const directoryValidation = validateDirectoryRoot(input.repoPath);
 
-  if (!validation.ok) {
+  if (!directoryValidation.ok) {
     return buildFailureResult({
       ok: false,
-      repoPath: validation.repoPath,
+      repoPath: directoryValidation.repoPath,
       command: "verify",
       steps: [],
-      summary: validation.summary ?? "Invalid repo path.",
-      errorCode: validation.errorCode,
-      hint: validation.hint,
+      summary: directoryValidation.summary ?? "Invalid repo path.",
+      errorCode: directoryValidation.errorCode,
+      hint: directoryValidation.hint,
       startedAt
     });
   }
 
-  const repoPath = validation.repoPath;
+  const repoPath = directoryValidation.repoPath;
+  const nodeValidation = validateRepoRoot(repoPath);
+
+  if (!nodeValidation.ok) {
+    if (nodeValidation.errorCode === "missing_package_json") {
+      return runStaticCodebaseVerification(repoPath, input, startedAt);
+    }
+
+    return buildFailureResult({
+      ok: false,
+      repoPath,
+      command: "verify",
+      steps: [],
+      summary: nodeValidation.summary ?? "Invalid repo path.",
+      errorCode: nodeValidation.errorCode,
+      hint: nodeValidation.hint,
+      startedAt
+    });
+  }
+
   const detection = await detectPackageManager(repoPath);
   const packageManager = detection.id;
   const command = `${packageManager} lint, build, typecheck, test, and audit`;
@@ -91,16 +307,26 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
     });
   }
 
-  if (!scripts.lint || !scripts.build || !scripts.typecheck || !scripts.test) {
+  const configuredSteps = verifySteps.filter((step) => Boolean(scripts[step.script]));
+  const missingScripts = verifySteps.filter((step) => !scripts[step.script]).map((step) => step.id);
+
+  if (configuredSteps.length === 0) {
     return buildFailureResult({
       ok: false,
       repoPath,
       command,
       packageManager,
-      steps: [],
-      summary: "This repo does not expose lint, build, typecheck, and test scripts.",
+      steps: verifySteps.map((step) => ({
+        id: step.id,
+        label: step.label,
+        status: "not_run" as const,
+        exitCode: null,
+        outputTail: missingScriptReason(step.script),
+        command: formatPackageScriptCommand(packageManager, step.script)
+      })),
+      summary: "This repo does not expose any lint, build, typecheck, or test scripts.",
       errorCode: "missing_verify_script",
-      hint: `Arkitect verify runs ${formatPackageScriptCommand(packageManager, "lint")}, ${formatPackageScriptCommand(packageManager, "build")}, ${formatPackageScriptCommand(packageManager, "typecheck")}, then ${formatPackageScriptCommand(packageManager, "test")} from the repo root.`,
+      hint: `Add at least one root script (${verifySteps.map((step) => step.script).join(", ")}) before running verify.`,
       startedAt
     });
   }
@@ -116,14 +342,26 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
       steps.push({
         id: step.id,
         label: step.label,
-        status: "not_run",
+        status: scripts[step.script] ? "not_run" : "not_run",
         exitCode: null,
-        outputTail: dependencyStatus.message,
+        outputTail: scripts[step.script] ? dependencyStatus.message : missingScriptReason(step.script),
         command: formatPackageScriptCommand(packageManager, step.script)
       });
     }
   } else {
     for (const step of verifySteps) {
+      if (!scripts[step.script]) {
+        steps.push({
+          id: step.id,
+          label: step.label,
+          status: "not_run",
+          exitCode: null,
+          outputTail: missingScriptReason(step.script),
+          command: formatPackageScriptCommand(packageManager, step.script)
+        });
+        continue;
+      }
+
       if (!ok) {
         steps.push({
           id: step.id,
@@ -188,12 +426,9 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
   }
 
   const finishedAt = new Date();
-  const passedCount = steps.filter((step) => step.status === "success").length;
   const git = await readGitMetadata(repoPath);
 
-  let summary = ok
-    ? `Codebase verification passed (${passedCount}/${steps.length} steps).`
-    : `Codebase verification failed after ${passedCount}/${steps.length} steps.`;
+  let summary = buildExecutedSummary(ok, steps, missingScripts);
 
   if (!dependencyStatus.installed) {
     summary = `Codebase verification failed: ${dependencyStatus.message}`;
