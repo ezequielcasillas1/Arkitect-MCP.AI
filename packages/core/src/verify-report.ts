@@ -1,9 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import { join } from "node:path";
+import { access, mkdir, writeFile } from "node:fs/promises";
+import { join, relative, resolve } from "node:path";
 import type { CodebaseVerifyResult } from "@arkitect/contracts";
 import { spawn } from "node:child_process";
 
-function formatTimestampWithOffset(date: Date): string {
+export function formatTimestampWithOffset(date: Date): string {
   const pad = (value: number) => String(value).padStart(2, "0");
   const offsetMinutes = -date.getTimezoneOffset();
   const sign = offsetMinutes >= 0 ? "+" : "-";
@@ -12,6 +12,18 @@ function formatTimestampWithOffset(date: Date): string {
   const minutes = pad(abs % 60);
 
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}${sign}${hours}:${minutes}`;
+}
+
+export function isReportDirectoryInsideRepo(repoPath: string, reportDir: string): boolean {
+  const root = resolve(repoPath);
+  const target = resolve(reportDir);
+  const rel = relative(root, target);
+
+  if (rel === "") {
+    return true;
+  }
+
+  return !rel.startsWith("..") && !rel.includes("..");
 }
 
 async function readGitField(repoPath: string, args: string[]): Promise<string | undefined> {
@@ -48,7 +60,7 @@ export async function readGitMetadata(repoPath: string): Promise<{ commit?: stri
 export function resolveVerifyReportDir(repoPath: string, override?: string): string {
   const fromEnv = process.env.ARKITECT_REPORT_DIR?.trim();
   const base = override?.trim() || fromEnv || join(repoPath, ".arkitect", "reports");
-  return base;
+  return resolve(base);
 }
 
 function shouldWriteReport(input?: boolean): boolean {
@@ -65,11 +77,12 @@ function shouldWriteReport(input?: boolean): boolean {
   return true;
 }
 
-function renderMarkdownReport(result: CodebaseVerifyResult): string {
+function renderMarkdownReport(result: CodebaseVerifyResult, reportTimestampLocal: string): string {
   const lines: string[] = [
     "# Arkitect verify report",
     "",
-    `- **Timestamp:** ${result.startedAt}`,
+    `- **Timestamp:** ${reportTimestampLocal}`,
+    `- **Timestamp (UTC):** ${result.startedAt}`,
     `- **Repo:** ${result.repoPath}`,
     `- **Git commit:** ${result.gitCommit ?? "n/a"}`,
     `- **Git branch:** ${result.gitBranch ?? "n/a"}`,
@@ -111,6 +124,21 @@ function renderMarkdownReport(result: CodebaseVerifyResult): string {
   return lines.join("\n");
 }
 
+async function ensureRepoGitignoreForReports(repoPath: string, reportDir: string): Promise<void> {
+  if (!isReportDirectoryInsideRepo(repoPath, reportDir)) {
+    return;
+  }
+
+  const gitignorePath = join(repoPath, ".arkitect", ".gitignore");
+
+  try {
+    await mkdir(join(repoPath, ".arkitect"), { recursive: true });
+    await writeFile(gitignorePath, "reports/\n", { flag: "wx" });
+  } catch {
+    // ignore if exists
+  }
+}
+
 export async function writeVerifyReport(
   result: CodebaseVerifyResult,
   options?: { reportDir?: string; writeReport?: boolean }
@@ -122,22 +150,38 @@ export async function writeVerifyReport(
   const reportDir = resolveVerifyReportDir(result.repoPath, options?.reportDir);
   await mkdir(reportDir, { recursive: true });
 
-  const stamp = formatTimestampWithOffset(new Date(result.startedAt));
-  const safeStamp = stamp.replace(/:/g, "-");
-  const baseName = `verify-${safeStamp}`;
+  const started = new Date(result.startedAt);
+  const reportTimestampLocal = formatTimestampWithOffset(started);
+  const stamp = reportTimestampLocal.replace(/:/g, "-");
+  const baseName = `verify-${stamp}`;
   const reportPath = join(reportDir, `${baseName}.md`);
   const reportJsonPath = join(reportDir, `${baseName}.json`);
 
-  const gitignorePath = join(result.repoPath, ".arkitect", ".gitignore");
-  try {
-    await mkdir(join(result.repoPath, ".arkitect"), { recursive: true });
-    await writeFile(gitignorePath, "reports/\n", { flag: "wx" });
-  } catch {
-    // ignore if exists
-  }
+  await ensureRepoGitignoreForReports(result.repoPath, reportDir);
 
-  await writeFile(reportPath, renderMarkdownReport(result), "utf8");
-  await writeFile(reportJsonPath, `${JSON.stringify(result, null, 2)}\n`, "utf8");
+  await writeFile(reportPath, renderMarkdownReport(result, reportTimestampLocal), "utf8");
+  await writeFile(
+    reportJsonPath,
+    `${JSON.stringify(
+      {
+        ...result,
+        startedAtUtc: result.startedAt,
+        reportTimestampLocal
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
 
   return { reportPath, reportJsonPath };
+}
+
+export async function pathExists(targetPath: string): Promise<boolean> {
+  try {
+    await access(targetPath);
+    return true;
+  } catch {
+    return false;
+  }
 }
