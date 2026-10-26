@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { BLUESKY_HANDLE, BLUESKY_PROFILE_URL } from "../lib/arkitect-links";
 
 export function Footer() {
   return (
@@ -32,6 +33,10 @@ export function Footer() {
         <NavLink to="/privacy" className="footer-link">
           Privacy
         </NavLink>
+        {" · "}
+        <a href={BLUESKY_PROFILE_URL} className="footer-link" target="_blank" rel="noopener noreferrer">
+          Bluesky ({BLUESKY_HANDLE})
+        </a>
       </p>
       <p className="helper-copy">arkitect-mcp.com</p>
     </footer>

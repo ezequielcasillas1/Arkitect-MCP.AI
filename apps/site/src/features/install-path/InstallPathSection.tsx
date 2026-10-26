@@ -1,4 +1,3 @@
-import { GITHUB_REPO_URL } from "../../lib/arkitect-links";
 import { RevealSection } from "../../components/RevealSection";
 import { InstallStepsList } from "./InstallStepsList";
 import { McpJsonReveal } from "./McpJsonReveal";
@@ -17,13 +16,7 @@ export function InstallPathSection() {
 
       <McpJsonReveal />
 
-      <p className="helper-copy">
-        Need the source? Clone{" "}
-        <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
-          the GitHub repo
-        </a>{" "}
-        and build with the steps above.
-      </p>
+      <p className="helper-copy">Use the clone command in step one and build with the steps above.</p>
     </RevealSection>
   );
 }

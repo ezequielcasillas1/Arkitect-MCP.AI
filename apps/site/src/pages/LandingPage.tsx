@@ -5,8 +5,8 @@ import { ConnectSection } from "../components/ConnectSection";
 import { InstallSection } from "../components/InstallSection";
 import { HeroLogo } from "../components/Logo";
 import { RevealSection } from "../components/RevealSection";
-import { BuyMeACoffeeButton } from "../features/download-counter/BuyMeACoffeeButton";
 import { DownloadCounterSection } from "../features/download-counter/DownloadCounterSection";
+import { BLUESKY_HANDLE, BLUESKY_PROFILE_URL } from "../lib/arkitect-links";
 import { SeoHead } from "../features/seo";
 
 const recommendation = createRecommendedModel();
@@ -52,7 +52,14 @@ export function LandingPage() {
             <a href="#install-path" className="primary-button">
               See the path to install
             </a>
-            <BuyMeACoffeeButton />
+            <a
+              href={BLUESKY_PROFILE_URL}
+              className="ghost-button"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Bluesky ({BLUESKY_HANDLE})
+            </a>
             <Link to="/reviews" className="ghost-button">
               See what people are saying
             </Link>
@@ -96,10 +103,10 @@ export function LandingPage() {
 
       <RevealSection className="panel" delay={100}>
         <p className="section-label">Open Source</p>
-        <h2>Free forever. Optional coffee.</h2>
+        <h2>Free forever. Open source.</h2>
         <p>
-          Arkitect is open source — desktop, MCP, and diagnosis stay free. No membership. If it
-          helps your work, you can buy me a coffee.
+          Arkitect is open source — desktop, MCP, and diagnosis stay free. No membership. Questions
+          or feedback? Find me on Bluesky ({BLUESKY_HANDLE}).
         </p>
       </RevealSection>
 

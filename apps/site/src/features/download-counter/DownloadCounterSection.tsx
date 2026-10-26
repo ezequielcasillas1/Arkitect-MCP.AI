@@ -1,7 +1,5 @@
 import { Coffee } from "lucide-react";
-import { GITHUB_REPO_URL } from "../../lib/arkitect-links";
 import { ReleaseFeedSection } from "../release-feed";
-import { BuyMeACoffeeButton } from "./BuyMeACoffeeButton";
 import { openSourceCta } from "./data";
 
 export function DownloadCounterSection() {
@@ -22,18 +20,11 @@ export function DownloadCounterSection() {
         <a href="#install-path" className="primary-button action-button-wide">
           {openSourceCta.installLabel}
         </a>
-        <BuyMeACoffeeButton wide />
       </div>
 
       <ReleaseFeedSection />
 
-      <p className="helper-copy">
-        {openSourceCta.helperPrefix}{" "}
-        <a href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
-          GitHub
-        </a>
-        .
-      </p>
+      <p className="helper-copy">{openSourceCta.helperCopy}</p>
     </section>
   );
 }

@@ -68,14 +68,14 @@ export const termsDocument: LegalDocument = {
       title: "Changes",
       paragraphs: [
         "We may modify these terms or product features with notice on this site or in the desktop app where practical.",
-        "Donations via Buy Me a Coffee are optional and do not purchase a membership or extra product entitlements."
+        "Optional support does not purchase a membership or extra product entitlements."
       ]
     },
     {
       id: "contact",
       title: "Contact",
       paragraphs: [
-        "Questions about these terms can be sent via the contact links on the About or Reviews pages (Reddit or X). Every message gets read."
+        "Questions about these terms can be sent via Bluesky (@casiezeq) — see the Connect section on the About or Reviews pages. Every message gets read."
       ]
     }
   ]
@@ -91,8 +91,8 @@ export const privacyDocument: LegalDocument = {
       id: "what-we-collect",
       title: "What we collect",
       paragraphs: [
-        "On this website, we collect data you voluntarily submit (public reviews). Optional donations go through Buy Me a Coffee and are handled by that service.",
-        "Reviews may include a display name, rating, comment, and optional social links you choose to share."
+        "On this website, we collect data you voluntarily submit (public reviews).",
+        "Reviews may include a display name, rating, and comment."
       ]
     },
     {
@@ -124,22 +124,22 @@ export const privacyDocument: LegalDocument = {
       title: "Cookies & hosting",
       paragraphs: [
         "This site is hosted on Cloudflare Pages. Cloudflare may process standard request metadata (IP address, user agent) for security and delivery.",
-        "The Buy Me a Coffee button opens their site. Donation payments and related data are governed by Buy Me a Coffee's privacy policy. We do not use third-party advertising cookies on this site."
+        "We do not use third-party advertising cookies on this site."
       ]
     },
     {
       id: "your-rights",
       title: "Your rights",
       paragraphs: [
-        "Depending on your jurisdiction, you may have rights to access, correct, or delete personal data we hold from site submissions. Contact us via the links on the About or Reviews pages.",
-        "You can clear local storage in your browser at any time. Review submissions can be addressed through the contact links on the About or Reviews pages."
+        "Depending on your jurisdiction, you may have rights to access, correct, or delete personal data we hold from site submissions. Contact us on Bluesky (@casiezeq) via the Connect section on the About or Reviews pages.",
+        "You can clear local storage in your browser at any time. Review submissions can be addressed on Bluesky (@casiezeq)."
       ]
     },
     {
       id: "contact",
       title: "Contact",
       paragraphs: [
-        "Privacy questions can be sent via Reddit or X — see the Connect section on the About or Reviews pages."
+        "Privacy questions can be sent via Bluesky (@casiezeq) — see the Connect section on the About or Reviews pages."
       ]
     }
   ]
