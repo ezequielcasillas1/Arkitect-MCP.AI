@@ -85,6 +85,7 @@
     body { font-family: 'Inter', sans-serif; }
     .serif { font-family: 'Playfair Display', serif; }
   </style>
+  <link rel="stylesheet" href="static-responsive.css" />
 
   <!-- Flash card cursor-reactive border styles -->
   <style>
@@ -155,22 +156,30 @@
   </div>
 
   <!-- ══════════ NAV ══════════ -->
-  <header id="nav" class="fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-[#050a1c]/40 border-b border-white/5">
-    <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-      <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
-        <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300">FEATURES</a>
-        <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300">MCP TOOLS</a>
+  <header id="nav" class="static-site-header fixed top-0 inset-x-0 z-50 backdrop-blur-md bg-[#050a1c]/40 border-b border-white/5">
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 py-2 md:py-0 md:h-16 flex flex-wrap items-center justify-between gap-2" aria-label="Primary">
+      <div class="hidden md:flex items-center gap-6 lg:gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
+        <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300 static-tap-target">FEATURES</a>
+        <a href="#features" class="nav-link relative hover:text-white transition-colors duration-300 static-tap-target">MCP TOOLS</a>
       </div>
-      <a href="#" class="group flex items-center justify-center w-10 h-10 rounded-full border border-white/10 hover:border-cyan-400/60 transition-all duration-500 hover:rotate-[360deg] overflow-hidden">
+      <a href="#" class="static-nav-logo group flex items-center justify-center w-11 h-11 md:w-10 md:h-10 rounded-full border border-white/10 hover:border-cyan-400/60 transition-all duration-500 hover:rotate-[360deg] overflow-hidden order-first md:order-none">
         <img src="arkitect-mark-nav.png" alt="Arkitect" class="w-6 h-6 object-contain" />
       </a>
-      <div class="hidden md:flex items-center gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
-        <a href="/architecture" class="nav-link relative hover:text-white transition-colors duration-300">ARCHITECTURE</a>
-        <a href="#connect" class="nav-link relative hover:text-white transition-colors duration-300">CONNECT</a>
+      <div class="hidden md:flex items-center gap-6 lg:gap-10 text-xs tracking-[0.25em] font-medium text-slate-400">
+        <a href="/architecture" class="nav-link relative hover:text-white transition-colors duration-300 static-tap-target">ARCHITECTURE</a>
+        <a href="#connect" class="nav-link relative hover:text-white transition-colors duration-300 static-tap-target">CONNECT</a>
       </div>
-      <button id="menu-btn" class="md:hidden text-slate-300">
-        <i data-lucide="menu" class="w-5 h-5"></i>
+      <button type="button" id="menu-btn" class="static-menu-btn md:hidden ml-auto" aria-expanded="false" aria-controls="mobile-nav-panel">
+        <span class="sr-only">Open menu</span>
+        <i data-lucide="menu" class="w-5 h-5" aria-hidden="true"></i>
       </button>
+      <div id="mobile-nav-panel" class="static-mobile-nav md:hidden">
+        <a href="#features">FEATURES</a>
+        <a href="#features">MCP TOOLS</a>
+        <a href="/architecture">ARCHITECTURE</a>
+        <a href="#install-path">INSTALL</a>
+        <a href="#connect">CONNECT</a>
+      </div>
     </nav>
   </header>
 
@@ -191,11 +200,11 @@
       </div>
 
       <!-- Side decorations -->
-      <div class="absolute top-1/3 left-6 md:left-12 hero-el flex items-center gap-3 text-xs tracking-[0.3em] text-slate-500">
+      <div class="static-hero-side absolute top-1/3 left-6 md:left-12 hero-el flex items-center gap-3 text-xs tracking-[0.3em] text-slate-500">
         <span>01</span>
         <span class="w-8 h-px bg-slate-600"></span>
       </div>
-      <div class="absolute top-1/3 right-6 md:right-12 hero-el flex items-center gap-3 text-xs tracking-[0.3em] text-slate-500">
+      <div class="static-hero-side absolute top-1/3 right-6 md:right-12 hero-el flex items-center gap-3 text-xs tracking-[0.3em] text-slate-500">
         <span class="w-8 h-px bg-slate-600"></span>
         <i data-lucide="sparkles" class="w-4 h-4 text-cyan-300/70"></i>
       </div>
@@ -212,7 +221,7 @@
         <div class="absolute -inset-12 rounded-full border border-cyan-500/5 orbit-ring" style="animation-duration: 45s; animation-direction: reverse;"></div>
       </div>
 
-      <p class="hero-el text-xs tracking-[0.6em] text-cyan-300/80 font-medium mb-4">
+      <p class="static-hero-eyebrow hero-el text-xs sm:text-sm tracking-[0.35em] sm:tracking-[0.6em] text-cyan-300/80 font-medium mb-4 text-center max-w-full px-2">
         A R K I T E C T &nbsp; M C P
       </p>
 
@@ -233,12 +242,12 @@
       </div>
 
       <!-- CTAs -->
-      <div class="hero-el mt-10 flex flex-wrap items-center justify-center gap-4 px-6">
-        <a href="#install-path" class="group inline-flex items-center gap-3 px-8 py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
+      <div class="static-hero-ctas hero-el mt-10 flex flex-wrap items-center justify-center gap-4 px-4 sm:px-6">
+        <a href="#install-path" class="static-tap-target group inline-flex items-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-md bg-cyan-300 text-[#050a1c] text-xs tracking-[0.2em] sm:tracking-[0.3em] font-semibold hover:bg-cyan-200 transition-colors duration-300">
           SEE THE PATH TO INSTALL
           <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300"></i>
         </a>
-        <a href="#download-counter" class="group inline-flex items-center gap-3 px-8 py-4 rounded-md border border-white/15 text-xs tracking-[0.3em] text-slate-200 font-medium hover:border-cyan-300/60 hover:text-cyan-200 transition-all duration-300">
+        <a href="#download-counter" class="static-tap-target group inline-flex items-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-md border border-white/15 text-xs tracking-[0.2em] sm:tracking-[0.3em] text-slate-200 font-medium hover:border-cyan-300/60 hover:text-cyan-200 transition-all duration-300">
           BUY ME A COFFEE
           <i data-lucide="coffee" class="w-4 h-4"></i>
         </a>
@@ -723,9 +732,9 @@ pnpm --filter @arkitect/mcp-server build</code></pre>
         <h2 class="serif text-3xl md:text-5xl tracking-tight text-white font-medium mb-14">
           Simple, transparent access
         </h2>
-        <div class="grid md:grid-cols-3 gap-6">
+        <div class="static-pricing-grid grid gap-6 md:grid-cols-3">
           <!-- Open source -->
-          <div class="relative rounded-xl border border-cyan-300/40 bg-white/[0.05] p-8 flex flex-col">
+          <div class="relative rounded-xl border border-cyan-300/40 bg-white/[0.05] p-6 sm:p-8 flex flex-col min-w-0">
             <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-cyan-300 text-[#050a1c] text-[10px] tracking-[0.25em] font-semibold">CURRENT</span>
             <p class="text-xs tracking-[0.3em] text-cyan-200 font-medium">OPEN SOURCE</p>
             <p class="serif text-4xl tracking-tight text-white font-medium mt-4">$0</p>
@@ -753,7 +762,7 @@ pnpm --filter @arkitect/mcp-server build</code></pre>
             </a>
           </div>
           <!-- Support -->
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col">
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 flex flex-col min-w-0">
             <p class="text-xs tracking-[0.3em] text-slate-400 font-medium">SUPPORT</p>
             <p class="serif text-4xl tracking-tight text-white font-medium mt-4">Coffee</p>
             <p class="text-xs text-slate-500 mt-1">optional donation</p>
@@ -781,7 +790,7 @@ pnpm --filter @arkitect/mcp-server build</code></pre>
             </a>
           </div>
           <!-- Contribute -->
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-8 flex flex-col">
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 flex flex-col min-w-0">
             <p class="text-xs tracking-[0.3em] text-slate-400 font-medium">CONTRIBUTE</p>
             <p class="serif text-4xl tracking-tight text-white font-medium mt-4">GitHub</p>
             <p class="text-xs text-slate-500 mt-1">clone and build</p>
@@ -868,7 +877,7 @@ pnpm --filter @arkitect/mcp-server build</code></pre>
           <span class="serif text-2xl font-semibold text-white tracking-tight">Arkitect<span class="text-cyan-300">.</span></span>
         </div>
         <div class="footer-el flex flex-col items-center md:items-end gap-4">
-          <nav class="serif flex items-center gap-8 text-lg text-slate-200">
+          <nav class="static-footer-nav serif text-base sm:text-lg text-slate-200" aria-label="Footer">
             <a href="#features" class="hover:text-cyan-300 transition-colors duration-300">Features</a>
             <a href="#features" class="hover:text-cyan-300 transition-colors duration-300">MCP</a>
             <a href="/architecture" class="hover:text-cyan-300 transition-colors duration-300">Architecture</a>
@@ -886,6 +895,7 @@ pnpm --filter @arkitect/mcp-server build</code></pre>
   </main>
 
   <!-- ══════════ SCRIPTS ══════════ -->
+  <script src="static-nav.js"></script>
   <script>
     lucide.createIcons({ attrs: { 'stroke-width': 1.5 } });
     gsap.registerPlugin(ScrollTrigger);

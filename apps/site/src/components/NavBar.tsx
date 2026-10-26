@@ -26,7 +26,7 @@ export function NavBar() {
   }, [menuOpen]);
 
   return (
-    <header className="site-nav nav-entrance">
+    <header className="site-nav nav-entrance site-nav-root">
       <a href="/" className="brand-link" aria-label="Arkitect home">
         <Logo />
       </a>
