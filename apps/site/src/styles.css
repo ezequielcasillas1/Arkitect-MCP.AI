@@ -16,6 +16,8 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  font-size: 1rem;
+  line-height: 1.6;
   overflow-x: clip;
   background:
     radial-gradient(circle at top, rgba(109, 140, 255, 0.22), transparent 32%),
@@ -325,8 +327,14 @@ a {
 .panel p,
 .flow-list {
   color: #dbe3f7;
+  font-size: 1rem;
   line-height: 1.6;
   overflow-wrap: anywhere;
+}
+
+.section-label,
+.eyebrow {
+  font-size: 0.75rem;
 }
 
 .flow-list {

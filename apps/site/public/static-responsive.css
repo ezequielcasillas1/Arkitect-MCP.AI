@@ -13,11 +13,62 @@
 }
 
 html {
-  overflow-x: clip;
   max-width: 100%;
 }
 
-body.static-nav-open {
+.static-site-body {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 100%;
+}
+
+.static-site-main {
+  overflow-x: hidden;
+}
+
+.static-bg-root {
+  contain: strict;
+}
+
+.static-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.static-site-main p:not(.static-label) {
+  font-size: 1rem;
+}
+
+.static-code-scroll {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.static-code-scroll pre {
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.static-code-scroll code {
+  display: block;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+body.static-nav-open,
+body.static-contents-open {
   overflow: hidden;
 }
 
@@ -33,6 +84,9 @@ body.static-nav-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  width: 44px;
+  height: 44px;
   min-width: 44px;
   min-height: 44px;
   padding: 0;
@@ -41,7 +95,15 @@ body.static-nav-open {
   background: rgba(255, 255, 255, 0.04);
   color: #cbd5e1;
   cursor: pointer;
+  flex-shrink: 0;
   transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.static-menu-btn svg,
+.static-menu-btn [data-lucide] {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
 }
 
 .static-menu-btn:hover {
@@ -108,9 +170,117 @@ body.static-nav-open {
   min-height: 44px;
 }
 
+/* Architecture guide: Contents sheet on narrow viewports */
+.static-contents-trigger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin-bottom: 1rem;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(103, 232, 249, 0.35);
+  background: rgba(103, 232, 249, 0.08);
+  color: #e2e8f0;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.static-contents-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: rgba(5, 10, 28, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.static-contents-backdrop.is-visible {
+  display: block;
+}
+
+@media (max-width: 1023px) {
+  .static-contents-trigger {
+    display: inline-flex;
+  }
+
+  .static-arch-aside {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 60;
+    max-height: min(78vh, 560px);
+    margin: 0;
+    border-radius: 16px 16px 0 0;
+    border-bottom: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.45);
+    transform: translateY(100%);
+    transition: transform 0.28s ease;
+  }
+
+  .static-arch-aside.is-sheet-open {
+    display: block;
+    transform: translateY(0);
+  }
+
+  .static-arch-aside .static-arch-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .static-arch-sheet-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    color: #e2e8f0;
+    cursor: pointer;
+  }
+}
+
+@media (min-width: 1024px) {
+  .static-arch-aside {
+    display: block;
+    position: sticky;
+    transform: none;
+    max-height: none;
+    border-radius: 0.75rem;
+    box-shadow: none;
+  }
+
+  .static-arch-aside .static-arch-sheet-header {
+    display: none;
+  }
+
+  .static-arch-sheet-close {
+    display: none;
+  }
+}
+
+.static-site-main .text-sm.leading-relaxed,
+.static-site-main p.text-sm {
+  font-size: 1rem;
+}
+
 @media (max-width: 767px) {
   .static-hero-eyebrow {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     letter-spacing: 0.35em;
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -166,16 +336,8 @@ body.static-nav-open {
   #contacts .max-w-6xl {
     gap: 1.5rem;
   }
-}
 
-/* Architecture guide: stack TOC above content on narrow viewports */
-@media (max-width: 1023px) {
   .static-arch-layout {
     grid-template-columns: 1fr;
-  }
-
-  .static-arch-aside {
-    position: static;
-    max-height: none;
   }
 }

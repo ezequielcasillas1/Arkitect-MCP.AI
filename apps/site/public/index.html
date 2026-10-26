@@ -135,16 +135,16 @@
   </style>
 </head>
 
-<body class="bg-[#050a1c] text-slate-200 antialiased overflow-x-hidden selection:bg-cyan-400/30">
+<body class="static-site-body bg-[#050a1c] text-slate-200 antialiased selection:bg-cyan-400/30">
 
   <!-- ══════════ FIXED BACKGROUND LAYERS (PARALLAX) ══════════ -->
-  <div class="fixed inset-0 pointer-events-none z-0">
-    <div id="bg-layer-1" class="absolute -inset-40 opacity-60">
-      <div class="absolute top-[5%] left-[10%] w-[40rem] h-[40rem] rounded-full bg-blue-700/20 blur-[120px]"></div>
-      <div class="absolute top-[40%] right-[5%] w-[30rem] h-[30rem] rounded-full bg-cyan-600/15 blur-[100px]"></div>
-      <div class="absolute bottom-[10%] left-[20%] w-[35rem] h-[35rem] rounded-full bg-teal-600/10 blur-[120px]"></div>
+  <div class="static-bg-root fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+    <div id="bg-layer-1" class="absolute inset-0 opacity-60">
+      <div class="absolute top-[5%] left-[10%] w-[min(100%,28rem)] h-[min(100%,28rem)] rounded-full bg-blue-700/20 blur-[120px]"></div>
+      <div class="absolute top-[40%] right-[5%] w-[min(100%,22rem)] h-[min(100%,22rem)] rounded-full bg-cyan-600/15 blur-[100px]"></div>
+      <div class="absolute bottom-[10%] left-[20%] w-[min(100%,24rem)] h-[min(100%,24rem)] rounded-full bg-teal-600/10 blur-[120px]"></div>
     </div>
-    <div id="bg-layer-2" class="absolute -inset-20">
+    <div id="bg-layer-2" class="absolute inset-0">
       <div class="absolute top-[20%] right-[25%] w-1 h-1 rounded-full bg-white/60"></div>
       <div class="absolute top-[35%] left-[15%] w-1 h-1 rounded-full bg-white/40"></div>
       <div class="absolute top-[60%] right-[10%] w-1.5 h-1.5 rounded-full bg-cyan-300/50"></div>
@@ -183,7 +183,7 @@
     </nav>
   </header>
 
-  <main class="relative z-10">
+  <main class="static-site-main relative z-10 min-w-0 max-w-full">
 
     <!-- ══════════ HERO ══════════ -->
     <section id="hero" class="relative min-h-screen flex flex-col items-center justify-center pt-20 pb-16 overflow-hidden">
@@ -229,7 +229,7 @@
         Design the structure<br/>before the code <em class="text-cyan-300">drifts</em>.
       </h1>
 
-      <p class="hero-el mt-6 text-sm md:text-base text-slate-400 text-center max-w-2xl px-6 leading-relaxed">
+      <p class="hero-el mt-6 text-base text-slate-400 text-center max-w-2xl px-6 leading-relaxed">
         Local MCP for Cursor and other AI builders.
         Diagnosis, pattern intelligence, and guidance grounded in your actual repo.
       </p>
@@ -517,13 +517,14 @@
     <!-- ══════════ INSTALL STEPS ══════════ -->
     <section id="install-path" class="relative py-28 px-6">
       <span id="install"></span>
-      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-        <div id="odyssey-art" class="relative rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-cyan-950/50 bg-[#0a1128] p-8">
+      <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center min-w-0">
+        <div id="odyssey-art" class="relative min-w-0 max-w-full rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-cyan-950/50 bg-[#0a1128] p-4 sm:p-8">
           <div class="flex items-center gap-3 text-xs tracking-[0.3em] text-slate-400 mb-6">
             <i data-lucide="terminal" class="w-4 h-4 text-cyan-300"></i>
             CURSOR MCP CONFIG
           </div>
-          <pre class="text-sm text-cyan-200/80 font-mono leading-relaxed overflow-x-auto"><code>{
+          <div class="static-code-scroll" tabindex="0" role="region" aria-label="MCP configuration snippet">
+          <pre class="text-sm text-cyan-200/80 font-mono leading-relaxed"><code>{
   "mcpServers": {
     "arkitect-mcp": {
       "command": "node",
@@ -538,8 +539,9 @@
     }
   }
 }</code></pre>
+          </div>
           <div class="mt-6 pt-6 border-t border-white/5">
-            <p class="text-xs text-slate-500">Paste this into Cursor or any MCP host. Replace the three paths. No Windows installer.</p>
+            <p class="text-base text-slate-400">Paste this into Cursor or any MCP host. Replace the three paths. No Windows installer.</p>
           </div>
         </div>
 
@@ -560,39 +562,41 @@
               <span class="text-cyan-300 font-mono text-sm">01</span>
               <div>
                 <strong class="text-white text-sm">Install Node.js 18+</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Node LTS, then corepack enable pnpm</p>
+                <p class="text-slate-400 text-base mt-0.5">Node LTS, then corepack enable pnpm</p>
               </div>
             </div>
             <div class="flex items-start gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">02</span>
               <div>
                 <strong class="text-white text-sm">Clone and build Arkitect</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Confirm packages/mcp-server/dist/stdio.js exists</p>
-                <pre class="mt-2 text-[11px] text-cyan-200/80 font-mono leading-relaxed overflow-x-auto"><code>git clone https://github.com/ezequielcasillas1/Arkitect-MCP.AI.git
+                <p class="text-slate-400 text-base mt-0.5">Confirm packages/mcp-server/dist/stdio.js exists</p>
+                <div class="static-code-scroll mt-2" tabindex="0" role="region" aria-label="Clone and build commands">
+                <pre class="text-sm text-cyan-200/80 font-mono leading-relaxed"><code>git clone https://github.com/ezequielcasillas1/Arkitect-MCP.AI.git
 cd Arkitect-MCP.AI
 pnpm install
 pnpm --filter @arkitect/mcp-server build</code></pre>
+                </div>
               </div>
             </div>
             <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">03</span>
               <div>
                 <strong class="text-white text-sm">Paste the JSON</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Cursor Settings → MCP, or project .cursor/mcp.json</p>
+                <p class="text-slate-400 text-base mt-0.5">Cursor Settings → MCP, or project .cursor/mcp.json</p>
               </div>
             </div>
             <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">04</span>
               <div>
                 <strong class="text-white text-sm">Replace the three paths</strong>
-                <p class="text-slate-500 text-xs mt-0.5">stdio.js, your repo, and the Arkitect clone</p>
+                <p class="text-slate-400 text-base mt-0.5">stdio.js, your repo, and the Arkitect clone</p>
               </div>
             </div>
             <div class="flex items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]">
               <span class="text-cyan-300 font-mono text-sm">05</span>
               <div>
                 <strong class="text-white text-sm">Restart MCP and diagnose</strong>
-                <p class="text-slate-500 text-xs mt-0.5">Ask the agent to call diagnose_repository</p>
+                <p class="text-slate-400 text-base mt-0.5">Ask the agent to call diagnose_repository</p>
               </div>
             </div>
           </div>

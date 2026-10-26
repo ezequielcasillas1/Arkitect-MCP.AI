@@ -30,12 +30,62 @@
     });
 
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && panel.classList.contains("is-open")) {
         setOpen(false);
+      }
+    });
+  }
+
+  function wireArchContentsSheet() {
+    var openBtn = document.getElementById("arch-contents-open");
+    var panel = document.getElementById("arch-toc-panel");
+    var backdrop = document.getElementById("arch-contents-backdrop");
+    if (!openBtn || !panel) {
+      return;
+    }
+
+    var closeBtn = panel.querySelector(".static-arch-sheet-close");
+
+    function setSheetOpen(open) {
+      panel.classList.toggle("is-sheet-open", open);
+      openBtn.setAttribute("aria-expanded", open ? "true" : "false");
+      document.body.classList.toggle("static-contents-open", open);
+      if (backdrop) {
+        backdrop.classList.toggle("is-visible", open);
+        backdrop.hidden = !open;
+      }
+    }
+
+    openBtn.addEventListener("click", function () {
+      setSheetOpen(!panel.classList.contains("is-sheet-open"));
+    });
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", function () {
+        setSheetOpen(false);
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener("click", function () {
+        setSheetOpen(false);
+      });
+    }
+
+    panel.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        setSheetOpen(false);
+      });
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && panel.classList.contains("is-sheet-open")) {
+        setSheetOpen(false);
       }
     });
   }
 
   wireStaticNav("menu-btn", "mobile-nav-panel");
   wireStaticNav("arch-menu-btn", "arch-mobile-nav-panel");
+  wireArchContentsSheet();
 })();
