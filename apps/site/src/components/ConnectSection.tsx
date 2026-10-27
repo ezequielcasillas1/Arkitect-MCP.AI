@@ -1,3 +1,4 @@
+import { BlueskyIcon } from "./BlueskyIcon";
 import { BLUESKY_HANDLE, BLUESKY_PROFILE_URL } from "../lib/arkitect-links";
 
 export function ConnectSection() {
@@ -16,10 +17,14 @@ export function ConnectSection() {
             className="connect-link-card"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label={`Bluesky profile ${BLUESKY_HANDLE}`}
           >
             <span className="connect-link-text">
               <strong>Bluesky</strong>
-              <span>{BLUESKY_HANDLE}</span>
+              <span className="bluesky-handle">
+                <BlueskyIcon size={14} decorative />
+                {BLUESKY_HANDLE}
+              </span>
             </span>
           </a>
         </li>
