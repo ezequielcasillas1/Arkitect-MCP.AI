@@ -75,7 +75,7 @@ export const termsDocument: LegalDocument = {
       id: "contact",
       title: "Contact",
       paragraphs: [
-        "Questions about these terms can be sent via the contact links on the About or Reviews pages (Reddit or X). Every message gets read."
+        "Questions about these terms can be sent on Bluesky (@casiezeq) — see the Connect section on the About or Reviews pages. Every message gets read."
       ]
     }
   ]
@@ -131,15 +131,15 @@ export const privacyDocument: LegalDocument = {
       id: "your-rights",
       title: "Your rights",
       paragraphs: [
-        "Depending on your jurisdiction, you may have rights to access, correct, or delete personal data we hold from site submissions. Contact us via the links on the About or Reviews pages.",
-        "You can clear local storage in your browser at any time. Review submissions can be addressed through the contact links on the About or Reviews pages."
+        "Depending on your jurisdiction, you may have rights to access, correct, or delete personal data we hold from site submissions. Contact us on Bluesky (@casiezeq) via the Connect section on the About or Reviews pages.",
+        "You can clear local storage in your browser at any time. Review submissions can be addressed on Bluesky (@casiezeq)."
       ]
     },
     {
       id: "contact",
       title: "Contact",
       paragraphs: [
-        "Privacy questions can be sent via Reddit or X — see the Connect section on the About or Reviews pages."
+        "Privacy questions can be sent on Bluesky (@casiezeq) — see the Connect section on the About or Reviews pages."
       ]
     }
   ]

@@ -907,6 +907,17 @@ a {
   font-size: 0.95rem;
 }
 
+.bluesky-handle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.bluesky-icon {
+  flex-shrink: 0;
+  color: #1185fe;
+}
+
 .connect-link-text span {
   color: #9aa6c2;
   font-size: 0.86rem;
