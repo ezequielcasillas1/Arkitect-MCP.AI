@@ -35,7 +35,7 @@ export function Footer() {
         </NavLink>
         {" · "}
         <a href={BLUESKY_PROFILE_URL} className="footer-link" target="_blank" rel="noopener noreferrer">
-          Bluesky ({BLUESKY_HANDLE})
+          {BLUESKY_HANDLE}
         </a>
       </p>
       <p className="helper-copy">arkitect-mcp.com</p>

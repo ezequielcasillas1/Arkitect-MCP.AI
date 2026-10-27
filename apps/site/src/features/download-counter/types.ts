@@ -3,7 +3,9 @@ export interface OpenSourceCtaCopy {
   heading: string;
   body: string;
   installLabel: string;
-  helperCopy: string;
+  donateLabel: string;
+  helperPrefix: string;
+  unwiredHint: string;
 }
 
 export interface DownloadCounterStats {
