@@ -43,3 +43,6 @@ export const BUYMEACOFFEE_URL = parseBuyMeACoffeeUrl(
   import.meta.env.VITE_BUY_ME_A_COFFEE_URL || DEFAULT_BUYMEACOFFEE_URL
 );
 export const isBuyMeACoffeeWired = BUYMEACOFFEE_URL.length > 0;
+
+export const BLUESKY_PROFILE_URL = "https://bsky.app/profile/casiezeq.bsky.social";
+export const BLUESKY_HANDLE = "@casiezeq";

@@ -1,4 +1,6 @@
 import { NavLink } from "react-router-dom";
+import { BlueskyIcon } from "./BlueskyIcon";
+import { BLUESKY_HANDLE, BLUESKY_PROFILE_URL } from "../lib/arkitect-links";
 
 export function Footer() {
   return (
@@ -32,6 +34,17 @@ export function Footer() {
         <NavLink to="/privacy" className="footer-link">
           Privacy
         </NavLink>
+        {" · "}
+        <a
+          href={BLUESKY_PROFILE_URL}
+          className="footer-link bluesky-handle"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`Bluesky profile ${BLUESKY_HANDLE}`}
+        >
+          <BlueskyIcon size={14} decorative />
+          {BLUESKY_HANDLE}
+        </a>
       </p>
       <p className="helper-copy">arkitect-mcp.com</p>
     </footer>
