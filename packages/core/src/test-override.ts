@@ -19,6 +19,7 @@ import {
   tailOutput,
   validateRepoRoot
 } from "./pnpm-runner.js";
+import { assessProjectDependenciesInstalled } from "./project-dependencies.js";
 import { runRepoTests } from "./test-runner.js";
 
 const capabilityDefs: Array<{
@@ -87,7 +88,7 @@ export async function discoverTestCapabilities(input: { repoPath: string }): Pro
       capabilities: capabilityDefs.map((def) => ({
         id: def.id,
         label: def.label,
-        command: `pnpm ${def.script}`,
+        command: def.id === "verify" ? "verify (detected package manager)" : def.script,
         available: false,
         category: def.category
       })),
@@ -116,14 +117,17 @@ export async function discoverTestCapabilities(input: { repoPath: string }): Pro
     };
   }
 
-  const hasVerifyScripts = Boolean(scripts.lint && scripts.build && scripts.typecheck && scripts.test);
+  const hasAnyVerifyScript = Boolean(scripts.lint || scripts.build || scripts.typecheck || scripts.test);
   const capabilities = capabilityDefs.map((def) => {
-    const available = def.id === "verify" ? hasVerifyScripts : Boolean(scripts[def.script]);
+    const available = def.id === "verify" ? hasAnyVerifyScript : Boolean(scripts[def.script]);
 
     return {
       id: def.id,
       label: def.label,
-      command: formatPackageScriptCommand(packageManager, def.script),
+      command:
+        def.id === "verify"
+          ? `${packageManager} lint/build/typecheck/test + audit`
+          : formatPackageScriptCommand(packageManager, def.script),
       available,
       category: def.category
     };
@@ -184,7 +188,7 @@ async function runSingleQualityStep(input: {
       durationMs: 0,
       steps: [],
       summary: `${packageManager} is not installed or not on PATH.`,
-      errorCode: "spawn_failed",
+      errorCode: "package_manager_missing",
       hint: packageManagerMissingHint(packageManager, detection)
     };
   }
@@ -221,6 +225,34 @@ async function runSingleQualityStep(input: {
       summary: `This repo does not expose a ${input.script} script.`,
       errorCode: input.kind === "test" || input.kind === "unit" || input.kind === "integration" ? "missing_test_script" : "missing_verify_script",
       hint: `Add a root "${input.script}" script before running ${input.label.toLowerCase()}.`
+    };
+  }
+
+  const dependencyStatus = await assessProjectDependenciesInstalled(repoPath, packageManager);
+
+  if (!dependencyStatus.installed) {
+    const finishedAt = new Date();
+
+    return {
+      ok: false,
+      kind: input.kind,
+      repoPath,
+      command,
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime(),
+      steps: [
+        {
+          id: input.kind,
+          label: input.label,
+          status: "not_run",
+          exitCode: null,
+          outputTail: dependencyStatus.message
+        }
+      ],
+      summary: dependencyStatus.message,
+      errorCode: "packages_not_installed",
+      hint: dependencyStatus.message
     };
   }
 

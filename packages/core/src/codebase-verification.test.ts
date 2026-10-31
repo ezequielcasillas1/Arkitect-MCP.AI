@@ -246,6 +246,24 @@ describe("runCodebaseVerification", () => {
     expect(spawnMock.mock.calls[0]?.[1]).toEqual(["audit", "--json"]);
   });
 
+  it("marks inconclusive audit as not_run without a fake command", async () => {
+    mockSpawnSequence([
+      { exitCode: 0, output: "lint ok" },
+      { exitCode: 0, output: "build ok" },
+      { exitCode: 0, output: "typecheck ok" },
+      { exitCode: 0, output: "tests passed" },
+      { exitCode: 1, output: "npm ERR! network unavailable" }
+    ]);
+
+    const result = await runCodebaseVerification({ repoPath, writeReport: false });
+    const auditStep = result.steps.find((step) => step.id === "audit");
+
+    expect(result.audit?.status).toBe("inconclusive");
+    expect(auditStep?.status).toBe("not_run");
+    expect(auditStep?.command).toBeUndefined();
+    expect(result.summary).toContain("inconclusive");
+  });
+
   it("skips remaining script steps after the first failure", async () => {
     mockSpawnSequence([
       { exitCode: 0, output: "lint ok" },

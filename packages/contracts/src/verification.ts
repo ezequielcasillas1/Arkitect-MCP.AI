@@ -75,7 +75,7 @@ export interface CodebaseVerifyRequest {
 
 export type TestSuiteId = "unit" | "integration" | "all";
 
-export type TestRunStepStatus = "success" | "failure" | "skipped";
+export type TestRunStepStatus = "success" | "failure" | "skipped" | "not_run";
 
 export interface TestRunStepResult {
   id: TestSuiteId;
@@ -96,7 +96,14 @@ export interface TestRunResult {
   steps: TestRunStepResult[];
   summary: string;
   hint?: string;
-  errorCode?: "missing_repo" | "missing_repo_path" | "missing_package_json" | "missing_test_script" | "spawn_failed";
+  errorCode?:
+    | "missing_repo"
+    | "missing_repo_path"
+    | "missing_package_json"
+    | "missing_test_script"
+    | "spawn_failed"
+    | "package_manager_missing"
+    | "packages_not_installed";
 }
 
 export interface TestRunRequest {

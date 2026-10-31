@@ -1,3 +1,8 @@
+### 2026-10-31 - Verify audit gaps
+**Status:** PARTIAL
+**Files:** test-runner.ts, test-override.ts, codebase-verification.ts, verification.ts, mcp-tool-definitions.ts, USER_GUIDE.md, site/desktop copy
+**Result:** packages_not_installed on tests/overrides; partial verify discovery; inconclusive→not_run; stale pnpm copy fixed. SUCCESS not confirmed.
+
 ### 2026-09-03 - Live site install-path reveal
 **Status:** PARTIAL
 **Files:** apps/site/public/index.html, apps/site/src/features/install-path/*, apps/desktop/src/features/mcp-connection/McpConnectionSection.tsx

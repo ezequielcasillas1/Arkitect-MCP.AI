@@ -55,7 +55,11 @@ describe("createArkitectMcpServer", () => {
     expect(verifyTool?.description).toContain("dependency audit");
     expect(verifyTool?.description).not.toContain("pnpm lint");
     expect(runTestsTool?.description).toContain("detected package manager");
+    expect(runTestsTool?.description).toContain("packages_not_installed");
     expect(runTestsTool?.description).not.toMatch(/\(pnpm test\)/);
+    const diagnoseTool = server.tools.find((tool) => tool.name === "diagnose_repository");
+    expect(diagnoseTool?.description).toContain("filesystem");
+    expect(diagnoseTool?.description).toContain("repo path");
     expect(toolNames).toContain("run_tests");
     expect(toolNames).toContain("run_test_suite");
     expect(toolNames).toContain("recommend_patterns");

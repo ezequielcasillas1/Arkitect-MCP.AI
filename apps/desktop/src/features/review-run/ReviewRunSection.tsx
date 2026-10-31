@@ -194,8 +194,8 @@ export function ReviewRunSection({
             <span className="metric-label">Run codebase verify</span>
             <InfoHint label="How codebase verify works" wide>
               <p className="permission-guide-copy">
-                Runs pnpm lint, pnpm build, pnpm typecheck, then pnpm test from the connected local repo root — the same
-                as <strong>pnpm verify</strong>.
+                Runs the target repo&apos;s configured lint, build, typecheck, and test scripts (detected npm/pnpm/yarn/bun)
+                plus a dependency audit from the connected local repo root.
               </p>
               <p className="permission-guide-copy">
                 Always run from the project folder that contains package.json. Running from C:\Windows\System32 will fail

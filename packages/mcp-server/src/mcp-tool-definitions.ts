@@ -394,7 +394,8 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
   return [
     {
       name: "diagnose_repository",
-      description: "Analyze intake signals, apply Arkitect policy, and expose an MCP-friendly diagnosis payload.",
+      description:
+        "Inspect the connected repo filesystem (when repoPath or ARKITECT_DEFAULT_REPO_PATH is set), analyze intake signals, apply Arkitect policy, and expose an MCP-friendly diagnosis payload. Refuses without a target repo path.",
       inputSchema: diagnosisToolInputSchema,
       outputSchema: diagnosisToolOutputSchema
     },
@@ -458,14 +459,14 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
     {
       name: "run_tests",
       description:
-        "Run test scripts from a repo root using the detected package manager (npm/pnpm/yarn/bun). Executes the root test script and returns structured pass/fail, output tails, and summary.",
+        "Run the root test script from a repo root using the detected package manager (npm/pnpm/yarn/bun). Requires repoPath or ARKITECT_DEFAULT_REPO_PATH. Refuses with packages_not_installed when declared dependencies are missing (avoids false passes from global CLIs).",
       inputSchema: testToolInputSchema,
       outputSchema: testToolOutputSchema
     },
     {
       name: "run_test_suite",
       description:
-        "Run a scoped test suite from a repo root using the detected package manager: unit (test:unit), integration (test:integration), or all (test). Returns structured JSON with steps and output tails.",
+        "Run a scoped test suite from a repo root using the detected package manager: unit (test:unit), integration (test:integration), or all (test). Requires repoPath or ARKITECT_DEFAULT_REPO_PATH. Same packages_not_installed guard as run_tests.",
       inputSchema: testSuiteToolInputSchema,
       outputSchema: testToolOutputSchema
     },
