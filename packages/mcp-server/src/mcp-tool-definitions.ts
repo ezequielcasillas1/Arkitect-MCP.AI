@@ -20,7 +20,7 @@ export interface ArkitectMcpServer {
 
 export const MCP_SERVER_INFO = {
   name: "arkitect-mcp",
-  version: "2.1.0",
+  version: "2.1.2",
   description: "Scaffolded Arkitect MCP surface for diagnosis-first architecture context."
 } as const;
 

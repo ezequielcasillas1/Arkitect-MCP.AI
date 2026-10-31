@@ -44,7 +44,7 @@ The marketing site ([arkitect-mcp.com](https://arkitect-mcp.com/#install-path)) 
 | Package | `@arkitect/mcp-server` |
 | Entrypoint | `packages/mcp-server/dist/stdio.js` |
 | Transport | Stdio (`@modelcontextprotocol/sdk`) |
-| Server name | `arkitect-mcp` (v2.1.0) |
+| Server name | `arkitect-mcp` (v2.1.2) |
 | Tools | 10 (diagnosis, catalogs, tags, verification, tests) |
 | Resources | 5 (`arkitect://` URIs) |
 
@@ -538,4 +538,4 @@ Claude Desktop, Windsurf, and other MCP-capable clients use the same `mcpServers
 
 ---
 
-*Last updated: July 2026 — arkitect-mcp v2.1.0.*
+*Last updated: October 2026 — arkitect-mcp v2.1.2.*

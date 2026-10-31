@@ -1,3 +1,8 @@
+### 2026-10-31 - Verify audit fixes v2.1.2 release
+**Status:** PARTIAL
+**Files:** package.json workspaces, mcp-tool-definitions.ts, arkitect-links.ts, release-feed/mcp-page data, USER_GUIDE.md
+**Result:** PR #14 merged; tagged GitHub Release v2.1.2 with portable MCP. SUCCESS not confirmed.
+
 ### 2026-10-31 - Verify audit gaps
 **Status:** PARTIAL
 **Files:** test-runner.ts, test-override.ts, codebase-verification.ts, verification.ts, mcp-tool-definitions.ts, USER_GUIDE.md, site/desktop copy
