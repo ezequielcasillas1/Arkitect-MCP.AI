@@ -50,7 +50,8 @@ if (process.platform === "win32") {
     `powershell -NoProfile -Command "Compress-Archive -Path '${portableDir}' -DestinationPath '${join(outDir, zipName)}' -Force"`
   );
 } else {
-  run(`zip -r "${join(outDir, zipName)}" "${portableDir}"`);
+  // -y keeps pnpm workspace symlinks as links (avoids cyclic core↔repo-analyzer blowup)
+  run(`zip -ry "${zipName}" "arkitect-mcp-server-${version}-portable"`, { cwd: outDir });
 }
 
 console.log(`\nMCP release artifacts (${version}):`);

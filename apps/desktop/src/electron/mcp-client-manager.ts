@@ -148,7 +148,7 @@ export class McpClientManager {
 
     const client = new Client({
       name: "arkitect-desktop",
-      version: "2.1.0"
+      version: "2.1.2"
     });
 
     try {

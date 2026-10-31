@@ -3,6 +3,16 @@ import type { ReleaseEntry } from "./types";
 /** Newest first. Update this file when shipping a release. */
 export const releaseFeed: ReleaseEntry[] = [
   {
+    version: "2.1.2",
+    releaseDate: "2026-10-31",
+    status: "released",
+    changes: [
+      "Guard run_tests / quality overrides when packages are missing (packages_not_installed).",
+      "Partial-script verify discovery (lint|build|typecheck|test) for repos without a full script set.",
+      "Inconclusive dependency audit reported as not_run; refreshed PM-aware tool and docs copy."
+    ]
+  },
+  {
     version: "2.2.0",
     releaseDate: "2026-09-03",
     status: "released",

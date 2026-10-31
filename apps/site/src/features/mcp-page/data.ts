@@ -205,6 +205,20 @@ export const mcpToolGroups: McpToolGroup[] = [
 
 export const mcpVersionHistory: McpVersionEntry[] = [
   {
+    version: "2.1.2",
+    releaseDate: "2026-10-31",
+    status: "released",
+    title: "Verify audit fixes — tests guard + partial discovery",
+    summary:
+      "Patch release closing remaining verify-path gaps: missing packages no longer false-pass on run_tests/overrides, partial script repos can verify, and inconclusive audits stay not_run with PM-aware copy.",
+    highlights: [
+      "run_tests / run_test_suite and desktop lint/build/typecheck overrides apply packages_not_installed.",
+      "discoverTestCapabilities treats any of lint|build|typecheck|test as verify-capable.",
+      "Inconclusive dependency audit step status is not_run (not skipped).",
+      "USER_GUIDE, site MCP copy, and tool descriptions aligned with detected package managers."
+    ]
+  },
+  {
     version: "2.2.0",
     releaseDate: "2026-09-03",
     status: "released",

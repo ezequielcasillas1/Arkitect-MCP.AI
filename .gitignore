@@ -1,5 +1,6 @@
 node_modules
 dist
+dist-release
 dist-electron
 apps/desktop/release
 apps/desktop/dist-electron/integrity-manifest.json

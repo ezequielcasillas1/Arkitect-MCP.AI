@@ -1,4 +1,4 @@
-export const ARKITECT_RELEASE_VERSION = "2.1.0";
+export const ARKITECT_RELEASE_VERSION = "2.1.2";
 
 export const GITHUB_REPO_URL = "https://github.com/ezequielcasillas1/Arkitect-MCP.AI";
 export const GITHUB_REPO_BLOB_BASE = `${GITHUB_REPO_URL}/blob/master`;

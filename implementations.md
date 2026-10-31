@@ -1,3 +1,8 @@
+### 2026-10-31 - Verify audit fixes released as v2.1.2
+**Status:** PARTIAL
+**Files:** packages/* package.json, mcp-tool-definitions.ts, site/desktop version refs, scripts/package-mcp-release.mjs artifacts
+**Result:** Merged PR #14; bumped monorepo to 2.1.2; GitHub Release v2.1.2 with portable MCP zip. SUCCESS not confirmed.
+
 ### 2026-10-31 - Verify audit gaps (tests + copy)
 **Status:** PARTIAL
 **Files:** packages/core/src/{test-runner,test-override,codebase-verification}.ts, packages/contracts/src/verification.ts, packages/mcp-server/src/mcp-tool-definitions.ts, docs/USER_GUIDE.md, apps/site + desktop copy
