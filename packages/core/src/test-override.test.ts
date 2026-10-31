@@ -64,6 +64,26 @@ describe("discoverTestCapabilities", () => {
     expect(catalog.capabilities.find((cap) => cap.id === "integration")?.available).toBe(false);
     expect(catalog.capabilities.find((cap) => cap.id === "verify")?.available).toBe(true);
   });
+
+  it("marks verify available when only some verify scripts exist", async () => {
+    const repoPath = await mkdtemp(join(tmpdir(), "arkitect-override-partial-"));
+    await writeFile(
+      join(repoPath, "package.json"),
+      JSON.stringify({
+        scripts: {
+          lint: "eslint .",
+          build: "vite build"
+        }
+      })
+    );
+    await writeFile(join(repoPath, "package-lock.json"), "{}");
+
+    const catalog = await discoverTestCapabilities({ repoPath });
+
+    expect(catalog.capabilities.find((cap) => cap.id === "verify")?.available).toBe(true);
+    expect(catalog.capabilities.find((cap) => cap.id === "typecheck")?.available).toBe(false);
+    expect(catalog.capabilities.find((cap) => cap.id === "test")?.available).toBe(false);
+  });
 });
 
 describe("runTestOverride", () => {
@@ -90,6 +110,25 @@ describe("runTestOverride", () => {
     expect(result.ok).toBe(true);
     expect(result.kind).toBe("lint");
     expect(result.steps).toHaveLength(1);
+  });
+
+  it("refuses lint when packages are not installed", async () => {
+    const repoPath = await mkdtemp(join(tmpdir(), "arkitect-override-bare-"));
+    await writeFile(
+      join(repoPath, "package.json"),
+      JSON.stringify({
+        dependencies: { eslint: "^9.0.0" },
+        scripts: { lint: "eslint ." }
+      })
+    );
+    await writeFile(join(repoPath, "package-lock.json"), "{}");
+
+    const result = await runTestOverride({ repoPath, kind: "lint" });
+
+    expect(result.ok).toBe(false);
+    expect(result.errorCode).toBe("packages_not_installed");
+    expect(result.steps[0]?.status).toBe("not_run");
+    expect(pnpmRunner.runPackageScript).not.toHaveBeenCalled();
   });
 
   it("delegates verify to codebase verification", async () => {

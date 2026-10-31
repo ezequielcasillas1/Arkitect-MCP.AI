@@ -111,4 +111,23 @@ describe("runRepoTests", () => {
     expect(result.steps[0]?.status).toBe("failure");
     expect(result.steps[0]?.outputTail).toContain("integration suite failed");
   });
+
+  it("marks tests as not_run when packages are not installed", async () => {
+    await writeFile(
+      join(repoPath, "package.json"),
+      JSON.stringify({
+        dependencies: { vitest: "^3.0.0" },
+        scripts: { test: "vitest run" }
+      })
+    );
+    await writeFile(join(repoPath, "package-lock.json"), "{}");
+
+    const result = await runRepoTests({ repoPath, suite: "all" });
+
+    expect(result.ok).toBe(false);
+    expect(result.errorCode).toBe("packages_not_installed");
+    expect(result.steps[0]?.status).toBe("not_run");
+    expect(result.summary).toContain("packages not installed");
+    expect(spawnMock).not.toHaveBeenCalled();
+  });
 });

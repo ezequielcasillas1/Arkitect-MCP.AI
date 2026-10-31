@@ -436,10 +436,10 @@ export async function runCodebaseVerification(input: CodebaseVerifyRequest): Pro
   steps.push({
     id: "audit",
     label: "Dependency audit",
-    status: audit.status === "success" ? "success" : audit.status === "inconclusive" ? "skipped" : "failure",
+    status: audit.status === "success" ? "success" : audit.status === "inconclusive" ? "not_run" : "failure",
     exitCode: audit.exitCode,
     outputTail: audit.outputTail,
-    command: audit.command,
+    command: audit.status === "inconclusive" ? undefined : audit.command,
     startedAt: auditStarted.toISOString(),
     finishedAt: auditFinished.toISOString(),
     durationMs: audit.durationMs

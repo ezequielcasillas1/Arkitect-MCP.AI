@@ -9,6 +9,7 @@ import {
   tailOutput,
   validateRepoRoot
 } from "./pnpm-runner.js";
+import { assessProjectDependenciesInstalled } from "./project-dependencies.js";
 
 const suiteScripts: Record<TestSuiteId, string> = {
   all: "test",
@@ -66,7 +67,7 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
       durationMs: 0,
       steps: [],
       summary: `${packageManager} is not installed or not on PATH.`,
-      errorCode: "spawn_failed",
+      errorCode: "package_manager_missing",
       hint: packageManagerMissingHint(packageManager, detection)
     };
   }
@@ -106,6 +107,34 @@ export async function runRepoTests(input: { repoPath: string; suite?: TestSuiteI
         suite === "all"
           ? `Arkitect run_tests expects ${formatPackageScriptCommand(packageManager, "test")} at the repo root.`
           : `Add a root "${script}" script (e.g. turbo run ${script}) before running the ${suite} suite.`
+    };
+  }
+
+  const dependencyStatus = await assessProjectDependenciesInstalled(repoPath, packageManager);
+
+  if (!dependencyStatus.installed) {
+    const finishedAt = new Date();
+
+    return {
+      ok: false,
+      repoPath,
+      suite,
+      command,
+      startedAt: startedAt.toISOString(),
+      finishedAt: finishedAt.toISOString(),
+      durationMs: finishedAt.getTime() - startedAt.getTime(),
+      steps: [
+        {
+          id: suite,
+          label: suiteLabels[suite],
+          status: "not_run",
+          exitCode: null,
+          outputTail: dependencyStatus.message
+        }
+      ],
+      summary: dependencyStatus.message,
+      errorCode: "packages_not_installed",
+      hint: dependencyStatus.message
     };
   }
 

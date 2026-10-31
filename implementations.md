@@ -1,3 +1,8 @@
+### 2026-10-31 - Verify audit gaps (tests + copy)
+**Status:** PARTIAL
+**Files:** packages/core/src/{test-runner,test-override,codebase-verification}.ts, packages/contracts/src/verification.ts, packages/mcp-server/src/mcp-tool-definitions.ts, docs/USER_GUIDE.md, apps/site + desktop copy
+**Result:** run_tests/overrides guard packages_not_installed; partial verify discovery; inconclusive audit → not_run; stale pnpm-only copy fixed. Awaiting SUCCESS confirm.
+
 ### 2026-09-04 - Live JSON install steps; delete Setup.exe
 **Status:** SUCCESS
 **Files:** apps/site/src/features/install-path/*, apps/site/public/index.html, apps/site/src/pages/McpPage.tsx, apps/desktop/src/electron/{update-config,app-update-service}.ts

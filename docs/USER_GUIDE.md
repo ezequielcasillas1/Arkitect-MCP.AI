@@ -334,8 +334,8 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | `suggest_requirement_tags` | Scoping a feature or policy pass | Tags derived from repo inspection and diagnosis signals |
 | `list_diagnosis_strategies` | Explaining continuation guardrails | Strategies for healthy continuation, deferral, reporting |
 | `verify_codebase` | Pre-merge or CI parity check | Requires `repoPath`. Detects npm/pnpm/yarn/bun, runs configured lint/build/typecheck/test scripts (skips missing ones), dependency audit for Node repos, static/PHP syntax path otherwise; writes `.arkitect/reports/` |
-| `run_tests` | Test-only pass | Runs `pnpm test` |
-| `run_test_suite` | Targeted suite | `suite`: `unit` \| `integration` \| `all` |
+| `run_tests` | Test-only pass | Detected package manager `test` script; requires `repoPath`; fails with `packages_not_installed` when deps missing |
+| `run_test_suite` | Targeted suite | Detected PM: `suite` `unit` \| `integration` \| `all`; same install guard as `run_tests` |
 | `list_refactoring_techniques` | Refactoring Guru catalog browse | Techniques grouped by category with reference URLs |
 | `analyze_refactoring_opportunities` | Code smell analysis before refactors | Rank techniques, orchestration plan, `cursorGuidance` — report only |
 

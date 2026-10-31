@@ -158,26 +158,26 @@ export const mcpToolGroups: McpToolGroup[] = [
     label: "Verification",
     title: "Verify & test runners",
     intro:
-      "Wrap common pnpm scripts so the agent can verify a repo, run tests, or scope a specific suite — with structured pass/fail, step tails, and next-step hints.",
+      "Wrap the target repo's package scripts (npm/pnpm/yarn/bun detected from lockfiles) so the agent can verify, run tests, or scope a suite — with structured pass/fail, step tails, and next-step hints.",
     tools: [
       {
         name: "verify_codebase",
         purpose:
-          "Run the full verify pipeline (pnpm lint, build, typecheck, test) from a repo root. Use the connected local path — not a system folder like C:\\Windows\\System32.",
-        usage: "Pass repoPath. Response includes ok, command, summary, step output tails, and a hint.",
+          "Run every configured lint/build/typecheck/test script plus dependency audit from a repo root (detected package manager). Partial scripts and non-Node (PHP/HTML) paths are supported. Requires repoPath.",
+        usage: "Pass repoPath. Response includes ok, command, summary, steps, audit, report paths, and a hint.",
         example: "Verify the codebase at C:\\Dev\\Pastecraft."
       },
       {
         name: "run_tests",
         purpose:
-          "Run unit and integration tests only (pnpm test) from a repo root. Returns structured pass/fail, step output tails, and summary.",
-        usage: "Pass repoPath. Lighter than verify_codebase — skips lint/build/typecheck.",
+          "Run the root test script with the detected package manager. Returns structured pass/fail, step output tails, and summary. Fails clearly when packages are not installed.",
+        usage: "Pass repoPath. Lighter than verify_codebase — skips lint/build/typecheck/audit.",
         example: "Run tests in C:\\Dev\\Pastecraft."
       },
       {
         name: "run_test_suite",
         purpose:
-          "Run a specific test suite from a repo root: unit (test:unit), integration (test:integration), or all (test). Returns structured JSON with steps and output tails.",
+          "Run a specific test suite with the detected package manager: unit (test:unit), integration (test:integration), or all (test).",
         usage: "Pass repoPath and suite: unit | integration | all.",
         example: "Run the integration test suite in C:\\Dev\\Pastecraft."
       }
