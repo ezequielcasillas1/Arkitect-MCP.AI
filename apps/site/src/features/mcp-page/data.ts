@@ -154,6 +154,33 @@ export const mcpToolGroups: McpToolGroup[] = [
     ]
   },
   {
+    id: "bug-fix",
+    label: "Bug fix",
+    title: "Bug-fix orchestration + root-cause portraiture",
+    intro:
+      "Report-only bug-fix orchestration driven by a root-cause portraiture power unit — portraits evidence, candidates, and falsifiers before any fix plan.",
+    tools: [
+      {
+        name: "portray_root_cause",
+        purpose:
+          "Build a structured root-cause portrait from error text, stacks, failing tests, and diagnosis signals. Reports only — does not auto-fix.",
+        usage:
+          "Pass repoPath plus errorMessage, stackTrace, failingTests, and/or reproductionSteps when available.",
+        example:
+          "Portray the root cause for TypeError Cannot read properties of undefined in C:\\Dev\\Pastecraft."
+      },
+      {
+        name: "orchestrate_bug_fix",
+        purpose:
+          "Run root-cause portraiture, rank fix strategies, and return capture→portray→isolate→fix→verify phases. Reports only — does not auto-fix.",
+        usage:
+          "Requires repoPath. Set explicitFixIntent to true when the user asked for a repair.",
+        example:
+          "Orchestrate a bug fix for the failing checkout test suite with explicit fix intent."
+      }
+    ]
+  },
+  {
     id: "verification",
     label: "Verification",
     title: "Verify & test runners",

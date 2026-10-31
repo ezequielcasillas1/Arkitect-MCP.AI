@@ -86,3 +86,9 @@
 - Donation: https://www.buymeacoffee.com/casiezeq
 - Keep install-path CTA; optional coffee only, no paid spots.
 - Continue `download-counter` vertical slice (clean-slice-fusion).
+
+20. Bug-fix orchestration + root-cause portraiture power unit
+- MCP tools `portray_root_cause` and `orchestrate_bug_fix`; resource `arkitect://orchestration/bug-fix`.
+- Root-cause portraiture power unit builds a structured cause portrait (evidence, candidates, primary cause, falsifiers).
+- Orchestration phases: capture → portray → isolate → fix (explicit intent) → verify; report-only, no auto-fix.
+- Shared contracts/core/MCP/desktop; reuse diagnosis + verify bookends; honor `bug-fix` workload signals.

@@ -66,7 +66,10 @@ describe("createArkitectMcpServer", () => {
     expect(toolNames).toContain("list_architecture_decision_guide");
     expect(toolNames).toContain("recommend_architecture");
     expect(toolNames).toContain("list_refactoring_techniques");
+    expect(toolNames).toContain("portray_root_cause");
+    expect(toolNames).toContain("orchestrate_bug_fix");
     expect(toolNames).toContain("apply_workbench_intake");
+    expect(server.resources.some((resource) => resource.uri === "arkitect://orchestration/bug-fix")).toBe(true);
   });
 
   it("accepts autoRun on apply_workbench_intake schema", () => {

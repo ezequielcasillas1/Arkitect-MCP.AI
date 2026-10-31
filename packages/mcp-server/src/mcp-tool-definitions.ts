@@ -6,6 +6,7 @@ interface CatalogCounts {
   designPatterns: number;
   refactoringTechniques: number;
   designPrinciples: number;
+  bugFixStrategies?: number;
 }
 
 export interface ArkitectMcpServer {
@@ -136,6 +137,41 @@ export const refactoringAnalysisInputSchema = {
 };
 
 export const refactoringAnalysisOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    analysis: { type: "object" },
+    cursorGuidance: { type: "array", items: { type: "string" } }
+  }
+};
+
+export const bugFixOrchestrationInputSchema = {
+  type: "object",
+  properties: {
+    repoPath: { type: "string" },
+    repoName: { type: "string" },
+    repoSummary: { type: "string" },
+    requestedOutcome: { type: "string" },
+    errorMessage: { type: "string" },
+    stackTrace: { type: "string" },
+    failingTests: { type: "array", items: { type: "string" } },
+    reproductionSteps: { type: "string" },
+    symptomText: { type: "string" },
+    explicitFixIntent: { type: "boolean" }
+  }
+};
+
+export const rootCausePortraitOutputSchema = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    portrait: { type: "object" },
+    diagnosisContext: { type: "object" },
+    cursorGuidance: { type: "array", items: { type: "string" } }
+  }
+};
+
+export const bugFixOrchestrationOutputSchema = {
   type: "object",
   properties: {
     summary: { type: "string" },
@@ -386,6 +422,13 @@ export function createMcpResources(counts: CatalogCounts): ArkitectMcpResource[]
       uri: "arkitect://guide/architecture-decision",
       name: "Architecture Decision Guide",
       description: "Master software-architect and senior-developer decision guide used by recommend_architecture."
+    },
+    {
+      uri: "arkitect://orchestration/bug-fix",
+      name: "Bug-Fix Orchestration Guide",
+      description: `Bug-fix orchestration unit with root-cause portraiture power unit${
+        counts.bugFixStrategies ? ` (${counts.bugFixStrategies} strategies)` : ""
+      }. Report-only — does not auto-fix.`
     }
   ];
 }
@@ -488,6 +531,20 @@ export function createMcpToolTemplates(): Array<Omit<ArkitectMcpToolDefinition, 
         "Analyze structural smells, rank Refactoring Guru techniques, and return an orchestration plan for Cursor agents. Reports only — does not auto-refactor.",
       inputSchema: refactoringAnalysisInputSchema,
       outputSchema: refactoringAnalysisOutputSchema
+    },
+    {
+      name: "portray_root_cause",
+      description:
+        "Root-cause portraiture power unit: build a structured cause portrait from error text, stacks, failing tests, and diagnosis signals. Reports only — does not auto-fix.",
+      inputSchema: bugFixOrchestrationInputSchema,
+      outputSchema: rootCausePortraitOutputSchema
+    },
+    {
+      name: "orchestrate_bug_fix",
+      description:
+        "Bug-fix orchestration unit: run root-cause portraiture, rank fix strategies, and return phased capture→portray→isolate→fix→verify guidance. Reports only — does not auto-fix.",
+      inputSchema: bugFixOrchestrationInputSchema,
+      outputSchema: bugFixOrchestrationOutputSchema
     },
     {
       name: "get_pattern_intelligence",
