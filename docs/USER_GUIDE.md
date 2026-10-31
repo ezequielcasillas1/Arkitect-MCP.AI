@@ -294,6 +294,19 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 3. Use `list_refactoring_techniques` or `arkitect://catalog/refactoring` for technique reference URLs
 4. Apply techniques only when explicit refactor intent is confirmed; run `verify_codebase` after each batch
 
+### Pattern 4c — Bug-fix orchestration (root-cause portraiture)
+
+**You:**
+
+> Portray the root cause of this error and orchestrate a bug-fix plan — report only unless I explicitly ask you to apply the fix.
+
+**Agent flow:**
+
+1. `portray_root_cause` with `repoPath`, `errorMessage`, `stackTrace`, and `failingTests` when available
+2. Read the portrait narrative, primary cause, and falsification checks
+3. `orchestrate_bug_fix` for phased capture→portray→isolate→fix→verify guidance
+4. Apply fixes only with `explicitFixIntent`; run `verify_codebase` after each batch
+
 ### Pattern 5 — Verify after implementation
 
 **You:**
@@ -338,6 +351,8 @@ If any step fails, see [Troubleshooting](#troubleshooting).
 | `run_test_suite` | Targeted suite | Detected PM: `suite` `unit` \| `integration` \| `all`; same install guard as `run_tests` |
 | `list_refactoring_techniques` | Refactoring Guru catalog browse | Techniques grouped by category with reference URLs |
 | `analyze_refactoring_opportunities` | Code smell analysis before refactors | Rank techniques, orchestration plan, `cursorGuidance` — report only |
+| `portray_root_cause` | Bug/error triage before coding | Root-cause portraiture power unit — evidence, candidates, falsifiers |
+| `orchestrate_bug_fix` | Repair workflow planning | Portrait + strategies + phased orchestration — report only |
 
 **Common inputs for diagnosis tools:**
 

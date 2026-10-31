@@ -1,5 +1,6 @@
 export * from "./ai.js";
 export * from "./architecture-recommendation.js";
+export * from "./bug-fix-orchestration.js";
 export * from "./catalog.js";
 export * from "./client-session.js";
 export * from "./desktop.js";

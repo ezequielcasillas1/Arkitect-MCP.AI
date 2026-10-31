@@ -1,4 +1,5 @@
 export * from "./architecture-recommendation/index.js";
+export * from "./bug-fix-orchestration/index.js";
 export * from "./client-access/index.js";
 export * from "./catalog.js";
 export * from "./codebase-verification.js";

@@ -1,12 +1,14 @@
 import type {
   ArchitectureCatalogEntry,
+  BugFixOrchestrationInput,
   CatalogMcpPayload,
   DesignPatternCatalogEntry,
   DiagnosisIntake,
   DiagnosisResult,
   LibraryMcpPayload,
   RefactoringAnalysisInput,
-  RemixProfileCatalogEntry
+  RemixProfileCatalogEntry,
+  RootCausePortraitInput
 } from "@arkitect/contracts";
 import type {
   PatternIntelligenceLookupRequest,
@@ -16,7 +18,10 @@ import type {
 import type { ClientSession } from "@arkitect/contracts";
 import {
   applyClientSessionToIntake,
+  buildBugFixOrchestrationResult,
   buildRefactoringAnalysisResult,
+  buildRootCausePortraitResult,
+  createBugFixOrchestrationCatalogPayload,
   createDiagnosisResult,
   createRefactoringCatalogPayload,
   defaultArchitecturePolicy,
@@ -49,6 +54,7 @@ import {
 import { normalizeWorkbenchIntakeRequest } from "./workbench-intake-normalize.js";
 import { postWorkbenchIntake } from "./desktop-bridge-client.js";
 import { MockRepositoryAnalyzer } from "@arkitect/repo-analyzer";
+import { toBugFixOrchestrationMcpPayload, toRootCausePortraitMcpPayload } from "./bug-fix-payload.js";
 import { toDiagnosisMcpPayload } from "./diagnosis-payload.js";
 import { toRefactoringMcpPayload } from "./refactoring-payload.js";
 import {
@@ -59,12 +65,14 @@ import {
 } from "./mcp-tool-definitions.js";
 
 export type { ArkitectMcpServer };
-export { toDiagnosisMcpPayload, toRefactoringMcpPayload };
+export { toDiagnosisMcpPayload, toRefactoringMcpPayload, toBugFixOrchestrationMcpPayload, toRootCausePortraitMcpPayload };
 
 const analyzer = new MockRepositoryAnalyzer();
 let lastDiagnosis: DiagnosisResult | null = null;
 let lastClientSession: ClientSession | null = null;
 let lastRefactoringAnalysis: ReturnType<typeof toRefactoringMcpPayload> | null = null;
+let lastBugFixOrchestration: ReturnType<typeof toBugFixOrchestrationMcpPayload> | null = null;
+let lastRootCausePortrait: ReturnType<typeof toRootCausePortraitMcpPayload> | null = null;
 
 function resolveTargetRepoPath(input?: { repoPath?: string }) {
   return resolveRequiredRepoPath(input);
@@ -314,6 +322,84 @@ export async function analyzeRefactoring(input: RefactoringAnalysisInput = {}) {
   return payload;
 }
 
+export async function portrayRootCause(input: RootCausePortraitInput = {}) {
+  const resolved = resolveTargetRepoPath(input);
+
+  if (!resolved.ok) {
+    return {
+      summary: resolved.summary,
+      hint: resolved.hint,
+      errorCode: resolved.errorCode,
+      portrait: null,
+      cursorGuidance: [resolved.summary, resolved.hint]
+    };
+  }
+
+  const intake = await mergeIntake(input as Partial<DiagnosisIntake>);
+
+  if (!intake) {
+    const missing = buildMissingRepoPathResult();
+    return {
+      summary: missing.summary,
+      hint: missing.hint,
+      errorCode: missing.errorCode,
+      portrait: null,
+      cursorGuidance: [missing.summary, missing.hint]
+    };
+  }
+
+  const mergedInput = {
+    ...input,
+    repoPath: resolved.repoPath
+  };
+  const autoDetections = await analyzer.analyze(intake);
+  const diagnosis = createDiagnosisResult(intake, autoDetections);
+  const result = buildRootCausePortraitResult(diagnosis, mergedInput, mergedInput.repoPath);
+  const payload = toRootCausePortraitMcpPayload(result);
+  lastRootCausePortrait = payload;
+  void lastRootCausePortrait;
+  return payload;
+}
+
+export async function orchestrateBugFix(input: BugFixOrchestrationInput = {}) {
+  const resolved = resolveTargetRepoPath(input);
+
+  if (!resolved.ok) {
+    return {
+      summary: resolved.summary,
+      hint: resolved.hint,
+      errorCode: resolved.errorCode,
+      analysis: null,
+      cursorGuidance: [resolved.summary, resolved.hint]
+    };
+  }
+
+  const intake = await mergeIntake(input as Partial<DiagnosisIntake>);
+
+  if (!intake) {
+    const missing = buildMissingRepoPathResult();
+    return {
+      summary: missing.summary,
+      hint: missing.hint,
+      errorCode: missing.errorCode,
+      analysis: null,
+      cursorGuidance: [missing.summary, missing.hint]
+    };
+  }
+
+  const mergedInput = {
+    ...input,
+    repoPath: resolved.repoPath
+  };
+  const autoDetections = await analyzer.analyze(intake);
+  const diagnosis = createDiagnosisResult(intake, autoDetections);
+  const result = buildBugFixOrchestrationResult(diagnosis, mergedInput, mergedInput.repoPath);
+  const payload = toBugFixOrchestrationMcpPayload(result);
+  lastBugFixOrchestration = payload;
+  void lastBugFixOrchestration;
+  return payload;
+}
+
 function toDesignPrinciplesPayload() {
   const items = listDesignPrinciples();
   return {
@@ -324,10 +410,12 @@ function toDesignPrinciplesPayload() {
 }
 
 export function createArkitectMcpServer(): ArkitectMcpServer {
+  const bugFixCatalog = createBugFixOrchestrationCatalogPayload();
   const counts = {
     ...getCatalogCounts(),
     refactoringTechniques: createRefactoringCatalogPayload().total,
-    designPrinciples: listDesignPrinciples().length
+    designPrinciples: listDesignPrinciples().length,
+    bugFixStrategies: bugFixCatalog.total
   };
   const resources = createMcpResources(counts);
   const executeByName: Record<string, (input: unknown) => Promise<ReturnType<typeof createJsonToolResult>>> = {
@@ -401,6 +489,14 @@ export function createArkitectMcpServer(): ArkitectMcpServer {
     },
     analyze_refactoring_opportunities: async (input) => {
       const result = await analyzeRefactoring(input as RefactoringAnalysisInput);
+      return createJsonToolResult(result);
+    },
+    portray_root_cause: async (input) => {
+      const result = await portrayRootCause(input as RootCausePortraitInput);
+      return createJsonToolResult(result);
+    },
+    orchestrate_bug_fix: async (input) => {
+      const result = await orchestrateBugFix(input as BugFixOrchestrationInput);
       return createJsonToolResult(result);
     },
     get_pattern_intelligence: async (input) => {
@@ -533,6 +629,8 @@ export async function readArkitectMcpResource(uri: string): Promise<unknown> {
         items: guide.steps
       };
     }
+    case "arkitect://orchestration/bug-fix":
+      return createBugFixOrchestrationCatalogPayload();
     default:
       throw new Error(`Unknown resource: ${uri}`);
   }

@@ -1,5 +1,11 @@
 import { useState } from "react";
-import type { CodebaseVerifyResult, DiagnosisResult, RefactoringMcpPayload, TestOverrideRunResult } from "@arkitect/contracts";
+import type {
+  BugFixOrchestrationMcpPayload,
+  CodebaseVerifyResult,
+  DiagnosisResult,
+  RefactoringMcpPayload,
+  TestOverrideRunResult
+} from "@arkitect/contracts";
 import { getArchitectureCatalogEntry, getDesignPatternDisplayName, getRemixProfileCatalogEntry, listDiagnosisStrategies } from "@arkitect/core";
 
 interface ResultsOverviewSectionProps {
@@ -13,10 +19,21 @@ interface ResultsOverviewSectionProps {
   mcpSummary: string;
   cursorGuidance: string[];
   refactoringPayload?: RefactoringMcpPayload;
+  bugFixPayload?: BugFixOrchestrationMcpPayload;
   toolNames: string[];
 }
 
-type ResultsTab = "overview" | "architecture" | "patterns" | "risks" | "ai" | "mcp" | "refactoring" | "verify" | "tests";
+type ResultsTab =
+  | "overview"
+  | "architecture"
+  | "patterns"
+  | "risks"
+  | "ai"
+  | "mcp"
+  | "refactoring"
+  | "bug-fix"
+  | "verify"
+  | "tests";
 
 export function ResultsOverviewSection({
   result,
@@ -29,6 +46,7 @@ export function ResultsOverviewSection({
   mcpSummary,
   cursorGuidance,
   refactoringPayload,
+  bugFixPayload,
   toolNames
 }: ResultsOverviewSectionProps) {
   const [activeTab, setActiveTab] = useState<ResultsTab>("overview");
@@ -80,7 +98,18 @@ export function ResultsOverviewSection({
 
           <div className="tab-row">
             {(
-              ["overview", "architecture", "patterns", "risks", "ai", "mcp", "refactoring", "verify", "tests"] as ResultsTab[]
+              [
+                "overview",
+                "architecture",
+                "patterns",
+                "risks",
+                "ai",
+                "mcp",
+                "refactoring",
+                "bug-fix",
+                "verify",
+                "tests"
+              ] as ResultsTab[]
             ).map((tab) => (
               <button
                 className={`tab-button ${activeTab === tab ? "tab-button-active" : ""}`}
@@ -305,8 +334,8 @@ export function ResultsOverviewSection({
                   ))}
                 </div>
                 <p className="helper-copy">
-                  MCP tools include analyze_refactoring_opportunities and list_refactoring_techniques for Refactoring
-                  Guru–guided agent orchestration. Test tools: verify_codebase, run_tests, run_test_suite.
+                  MCP tools include analyze_refactoring_opportunities, portray_root_cause, and orchestrate_bug_fix for
+                  agent orchestration. Test tools: verify_codebase, run_tests, run_test_suite.
                 </p>
                 <span className="metric-label">Cursor guidance</span>
                 <ul className="tight-list">
@@ -359,6 +388,59 @@ export function ResultsOverviewSection({
                   {refactoringPayload.analysis.orchestrationPlan.map((phase) => (
                     <li key={phase.id}>
                       <strong>{phase.label}</strong> — {phase.summary}
+                      <ul className="tight-list">
+                        {phase.agentActions.map((action) => (
+                          <li key={action}>{action}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              </article>
+            </div>
+          ) : null}
+
+          {activeTab === "bug-fix" && hasRun && bugFixPayload ? (
+            <div className="step-grid">
+              <article className="panel-card">
+                <span className="metric-label">Bug-fix orchestration</span>
+                <p>{bugFixPayload.summary}</p>
+                <ul className="tight-list">
+                  {bugFixPayload.cursorGuidance.map((guidance) => (
+                    <li key={guidance}>{guidance}</li>
+                  ))}
+                </ul>
+              </article>
+              <article className="panel-card">
+                <span className="metric-label">Root-cause portrait</span>
+                <p>{bugFixPayload.analysis.portrait.portraitNarrative}</p>
+                <ul className="tight-list">
+                  <li>
+                    <strong>{bugFixPayload.analysis.portrait.primaryCause.label}</strong> (
+                    {Math.round(bugFixPayload.analysis.portrait.primaryCause.confidence * 100)}%) —{" "}
+                    {bugFixPayload.analysis.portrait.primaryCause.summary}
+                  </li>
+                  <li>Blast radius: {bugFixPayload.analysis.portrait.blastRadius}</li>
+                  <li>Symptom: {bugFixPayload.analysis.portrait.symptomCategory}</li>
+                </ul>
+              </article>
+              <article className="panel-card">
+                <span className="metric-label">Recommended strategies</span>
+                <ul className="tight-list">
+                  {bugFixPayload.analysis.recommendedStrategies.map((entry) => (
+                    <li key={entry.strategy.id}>
+                      <strong>{entry.strategy.name}</strong> ({entry.priority}) — {entry.rationale}
+                    </li>
+                  ))}
+                </ul>
+              </article>
+              <article className="panel-card">
+                <span className="metric-label">Orchestration plan</span>
+                <ul className="tight-list">
+                  {bugFixPayload.analysis.orchestrationPlan.map((phase) => (
+                    <li key={phase.id}>
+                      <strong>{phase.label}</strong>
+                      {phase.powerUnit ? ` [${phase.powerUnit}]` : ""} — {phase.summary}
                       <ul className="tight-list">
                         {phase.agentActions.map((action) => (
                           <li key={action}>{action}</li>

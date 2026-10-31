@@ -24,10 +24,10 @@ import type {
   WorkbenchAutomationPhase
 } from "@arkitect/contracts";
 import { buildDiagnosisFactsBundle } from "@arkitect/ai";
-import { buildRefactoringAnalysisResult, applyPartialIntakeToDraft, applyRequestToWorkbenchPreset, createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult, runWorkbenchAutomationPipeline, resolveWorkbenchApplyRequest, upsertWorkbenchPreset, workbenchPresetToApplyRequest, buildTestingForArkApplyRequest } from "@arkitect/core";
+import { buildBugFixOrchestrationResult, buildRefactoringAnalysisResult, applyPartialIntakeToDraft, applyRequestToWorkbenchPreset, createDefaultDesktopLibrary, createDefaultIntake, createDiagnosisResult, runWorkbenchAutomationPipeline, resolveWorkbenchApplyRequest, upsertWorkbenchPreset, workbenchPresetToApplyRequest, buildTestingForArkApplyRequest } from "@arkitect/core";
 import { arkitectWindowsTheme, buildCssVariables } from "@arkitect/design-system";
 import { githubRouteToRepoInspection, validateGitHubTokenFormat } from "@arkitect/github";
-import { arkitectMcpServer, toDiagnosisMcpPayload, toRefactoringMcpPayload } from "@arkitect/mcp-server";
+import { arkitectMcpServer, toBugFixOrchestrationMcpPayload, toDiagnosisMcpPayload, toRefactoringMcpPayload } from "@arkitect/mcp-server";
 import { createMockAutoDetections } from "@arkitect/repo-analyzer";
 import { AiSettingsSection } from "./features/ai-settings/AiSettingsSection";
 import { ArchitecturePolicySection } from "./features/architecture-policy/ArchitecturePolicySection";
@@ -447,6 +447,22 @@ export function App() {
           repoSummary: draft.repoSummary,
           requestedOutcome: draft.requestedOutcome,
           explicitRefactorIntent: draft.executionPermission === "apply-structural-changes"
+        })
+      ),
+    [resultForDisplay, localRepoPath, draft.repoName, draft.repoSummary, draft.requestedOutcome, draft.executionPermission]
+  );
+  const bugFixPayload = useMemo(
+    () =>
+      toBugFixOrchestrationMcpPayload(
+        buildBugFixOrchestrationResult(resultForDisplay, {
+          repoPath: localRepoPath,
+          repoName: draft.repoName,
+          repoSummary: draft.repoSummary,
+          requestedOutcome: draft.requestedOutcome,
+          explicitFixIntent:
+            draft.executionPermission === "apply-safe-changes" ||
+            draft.executionPermission === "apply-structural-changes" ||
+            draft.requestedOutcome.toLowerCase().includes("fix")
         })
       ),
     [resultForDisplay, localRepoPath, draft.repoName, draft.repoSummary, draft.requestedOutcome, draft.executionPermission]
@@ -1895,6 +1911,7 @@ export function App() {
               lastTestOverrideResult={lastTestOverrideResult ?? undefined}
               mcpSummary={mcpPayload.summary}
               refactoringPayload={refactoringPayload}
+              bugFixPayload={bugFixPayload}
               result={resultForDisplay}
               toolNames={arkitectMcpServer.tools.map((tool) => tool.name)}
             />

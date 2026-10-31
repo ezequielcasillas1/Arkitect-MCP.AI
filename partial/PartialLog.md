@@ -1,3 +1,8 @@
+### 2026-10-30 - Bug-fix orchestration + root-cause portraiture
+**Status:** PARTIAL
+**Files:** packages/contracts/src/bug-fix-orchestration.ts, packages/core/src/bug-fix-orchestration/*, packages/mcp-server/src/{index,mcp-tool-definitions,bug-fix-payload}.ts, desktop ResultsOverview, mcp-page, USER_GUIDE.md
+**Result:** portray_root_cause + orchestrate_bug_fix shipped; awaiting SUCCESS confirm.
+
 ### 2026-10-31 - Verify audit fixes v2.1.2 release
 **Status:** PARTIAL
 **Files:** package.json workspaces, mcp-tool-definitions.ts, arkitect-links.ts, release-feed/mcp-page data, USER_GUIDE.md
